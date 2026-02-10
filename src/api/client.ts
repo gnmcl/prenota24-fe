@@ -1,6 +1,7 @@
 import axios from "axios";
-import type { AxiosError, AxiosInstance, AxiosResponse } from "axios";
+import type { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import type { ApiErrorResponse } from "../types";
+import { useAuthStore } from "../store/auth";
 
 /**
  * Pre-configured Axios instance pointing at the backend API.
@@ -17,17 +18,39 @@ const apiClient: AxiosInstance = axios.create({
 });
 
 /* ────────────────────────────────────────────
- * Response interceptor – normalise errors
+ * Request interceptor – attach JWT
+ * ──────────────────────────────────────────── */
+
+apiClient.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    const token = useAuthStore.getState().accessToken;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+);
+
+/* ────────────────────────────────────────────
+ * Response interceptor – normalise errors + handle 401
  * ──────────────────────────────────────────── */
 
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError<ApiErrorResponse>) => {
-    // Attach a friendlier shape that callers can inspect
     if (error.response) {
+      const status = error.response.status;
       const data = error.response.data;
+
+      // 401 → token expired or invalid → force logout
+      if (status === 401) {
+        useAuthStore.getState().logout();
+        window.location.href = "/login";
+        return Promise.reject(data);
+      }
+
       const normalised: ApiErrorResponse = {
-        status: error.response.status,
+        status,
         message: data?.message ?? error.message,
         errors: data?.errors,
       };

@@ -1,19 +1,34 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import { CreateStudioPage, CreateAdminUserPage, DashboardPage } from "../pages";
+import {
+  CreateStudioPage,
+  CreateAdminUserPage,
+  DashboardPage,
+  LoginPage,
+  AgendaPage,
+} from "../pages";
+import { ProtectedRoute, RoleGuard } from "../components/guards";
 
 /**
  * Application route tree.
  *
- * /                    → redirects into the setup wizard
- * /setup/studio        → Step 1: create a Studio
- * /setup/admin         → Step 2: create the Admin user
- * /dashboard           → post-setup landing page
- * *                    → catch-all redirect
+ * PUBLIC
+ *   /login              → Login page
+ *   /setup/studio       → Step 1: create a Studio
+ *   /setup/admin        → Step 2: create the Admin user
+ *
+ * PROTECTED (require authentication)
+ *   /dashboard          → Admin landing page
+ *   /agenda             → Professional landing page (placeholder)
+ *
+ * REDIRECTS
+ *   /                   → /login
+ *   *                   → /login
  */
 export const router = createBrowserRouter([
+  /* ── Public routes ─────────────────────── */
   {
-    path: "/",
-    element: <Navigate to="/setup/studio" replace />,
+    path: "/login",
+    element: <LoginPage />,
   },
   {
     path: "/setup/studio",
@@ -23,12 +38,41 @@ export const router = createBrowserRouter([
     path: "/setup/admin",
     element: <CreateAdminUserPage />,
   },
+
+  /* ── Protected routes ──────────────────── */
   {
-    path: "/dashboard",
-    element: <DashboardPage />,
+    element: <ProtectedRoute />,
+    children: [
+      /* Admin-only */
+      {
+        element: <RoleGuard allowed={["ADMIN"]} />,
+        children: [
+          {
+            path: "/dashboard",
+            element: <DashboardPage />,
+          },
+        ],
+      },
+      /* Professional-only */
+      {
+        element: <RoleGuard allowed={["PROFESSIONAL"]} />,
+        children: [
+          {
+            path: "/agenda",
+            element: <AgendaPage />,
+          },
+        ],
+      },
+    ],
+  },
+
+  /* ── Redirects ─────────────────────────── */
+  {
+    path: "/",
+    element: <Navigate to="/login" replace />,
   },
   {
     path: "*",
-    element: <Navigate to="/setup/studio" replace />,
+    element: <Navigate to="/login" replace />,
   },
 ]);
