@@ -48,7 +48,7 @@ const PRESET_COLORS = ['#4F46E5', '#7C3AED', '#059669', '#D97706', '#DC2626', '#
             title="Nessun servizio"
             description="Crea il primo servizio per categorizzare i tuoi appuntamenti."
             actionLabel="Crea servizio"
-            (actionClick)="openForm()"
+            (action)="openForm()"
           />
         } @else {
           <div class="space-y-3">

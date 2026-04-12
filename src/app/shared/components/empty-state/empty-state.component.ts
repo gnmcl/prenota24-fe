@@ -1,8 +1,10 @@
 import { Component, input, output } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-empty-state',
   standalone: true,
+  imports: [RouterLink],
   template: `
     <div class="flex flex-col items-center justify-center py-12 text-center">
       <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
@@ -12,7 +14,12 @@ import { Component, input, output } from '@angular/core';
       @if (description()) {
         <p class="mt-1 max-w-sm text-sm text-gray-500">{{ description() }}</p>
       }
-      @if (actionLabel()) {
+      @if (actionLabel() && actionRoute()) {
+        <a [routerLink]="actionRoute()"
+          class="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors">
+          {{ actionLabel() }}
+        </a>
+      } @else if (actionLabel()) {
         <button (click)="action.emit()"
           class="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors">
           {{ actionLabel() }}
@@ -26,5 +33,6 @@ export class EmptyStateComponent {
   readonly title = input('Nessun elemento');
   readonly description = input<string>('');
   readonly actionLabel = input<string>('');
+  readonly actionRoute = input<string>('');
   readonly action = output();
 }
