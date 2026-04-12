@@ -13,7 +13,6 @@ import type {
   AppointmentResponse,
   AppointmentStatus,
 } from '../../core/models/domain.model';
-import { getErrorMessage } from '../../shared/utils/errors';
 
 @Component({
   selector: 'app-client-detail',
