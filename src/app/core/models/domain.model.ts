@@ -307,6 +307,11 @@ export interface CreateAppointmentRequest {
   confirmImmediately?: boolean;
 }
 
+export interface UpdateAppointmentRequest {
+  notes?: string;
+  serviceTypeId?: UUID;
+}
+
 export interface ProposeNewTimeRequest {
   proposedStart: string;
   proposedEnd: string;
