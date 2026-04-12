@@ -117,3 +117,220 @@ export interface ApiErrorResponse {
   message: string;
   errors?: Record<string, string>;
 }
+
+/* ── Professional ───────────────────────── */
+
+export interface ProfessionalResponse {
+  id: UUID;
+  studioId: UUID;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  phone: string | null;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface CreateProfessionalRequest {
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface UpdateProfessionalRequest {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  active?: boolean;
+}
+
+/* ── Availability ───────────────────────── */
+
+export interface AvailabilityResponse {
+  id: UUID;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+}
+
+export interface AvailabilitySlotRequest {
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+}
+
+export interface AvailabilityExceptionResponse {
+  id: UUID;
+  date: string;
+  isUnavailable: boolean;
+  startTime: string | null;
+  endTime: string | null;
+  reason: string | null;
+}
+
+export interface CreateAvailabilityExceptionRequest {
+  date: string;
+  isUnavailable: boolean;
+  startTime?: string;
+  endTime?: string;
+  reason?: string;
+}
+
+/* ── Client ─────────────────────────────── */
+
+export const CLIENT_SOURCES = ['MANUAL', 'RESERVATION_IMPORT', 'PUBLIC_BOOKING', 'API'] as const;
+export type ClientSource = (typeof CLIENT_SOURCES)[number];
+
+export interface ClientResponse {
+  id: UUID;
+  studioId: UUID;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  phone: string | null;
+  notes: string | null;
+  source: ClientSource;
+  tags: string[] | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ClientSummaryResponse {
+  id: UUID;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  phone: string | null;
+  createdAt: string;
+}
+
+export interface CreateClientRequest {
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  notes?: string;
+  tags?: string[];
+}
+
+export interface UpdateClientRequest {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  notes?: string;
+  tags?: string[];
+}
+
+/* ── Client Note ────────────────────────── */
+
+export interface ClientNoteResponse {
+  id: UUID;
+  clientId: UUID;
+  authorId: UUID;
+  authorName: string | null;
+  appointmentId: UUID | null;
+  content: string;
+  pinned: boolean;
+  createdAt: string;
+}
+
+export interface CreateClientNoteRequest {
+  content: string;
+  appointmentId?: UUID;
+  pinned?: boolean;
+}
+
+/* ── Service Type ───────────────────────── */
+
+export interface ServiceTypeResponse {
+  id: UUID;
+  studioId: UUID;
+  professionalId: UUID | null;
+  name: string;
+  description: string | null;
+  durationMinutes: number;
+  price: number | null;
+  color: string | null;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface CreateServiceTypeRequest {
+  name: string;
+  description?: string;
+  durationMinutes: number;
+  price?: number;
+  color?: string;
+  professionalId?: UUID;
+}
+
+/* ── Appointment ────────────────────────── */
+
+export const APPOINTMENT_STATUSES = ['REQUESTED', 'CONFIRMED', 'PROPOSED_NEW_TIME', 'CANCELLED', 'COMPLETED', 'NO_SHOW'] as const;
+export type AppointmentStatus = (typeof APPOINTMENT_STATUSES)[number];
+
+export const CANCELLED_BY = ['CLIENT', 'PROFESSIONAL', 'SYSTEM'] as const;
+export type CancelledBy = (typeof CANCELLED_BY)[number];
+
+export interface AppointmentResponse {
+  id: UUID;
+  studioId: UUID;
+  professionalId: UUID;
+  professionalFullName: string;
+  clientId: UUID;
+  clientFullName: string;
+  serviceTypeId: UUID | null;
+  serviceTypeName: string | null;
+  startDatetime: string;
+  endDatetime: string;
+  status: AppointmentStatus;
+  notes: string | null;
+  proposedStart: string | null;
+  proposedEnd: string | null;
+  cancellationReason: string | null;
+  cancelledBy: CancelledBy | null;
+  token: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAppointmentRequest {
+  professionalId: UUID;
+  clientId: UUID;
+  serviceTypeId?: UUID;
+  startDatetime: string;
+  endDatetime: string;
+  notes?: string;
+  confirmImmediately?: boolean;
+}
+
+export interface ProposeNewTimeRequest {
+  proposedStart: string;
+  proposedEnd: string;
+}
+
+export interface CancelAppointmentRequest {
+  reason?: string;
+}
+
+/* ── Time Slot ──────────────────────────── */
+
+export interface TimeSlotResponse {
+  start: string;
+  end: string;
+}
+
+/* ── Paginated Response ─────────────────── */
+
+export interface Page<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+}
