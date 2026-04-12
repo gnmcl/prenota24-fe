@@ -1,5 +1,4 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { CardComponent } from '../../shared/components/card/card.component';
@@ -17,7 +16,7 @@ const PRESET_COLORS = ['#4F46E5', '#7C3AED', '#059669', '#D97706', '#DC2626', '#
 @Component({
   selector: 'app-service-types',
   standalone: true,
-  imports: [RouterLink, FormsModule, PageShellComponent, CardComponent, ButtonComponent, BadgeComponent, EmptyStateComponent, ConfirmDialogComponent, AlertComponent],
+  imports: [FormsModule, PageShellComponent, CardComponent, ButtonComponent, BadgeComponent, EmptyStateComponent, ConfirmDialogComponent, AlertComponent],
   template: `
     <app-page-shell>
       <div class="mx-auto max-w-4xl">
