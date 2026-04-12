@@ -27,7 +27,7 @@ import { getErrorMessage } from '../../shared/utils/errors';
         <h2 class="mb-6 text-2xl font-bold text-gray-900">{{ isEdit() ? 'Modifica cliente' : 'Nuovo cliente' }}</h2>
 
         @if (error()) {
-          <app-alert variant="error" class="mb-6">{{ error() }}</app-alert>
+          <app-alert variant="error" [message]="error()" class="mb-6" />
         }
 
         <app-card>

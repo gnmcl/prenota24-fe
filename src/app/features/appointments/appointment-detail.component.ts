@@ -32,7 +32,7 @@ import { getErrorMessage } from '../../shared/utils/errors';
         }
 
         @if (error()) {
-          <app-alert variant="error" class="mb-4">{{ error() }}</app-alert>
+          <app-alert variant="error" [message]="error()" class="mb-4" />
         }
 
         @if (apt()) {

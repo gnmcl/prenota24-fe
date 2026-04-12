@@ -35,7 +35,7 @@ const PRESET_COLORS = ['#4F46E5', '#7C3AED', '#059669', '#D97706', '#DC2626', '#
         </div>
 
         @if (error()) {
-          <app-alert variant="error" class="mb-4">{{ error() }}</app-alert>
+          <app-alert variant="error" [message]="error()" class="mb-4" />
         }
 
         @if (isLoading()) {
