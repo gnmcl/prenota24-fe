@@ -9,9 +9,11 @@ import type {
   AvailabilityExceptionResponse,
   CreateAvailabilityExceptionRequest,
   ClientSummaryResponse,
+  CreateClientRequest,
   CreateAppointmentRequest,
   CancelAppointmentRequest,
   ProfessionalDashboardResponse,
+  ServiceTypeResponse,
   Page,
   Studio,
 } from '../models/domain.model';
@@ -71,6 +73,16 @@ export class ProfessionalPortalService {
 
   listClients(): Observable<ClientSummaryResponse[]> {
     return this.http.get<ClientSummaryResponse[]>(`${this.baseUrl}/clients`);
+  }
+
+  createClient(request: CreateClientRequest): Observable<ClientSummaryResponse> {
+    return this.http.post<ClientSummaryResponse>(`${this.baseUrl}/clients`, request);
+  }
+
+  // ── Service Types ──────────────────────────
+
+  listServiceTypes(): Observable<ServiceTypeResponse[]> {
+    return this.http.get<ServiceTypeResponse[]>(`${this.baseUrl}/service-types`);
   }
 
   // ── Availability ──────────────────────────

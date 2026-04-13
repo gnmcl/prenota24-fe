@@ -6,7 +6,8 @@ import { ButtonComponent } from '../../shared/components/button/button.component
 import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { ProfessionalService } from '../../core/services/professional.service';
-import type { ProfessionalResponse, AvailabilityResponse, AvailabilityExceptionResponse, AvailabilitySlotRequest } from '../../core/models/domain.model';
+import { InvitationService } from '../../core/services/invitation.service';
+import type { ProfessionalResponse, AvailabilityResponse, AvailabilityExceptionResponse, AvailabilitySlotRequest, InvitationResponse } from '../../core/models/domain.model';
 import { FormsModule } from '@angular/forms';
 
 const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
@@ -87,6 +88,53 @@ const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Saba
                     <dd class="text-sm text-gray-900">{{ formatDate(professional()!.createdAt) }}</dd>
                   </div>
                 </dl>
+              </app-card>
+
+              <!-- Invitation card -->
+              <app-card>
+                <h3 class="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">Accesso portale</h3>
+
+                @if (invitation()) {
+                  @if (invitation()!.status === 'ACCEPTED') {
+                    <div class="flex items-center gap-2">
+                      <app-badge variant="green">Registrato</app-badge>
+                      <span class="text-sm text-gray-500">Il professionista ha già accettato l'invito.</span>
+                    </div>
+                  } @else if (invitation()!.status === 'PENDING') {
+                    <div class="space-y-3">
+                      <div class="flex items-center gap-2">
+                        <app-badge variant="amber">In attesa</app-badge>
+                        <span class="text-xs text-gray-400">Scade il {{ formatDate(invitation()!.expiresAt) }}</span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <input readonly [value]="invitation()!.inviteLink"
+                          class="flex-1 truncate rounded border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs text-gray-700 font-mono" />
+                        <app-button variant="secondary" (click)="copyLink()">
+                          {{ copied() ? 'Copiato!' : 'Copia' }}
+                        </app-button>
+                      </div>
+                      <app-button variant="danger" [isLoading]="revokingInvite()" (click)="revokeInvite()">
+                        Revoca invito
+                      </app-button>
+                    </div>
+                  } @else {
+                    <!-- EXPIRED or REVOKED — allow re-invite -->
+                    <p class="mb-3 text-sm text-gray-500">
+                      Invito <span class="font-medium">{{ invitation()!.status === 'EXPIRED' ? 'scaduto' : 'revocato' }}</span>.
+                      Puoi generarne uno nuovo.
+                    </p>
+                    <app-button [isLoading]="creatingInvite()" (click)="createInvite()">Genera nuovo invito</app-button>
+                  }
+                } @else if (inviteLoading()) {
+                  <div class="h-6 w-6 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+                } @else {
+                  <p class="mb-3 text-sm text-gray-500">Il professionista non ha ancora accesso al portale.</p>
+                  @if (!professional()!.email) {
+                    <p class="text-xs text-amber-600">⚠ Aggiungi prima un'email al professionista.</p>
+                  } @else {
+                    <app-button [isLoading]="creatingInvite()" (click)="createInvite()">Invia invito</app-button>
+                  }
+                }
               </app-card>
             </div>
           }
@@ -192,6 +240,7 @@ export class ProfessionalDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly profService = inject(ProfessionalService);
+  private readonly invitationService = inject(InvitationService);
 
   readonly professional = signal<ProfessionalResponse | null>(null);
   readonly availability = signal<AvailabilityResponse[]>([]);
@@ -201,6 +250,13 @@ export class ProfessionalDetailComponent implements OnInit {
   readonly deleteDialogOpen = signal(false);
   readonly isDeleting = signal(false);
   readonly savingAvailability = signal(false);
+
+  // Invitation
+  readonly invitation = signal<InvitationResponse | null>(null);
+  readonly inviteLoading = signal(true);
+  readonly creatingInvite = signal(false);
+  readonly revokingInvite = signal(false);
+  readonly copied = signal(false);
 
   readonly tabs = [
     { key: 'info' as const, label: 'Informazioni' },
@@ -232,6 +288,18 @@ export class ProfessionalDetailComponent implements OnInit {
       },
     });
     this.profService.getExceptions(id).subscribe({ next: (e) => this.exceptions.set(e) });
+
+    // Load pending/accepted invitation for this professional
+    this.invitationService.list().subscribe({
+      next: (invites) => {
+        const found = invites
+          .filter((i) => i.professionalId === id)
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0] ?? null;
+        this.invitation.set(found);
+        this.inviteLoading.set(false);
+      },
+      error: () => this.inviteLoading.set(false),
+    });
   }
 
   private buildDaySlots(slots: AvailabilityResponse[]): void {
@@ -304,6 +372,41 @@ export class ProfessionalDetailComponent implements OnInit {
     this.profService.delete(this.professional()!.id).subscribe({
       next: () => this.router.navigate(['/professionisti']),
       error: () => this.isDeleting.set(false),
+    });
+  }
+
+  createInvite(): void {
+    const prof = this.professional();
+    if (!prof?.email) return;
+    this.creatingInvite.set(true);
+    this.invitationService.create({ professionalId: prof.id, email: prof.email }).subscribe({
+      next: (inv) => {
+        this.invitation.set(inv);
+        this.creatingInvite.set(false);
+      },
+      error: () => this.creatingInvite.set(false),
+    });
+  }
+
+  revokeInvite(): void {
+    const inv = this.invitation();
+    if (!inv) return;
+    this.revokingInvite.set(true);
+    this.invitationService.revoke(inv.id).subscribe({
+      next: () => {
+        this.invitation.set({ ...inv, status: 'REVOKED' });
+        this.revokingInvite.set(false);
+      },
+      error: () => this.revokingInvite.set(false),
+    });
+  }
+
+  copyLink(): void {
+    const link = this.invitation()?.inviteLink;
+    if (!link) return;
+    navigator.clipboard.writeText(link).then(() => {
+      this.copied.set(true);
+      setTimeout(() => this.copied.set(false), 2000);
     });
   }
 

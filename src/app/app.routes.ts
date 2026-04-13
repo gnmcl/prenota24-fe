@@ -22,6 +22,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/register/register.component').then(m => m.RegisterComponent),
   },
   {
+    path: 'invito/:token',
+    loadComponent: () => import('./features/accept-invitation/accept-invitation.component').then(m => m.AcceptInvitationComponent),
+  },
+  {
     path: 'e/:slug',
     loadComponent: () => import('./features/public-event/public-event.component').then(m => m.PublicEventComponent),
   },
@@ -140,6 +144,36 @@ export const routes: Routes = [
     loadComponent: () => import('./features/agenda/agenda.component').then(m => m.AgendaComponent),
     canActivate: [authGuard, roleGuard],
     data: { allowed: ['ADMIN', 'PROFESSIONAL'] },
+  },
+  {
+    path: 'pro/dashboard',
+    loadComponent: () => import('./features/pro/professional-dashboard.component').then(m => m.ProfessionalDashboardComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { allowed: ['PROFESSIONAL'] },
+  },
+  {
+    path: 'pro/appuntamenti',
+    loadComponent: () => import('./features/pro/professional-appointments.component').then(m => m.ProfessionalAppointmentsComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { allowed: ['PROFESSIONAL'] },
+  },
+  {
+    path: 'pro/clienti',
+    loadComponent: () => import('./features/pro/professional-clients.component').then(m => m.ProfessionalClientsComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { allowed: ['PROFESSIONAL'] },
+  },
+  {
+    path: 'pro/profilo',
+    loadComponent: () => import('./features/pro/professional-profile.component').then(m => m.ProfessionalProfileComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { allowed: ['PROFESSIONAL'] },
+  },
+  {
+    path: 'pro/disponibilita',
+    loadComponent: () => import('./features/pro/professional-availability.component').then(m => m.ProfessionalAvailabilityComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { allowed: ['PROFESSIONAL'] },
   },
 
   /* ── Redirects ─────────────────────────── */
