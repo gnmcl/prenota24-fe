@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import type { AuthUser } from '../models/auth.model';
-import type { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from '../models/auth.model';
+import type { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, AcceptInvitationRequest } from '../models/auth.model';
 import { environment } from '../../environments/environment';
 
 const STORAGE_KEY = 'prenota24-auth';
@@ -85,6 +85,13 @@ export class AuthService {
   registerApi(payload: RegisterRequest): Promise<RegisterResponse> {
     return firstValueFrom(
       this.http.post<RegisterResponse>(`${environment.apiBaseUrl}/auth/register`, payload),
+    );
+  }
+
+  /** Accept an invitation and register as professional */
+  acceptInvitationApi(payload: AcceptInvitationRequest): Promise<LoginResponse> {
+    return firstValueFrom(
+      this.http.post<LoginResponse>(`${environment.apiBaseUrl}/auth/accept-invitation`, payload),
     );
   }
 }

@@ -340,3 +340,31 @@ export interface Page<T> {
   first: boolean;
   last: boolean;
 }
+
+/* ── Invitation ────────────────────────── */
+
+export interface InvitationResponse {
+  id: UUID;
+  professionalId: UUID;
+  professionalName: string;
+  email: string;
+  status: string;
+  inviteLink: string;
+  expiresAt: string;
+  createdAt: string;
+}
+
+export interface CreateInvitationRequest {
+  professionalId: UUID;
+  email: string;
+}
+
+/* ── Professional Dashboard ────────────── */
+
+export interface ProfessionalDashboardResponse {
+  professional: ProfessionalResponse;
+  studio: Studio;
+  todayAppointments: number;
+  totalClients: number;
+  pendingAppointments: number;
+}
