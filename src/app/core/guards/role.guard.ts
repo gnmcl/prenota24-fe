@@ -15,7 +15,7 @@ export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
   const allowed: AppUserRole[] = route.data['allowed'] ?? [];
 
   if (!allowed.includes(user.role)) {
-    const fallback = user.role === 'ADMIN' ? '/dashboard' : '/agenda';
+    const fallback = user.role === 'PROFESSIONAL' ? '/pro/dashboard' : '/dashboard';
     return router.createUrlTree([fallback]);
   }
 
