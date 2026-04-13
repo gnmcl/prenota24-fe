@@ -39,27 +39,84 @@ import { getErrorMessage } from '../../shared/utils/errors';
         }
 
         <div class="space-y-6">
-          <!-- Step 1: Select professional -->
+          <!-- Step 1: Service (optional, searchable) -->
           <app-card>
-            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">1. Professionista</h3>
-            <div class="grid gap-2 sm:grid-cols-2">
-              @for (pro of professionals(); track pro.id) {
-                <button (click)="selectProfessional(pro)" type="button"
-                  [class]="selectedProfessionalId() === pro.id
-                    ? 'rounded-lg border-2 border-indigo-600 bg-indigo-50 p-3 text-left transition-colors'
-                    : 'rounded-lg border border-gray-200 p-3 text-left hover:bg-gray-50 transition-colors'">
-                  <span class="font-medium text-gray-900">{{ pro.firstName }} {{ pro.lastName }}</span>
-                  @if (pro.email) {
-                    <span class="block text-xs text-gray-500">{{ pro.email }}</span>
-                  }
+            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">1. Servizio (opzionale)</h3>
+            <div class="relative">
+              <input type="text" [ngModel]="serviceSearchText()" (ngModelChange)="onServiceSearch($event)" placeholder="Cerca servizio per nome..."
+                class="mb-2 w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+            </div>
+            @if (selectedServiceId()) {
+              <div class="mb-2 flex items-center gap-2 rounded-lg border-2 border-indigo-600 bg-indigo-50 px-3 py-2 text-sm">
+                @if (selectedServiceColor()) {
+                  <span class="h-3 w-3 rounded-full shrink-0" [style.background-color]="selectedServiceColor()"></span>
+                }
+                <span class="font-medium text-indigo-700">{{ selectedServiceName() }}</span>
+                <button (click)="selectNoService()" type="button" class="ml-auto text-gray-400 hover:text-gray-600">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+            }
+            <div class="max-h-52 overflow-y-auto space-y-1">
+              <button (click)="selectNoService()" type="button"
+                [class]="!selectedServiceId()
+                  ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 p-3 text-left text-sm transition-colors'
+                  : 'w-full rounded-lg border border-gray-200 p-3 text-left text-sm hover:bg-gray-50 transition-colors'">
+                <span class="font-medium text-gray-900">Nessun servizio</span>
+                <span class="block text-xs text-gray-400">Durata personalizzata</span>
+              </button>
+              @for (svc of filteredServices(); track svc.id) {
+                <button (click)="selectService(svc)" type="button"
+                  [class]="selectedServiceId() === svc.id
+                    ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 p-3 text-left text-sm transition-colors'
+                    : 'w-full rounded-lg border border-gray-200 p-3 text-left text-sm hover:bg-gray-50 transition-colors'">
+                  <div class="flex items-center gap-2">
+                    @if (svc.color) {
+                      <span class="h-3 w-3 rounded-full shrink-0" [style.background-color]="svc.color"></span>
+                    }
+                    <span class="font-medium text-gray-900">{{ svc.name }}</span>
+                  </div>
+                  <span class="block text-xs text-gray-400">{{ svc.durationMinutes }} min {{ svc.price ? '· €' + svc.price : '' }}</span>
                 </button>
               }
             </div>
           </app-card>
 
-          <!-- Step 2: Select client -->
+          <!-- Step 2: Professional (searchable, filtered by service) -->
           <app-card>
-            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">2. Cliente</h3>
+            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">2. Professionista</h3>
+            <input type="text" [ngModel]="professionalSearchText()" (ngModelChange)="onProfessionalSearch($event)" placeholder="Cerca professionista per nome o email..."
+              class="mb-2 w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+            @if (selectedProfessionalId()) {
+              <div class="mb-2 flex items-center gap-2 rounded-lg border-2 border-indigo-600 bg-indigo-50 px-3 py-2 text-sm">
+                <span class="font-medium text-indigo-700">{{ selectedProfessionalName() }}</span>
+                <button (click)="clearProfessional()" type="button" class="ml-auto text-gray-400 hover:text-gray-600">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+            }
+            @if (searchedProfessionals().length === 0) {
+              <p class="text-sm text-gray-400">Nessun professionista disponibile per il servizio selezionato.</p>
+            } @else {
+              <div class="max-h-52 overflow-y-auto space-y-1">
+                @for (pro of searchedProfessionals(); track pro.id) {
+                  <button (click)="selectProfessional(pro)" type="button"
+                    [class]="selectedProfessionalId() === pro.id
+                      ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 p-3 text-left transition-colors'
+                      : 'w-full rounded-lg border border-gray-200 p-3 text-left hover:bg-gray-50 transition-colors'">
+                    <span class="font-medium text-gray-900">{{ pro.firstName }} {{ pro.lastName }}</span>
+                    @if (pro.email) {
+                      <span class="block text-xs text-gray-500">{{ pro.email }}</span>
+                    }
+                  </button>
+                }
+              </div>
+            }
+          </app-card>
+
+          <!-- Step 3: Client -->
+          <app-card>
+            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">3. Cliente</h3>
             <input type="text" [(ngModel)]="clientSearch" (input)="searchClients()" placeholder="Cerca cliente per nome o email..."
               class="mb-3 w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
             @if (clientResults().length > 0) {
@@ -80,34 +137,6 @@ import { getErrorMessage } from '../../shared/utils/errors';
             @if (selectedClientName()) {
               <div class="mt-2 text-sm text-indigo-600 font-medium">Selezionato: {{ selectedClientName() }}</div>
             }
-          </app-card>
-
-          <!-- Step 3: Service (optional) -->
-          <app-card>
-            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">3. Servizio (opzionale)</h3>
-            <div class="grid gap-2 sm:grid-cols-2">
-              <button (click)="selectedServiceId.set(null); selectedDuration.set(30)" type="button"
-                [class]="!selectedServiceId()
-                  ? 'rounded-lg border-2 border-indigo-600 bg-indigo-50 p-3 text-left text-sm transition-colors'
-                  : 'rounded-lg border border-gray-200 p-3 text-left text-sm hover:bg-gray-50 transition-colors'">
-                <span class="font-medium text-gray-900">Nessun servizio</span>
-                <span class="block text-xs text-gray-400">Durata personalizzata</span>
-              </button>
-              @for (svc of services(); track svc.id) {
-                <button (click)="selectService(svc)" type="button"
-                  [class]="selectedServiceId() === svc.id
-                    ? 'rounded-lg border-2 border-indigo-600 bg-indigo-50 p-3 text-left text-sm transition-colors'
-                    : 'rounded-lg border border-gray-200 p-3 text-left text-sm hover:bg-gray-50 transition-colors'">
-                  <div class="flex items-center gap-2">
-                    @if (svc.color) {
-                      <span class="h-3 w-3 rounded-full shrink-0" [style.background-color]="svc.color"></span>
-                    }
-                    <span class="font-medium text-gray-900">{{ svc.name }}</span>
-                  </div>
-                  <span class="block text-xs text-gray-400">{{ svc.durationMinutes }} min {{ svc.price ? '· €' + svc.price : '' }}</span>
-                </button>
-              }
-            </div>
           </app-card>
 
           <!-- Step 4: Date + Time -->
@@ -186,14 +215,45 @@ export class AppointmentFormComponent implements OnInit {
   readonly error = signal('');
 
   readonly selectedProfessionalId = signal<UUID | null>(null);
+  readonly selectedProfessionalName = signal('');
   readonly selectedClientId = signal<UUID | null>(null);
   readonly selectedClientName = signal('');
   readonly selectedServiceId = signal<UUID | null>(null);
+  readonly selectedServiceName = signal('');
+  readonly selectedServiceColor = signal<string | null>(null);
   readonly selectedSlot = signal<TimeSlotResponse | null>(null);
   readonly selectedDuration = signal(30);
+  readonly serviceSearchText = signal('');
+  readonly professionalSearchText = signal('');
   clientSearch = '';
   selectedDate = '';
   notes = '';
+
+  readonly filteredServices = computed(() => {
+    const q = this.serviceSearchText().toLowerCase().trim();
+    const all = this.services();
+    if (!q) return all;
+    return all.filter((s) => s.name.toLowerCase().includes(q));
+  });
+
+  readonly filteredProfessionals = computed(() => {
+    const svcId = this.selectedServiceId();
+    const allPros = this.professionals();
+    if (!svcId) return allPros;
+    const svc = this.services().find((s) => s.id === svcId);
+    if (!svc || svc.professionalIds.length === 0) return allPros;
+    return allPros.filter((p) => svc.professionalIds.includes(p.id));
+  });
+
+  readonly searchedProfessionals = computed(() => {
+    const q = this.professionalSearchText().toLowerCase().trim();
+    const filtered = this.filteredProfessionals();
+    if (!q) return filtered;
+    return filtered.filter((p) =>
+      (p.firstName + ' ' + p.lastName).toLowerCase().includes(q) ||
+      (p.email ?? '').toLowerCase().includes(q)
+    );
+  });
 
   readonly canSubmit = computed(() => !!this.selectedProfessionalId() && !!this.selectedClientId() && !!this.selectedSlot());
 
@@ -217,19 +277,55 @@ export class AppointmentFormComponent implements OnInit {
     }, 300);
   }
 
+  onServiceSearch(value: string): void {
+    this.serviceSearchText.set(value);
+  }
+
+  onProfessionalSearch(value: string): void {
+    this.professionalSearchText.set(value);
+  }
+
   selectProfessional(pro: ProfessionalResponse): void {
     this.selectedProfessionalId.set(pro.id);
+    this.selectedProfessionalName.set(pro.firstName + ' ' + pro.lastName);
     this.selectedSlot.set(null);
     this.slots.set([]);
     if (this.selectedDate) this.loadSlots();
   }
 
+  clearProfessional(): void {
+    this.selectedProfessionalId.set(null);
+    this.selectedProfessionalName.set('');
+    this.selectedSlot.set(null);
+    this.slots.set([]);
+  }
+
   selectService(svc: ServiceTypeResponse): void {
     this.selectedServiceId.set(svc.id);
+    this.selectedServiceName.set(svc.name);
+    this.selectedServiceColor.set(svc.color ?? null);
     this.selectedDuration.set(svc.durationMinutes);
+    this.resetProfessionalIfNeeded();
     this.selectedSlot.set(null);
     this.slots.set([]);
     if (this.selectedDate && this.selectedProfessionalId()) this.loadSlots();
+  }
+
+  selectNoService(): void {
+    this.selectedServiceId.set(null);
+    this.selectedServiceName.set('');
+    this.selectedServiceColor.set(null);
+    this.selectedDuration.set(30);
+    this.resetProfessionalIfNeeded();
+    this.selectedSlot.set(null);
+    this.slots.set([]);
+  }
+
+  private resetProfessionalIfNeeded(): void {
+    const profId = this.selectedProfessionalId();
+    if (profId && !this.filteredProfessionals().find((p) => p.id === profId)) {
+      this.selectedProfessionalId.set(null);
+    }
   }
 
   loadSlots(): void {

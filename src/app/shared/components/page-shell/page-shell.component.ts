@@ -43,6 +43,10 @@ import { AuthService } from '../../../core/services/auth.service';
                   class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">
                   Servizi
                 </a>
+                <a routerLink="/agenda" routerLinkActive="bg-indigo-50 text-indigo-700"
+                  class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">
+                  Agenda
+                </a>
                 <a routerLink="/eventi" routerLinkActive="bg-indigo-50 text-indigo-700"
                   class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">
                   Eventi
@@ -91,6 +95,8 @@ import { AuthService } from '../../../core/services/auth.service';
               class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">Team</a>
             <a routerLink="/servizi" (click)="mobileMenuOpen.set(false)"
               class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">Servizi</a>
+            <a routerLink="/agenda" (click)="mobileMenuOpen.set(false)"
+              class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">Agenda</a>
             <a routerLink="/eventi" (click)="mobileMenuOpen.set(false)"
               class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">Eventi</a>
           </nav>
@@ -98,7 +104,7 @@ import { AuthService } from '../../../core/services/auth.service';
       </header>
 
       <!-- Main Content -->
-      <main class="mx-auto max-w-6xl px-6 py-10">
+      <main class="mx-auto max-w-7xl px-6 py-10">
         <ng-content />
       </main>
     </div>

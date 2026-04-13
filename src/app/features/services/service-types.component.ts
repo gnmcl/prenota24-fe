@@ -8,7 +8,8 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { ServiceTypeService } from '../../core/services/service-type.service';
-import type { ServiceTypeResponse, CreateServiceTypeRequest } from '../../core/models/domain.model';
+import { ProfessionalService } from '../../core/services/professional.service';
+import type { ServiceTypeResponse, CreateServiceTypeRequest, ProfessionalResponse, UUID } from '../../core/models/domain.model';
 import { getErrorMessage } from '../../shared/utils/errors';
 
 const PRESET_COLORS = ['#4F46E5', '#7C3AED', '#059669', '#D97706', '#DC2626', '#2563EB', '#DB2777', '#0891B2'];
@@ -67,6 +68,10 @@ const PRESET_COLORS = ['#4F46E5', '#7C3AED', '#059669', '#D97706', '#DC2626', '#
                           <span class="text-gray-300">·</span>
                           <span>€{{ svc.price }}</span>
                         }
+                        @if (svc.professionalIds.length > 0) {
+                          <span class="text-gray-300">·</span>
+                          <span>{{ svc.professionalIds.length }} professionista/i</span>
+                        }
                         @if (svc.description) {
                           <span class="text-gray-300">·</span>
                           <span class="truncate">{{ svc.description }}</span>
@@ -120,6 +125,31 @@ const PRESET_COLORS = ['#4F46E5', '#7C3AED', '#059669', '#D97706', '#DC2626', '#
                 <textarea [(ngModel)]="formDescription" rows="2"
                   class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none resize-none transition-colors"></textarea>
               </div>
+              <!-- Professional association -->
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Professionisti abilitati</label>
+                @if (allProfessionals().length === 0) {
+                  <p class="text-sm text-gray-400">Nessun professionista nel team.</p>
+                } @else {
+                  <div class="grid gap-2 sm:grid-cols-2">
+                    @for (pro of allProfessionals(); track pro.id) {
+                      <label class="flex items-center gap-2 rounded-lg border px-3 py-2 cursor-pointer hover:bg-gray-50 transition-colors"
+                        [class.border-indigo-600]="formProfessionalIds.has(pro.id)"
+                        [class.bg-indigo-50]="formProfessionalIds.has(pro.id)"
+                        [class.border-gray-200]="!formProfessionalIds.has(pro.id)">
+                        <input type="checkbox" [checked]="formProfessionalIds.has(pro.id)" (change)="toggleProfessional(pro.id)"
+                          class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                        <div>
+                          <span class="text-sm font-medium text-gray-900">{{ pro.firstName }} {{ pro.lastName }}</span>
+                          @if (pro.email) {
+                            <span class="block text-xs text-gray-400">{{ pro.email }}</span>
+                          }
+                        </div>
+                      </label>
+                    }
+                  </div>
+                }
+              </div>
             </div>
             <div class="mt-5 flex justify-end gap-3">
               <app-button variant="secondary" (click)="closeForm()">Annulla</app-button>
@@ -146,8 +176,10 @@ const PRESET_COLORS = ['#4F46E5', '#7C3AED', '#059669', '#D97706', '#DC2626', '#
 })
 export class ServiceTypesComponent implements OnInit {
   private readonly svcService = inject(ServiceTypeService);
+  private readonly profService = inject(ProfessionalService);
 
   readonly services = signal<ServiceTypeResponse[]>([]);
+  readonly allProfessionals = signal<ProfessionalResponse[]>([]);
   readonly isLoading = signal(true);
   readonly showForm = signal(false);
   readonly editingId = signal<string | null>(null);
@@ -162,6 +194,7 @@ export class ServiceTypesComponent implements OnInit {
   formPrice: number | null = null;
   formColor = PRESET_COLORS[0];
   formDescription = '';
+  formProfessionalIds = new Set<string>();
   private deleteTarget: ServiceTypeResponse | null = null;
 
   ngOnInit(): void {
@@ -171,6 +204,9 @@ export class ServiceTypesComponent implements OnInit {
         this.isLoading.set(false);
       },
       error: () => this.isLoading.set(false),
+    });
+    this.profService.list().subscribe({
+      next: (list) => this.allProfessionals.set(list.filter((p) => p.active)),
     });
   }
 
@@ -191,6 +227,7 @@ export class ServiceTypesComponent implements OnInit {
     this.formPrice = svc.price;
     this.formColor = svc.color || PRESET_COLORS[0];
     this.formDescription = svc.description ?? '';
+    this.formProfessionalIds = new Set(svc.professionalIds ?? []);
     this.showForm.set(true);
   }
 
@@ -204,6 +241,7 @@ export class ServiceTypesComponent implements OnInit {
       price: this.formPrice ?? undefined,
       color: this.formColor,
       description: this.formDescription.trim() || undefined,
+      professionalIds: [...this.formProfessionalIds] as UUID[],
     };
     const req$ = this.editingId()
       ? this.svcService.update(this.editingId()!, payload)
@@ -252,6 +290,17 @@ export class ServiceTypesComponent implements OnInit {
     this.formPrice = null;
     this.formColor = PRESET_COLORS[0];
     this.formDescription = '';
+    this.formProfessionalIds = new Set<string>();
     this.editingId.set(null);
+  }
+
+  toggleProfessional(id: string): void {
+    const copy = new Set(this.formProfessionalIds);
+    if (copy.has(id)) {
+      copy.delete(id);
+    } else {
+      copy.add(id);
+    }
+    this.formProfessionalIds = copy;
   }
 }

@@ -248,7 +248,7 @@ export interface CreateClientNoteRequest {
 export interface ServiceTypeResponse {
   id: UUID;
   studioId: UUID;
-  professionalId: UUID | null;
+  professionalIds: UUID[];
   name: string;
   description: string | null;
   durationMinutes: number;
@@ -264,7 +264,7 @@ export interface CreateServiceTypeRequest {
   durationMinutes: number;
   price?: number;
   color?: string;
-  professionalId?: UUID;
+  professionalIds?: UUID[];
 }
 
 /* ── Appointment ────────────────────────── */
@@ -284,6 +284,7 @@ export interface AppointmentResponse {
   clientFullName: string;
   serviceTypeId: UUID | null;
   serviceTypeName: string | null;
+  serviceTypeColor: string | null;
   startDatetime: string;
   endDatetime: string;
   status: AppointmentStatus;
