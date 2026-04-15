@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
@@ -29,14 +29,14 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
         </div>
 
         <app-card>
-          @if (serverError) {
+          @if (serverError()) {
             <div class="mb-4">
-              <app-alert variant="error" [message]="serverError" (dismiss)="serverError = null" />
+              <app-alert variant="error" [message]="serverError()!" (dismiss)="serverError.set(null)" />
             </div>
           }
-          @if (successMessage) {
+          @if (successMessage()) {
             <div class="mb-4">
-              <app-alert variant="success" [message]="successMessage" />
+              <app-alert variant="success" [message]="successMessage()!" />
             </div>
           }
 
@@ -56,7 +56,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
               }
             </div>
 
-            <app-button type="submit" [isLoading]="isLoading">Verifica</app-button>
+            <app-button type="submit" [isLoading]="isLoading()">Verifica</app-button>
           </form>
 
           <div class="mt-6 text-center">
@@ -65,11 +65,11 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
               <button
                 type="button"
                 (click)="onResend()"
-                [disabled]="isResending || resendCooldown > 0"
+                [disabled]="isResending() || resendCooldown() > 0"
                 class="font-semibold text-indigo-600 hover:text-indigo-500 disabled:cursor-not-allowed disabled:text-gray-400"
               >
-                @if (resendCooldown > 0) {
-                  Reinvia tra {{ resendCooldown }}s
+                @if (resendCooldown() > 0) {
+                  Reinvia tra {{ resendCooldown() }}s
                 } @else {
                   Reinvia codice
                 }
@@ -90,11 +90,11 @@ export class VerifyEmailComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
 
   email = '';
-  serverError: string | null = null;
-  successMessage: string | null = null;
-  isLoading = false;
-  isResending = false;
-  resendCooldown = 0;
+  readonly serverError = signal<string | null>(null);
+  readonly successMessage = signal<string | null>(null);
+  readonly isLoading = signal(false);
+  readonly isResending = signal(false);
+  readonly resendCooldown = signal(0);
   private cooldownInterval: ReturnType<typeof setInterval> | null = null;
 
   form = this.fb.group({
@@ -112,9 +112,9 @@ export class VerifyEmailComponent implements OnInit {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
 
-    this.serverError = null;
-    this.successMessage = null;
-    this.isLoading = true;
+    this.serverError.set(null);
+    this.successMessage.set(null);
+    this.isLoading.set(true);
 
     try {
       const response = await this.authService.verifyEmailApi({
@@ -124,34 +124,34 @@ export class VerifyEmailComponent implements OnInit {
       this.authService.setAuth(response.accessToken, response.user);
       this.router.navigate(['/dashboard'], { replaceUrl: true });
     } catch (error) {
-      this.serverError = getErrorMessage(error);
+      this.serverError.set(getErrorMessage(error));
     } finally {
-      this.isLoading = false;
+      this.isLoading.set(false);
     }
   }
 
   async onResend(): Promise<void> {
-    this.serverError = null;
-    this.successMessage = null;
-    this.isResending = true;
+    this.serverError.set(null);
+    this.successMessage.set(null);
+    this.isResending.set(true);
 
     try {
       await this.authService.resendVerificationApi({ email: this.email });
-      this.successMessage = 'Nuovo codice inviato! Controlla la tua casella di posta.';
+      this.successMessage.set('Nuovo codice inviato! Controlla la tua casella di posta.');
       this.startCooldown();
     } catch (error) {
-      this.serverError = getErrorMessage(error);
+      this.serverError.set(getErrorMessage(error));
     } finally {
-      this.isResending = false;
+      this.isResending.set(false);
     }
   }
 
   private startCooldown(): void {
-    this.resendCooldown = 60;
+    this.resendCooldown.set(60);
     if (this.cooldownInterval) clearInterval(this.cooldownInterval);
     this.cooldownInterval = setInterval(() => {
-      this.resendCooldown--;
-      if (this.resendCooldown <= 0 && this.cooldownInterval) {
+      this.resendCooldown.update(v => v - 1);
+      if (this.resendCooldown() <= 0 && this.cooldownInterval) {
         clearInterval(this.cooldownInterval);
         this.cooldownInterval = null;
       }

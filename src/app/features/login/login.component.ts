@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
@@ -22,9 +22,9 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
           </div>
 
           <app-card>
-            @if (serverError) {
+            @if (serverError()) {
               <div class="mb-4">
-                <app-alert variant="error" [message]="serverError" (dismiss)="serverError = null" />
+                <app-alert variant="error" [message]="serverError()!" (dismiss)="serverError.set(null)" />
               </div>
             }
 
@@ -47,7 +47,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
                 [error]="getFieldError('password')"
               />
 
-              <app-button type="submit" [isLoading]="isLoading">Accedi</app-button>
+              <app-button type="submit" [isLoading]="isLoading()">Accedi</app-button>
             </form>
 
             <p class="mt-6 text-center text-sm text-gray-500">
@@ -77,8 +77,8 @@ export class LoginComponent {
     password: ['', [Validators.required]],
   });
 
-  serverError: string | null = null;
-  isLoading = false;
+  readonly serverError = signal<string | null>(null);
+  readonly isLoading = signal(false);
 
   getFieldError(field: string): string {
     const control = this.form.get(field);
@@ -94,8 +94,8 @@ export class LoginComponent {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
 
-    this.serverError = null;
-    this.isLoading = true;
+    this.serverError.set(null);
+    this.isLoading.set(true);
 
     try {
       const { email, password } = this.form.getRawValue();
@@ -104,9 +104,9 @@ export class LoginComponent {
       const target = response.user.role === 'PROFESSIONAL' ? '/pro/dashboard' : '/dashboard';
       this.router.navigate([target], { replaceUrl: true });
     } catch (error) {
-      this.serverError = getErrorMessage(error);
+      this.serverError.set(getErrorMessage(error));
     } finally {
-      this.isLoading = false;
+      this.isLoading.set(false);
     }
   }
 }

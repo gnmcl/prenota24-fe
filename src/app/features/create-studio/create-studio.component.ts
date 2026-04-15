@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { StudioService } from '../../core/services/studio.service';
@@ -23,15 +23,15 @@ import { StepIndicatorComponent } from '../../shared/components/step-indicator/s
           <h2 class="mb-1 text-xl font-bold text-gray-900">Create your Studio</h2>
           <p class="mb-6 text-sm text-gray-500">A Studio is your workspace. All professionals and appointments belong to it.</p>
 
-          @if (serverError) {
-            <div class="mb-4"><app-alert variant="error" [message]="serverError" (dismiss)="serverError = null" /></div>
+          @if (serverError()) {
+            <div class="mb-4"><app-alert variant="error" [message]="serverError()!" (dismiss)="serverError.set(null)" /></div>
           }
 
           <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
             <app-input label="Studio name" placeholder="e.g. Studio Medico Rossi" formControlName="name" [error]="getFieldError('name')" />
             <app-input label="Email (optional)" type="email" placeholder="studio@example.com" formControlName="email" [error]="getFieldError('email')" />
             <app-input label="Phone (optional)" type="tel" placeholder="+39 02 1234567" formControlName="phone" />
-            <app-button type="submit" [isLoading]="isLoading">Create Studio</app-button>
+            <app-button type="submit" [isLoading]="isLoading()">Create Studio</app-button>
           </form>
         </app-card>
       </div>
@@ -45,8 +45,8 @@ export class CreateStudioComponent {
   private readonly setupService = inject(SetupService);
 
   setupSteps = ['Create Studio', 'Create Admin', 'Dashboard'];
-  serverError: string | null = null;
-  isLoading = false;
+  readonly serverError = signal<string | null>(null);
+  readonly isLoading = signal(false);
 
   form = this.fb.group({
     name: ['', [Validators.required]],
@@ -66,8 +66,8 @@ export class CreateStudioComponent {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
 
-    this.serverError = null;
-    this.isLoading = true;
+    this.serverError.set(null);
+    this.isLoading.set(true);
 
     const v = this.form.getRawValue();
     this.studioService.createStudio({
@@ -79,7 +79,7 @@ export class CreateStudioComponent {
         this.setupService.setStudio(studio);
         this.router.navigate(['/setup/admin']);
       },
-      error: (err) => { this.serverError = getErrorMessage(err); this.isLoading = false; },
+      error: (err) => { this.serverError.set(getErrorMessage(err)); this.isLoading.set(false); },
     });
   }
 }

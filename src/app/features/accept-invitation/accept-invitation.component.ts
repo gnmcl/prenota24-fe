@@ -104,9 +104,9 @@ import type { InvitationInfo } from '../../core/models/auth.model';
                 </div>
               </div>
 
-              @if (serverError) {
+              @if (serverError()) {
                 <div class="mb-4">
-                  <app-alert variant="error" [message]="serverError" (dismiss)="serverError = null" />
+                  <app-alert variant="error" [message]="serverError()!" (dismiss)="serverError.set(null)" />
                 </div>
               }
 
@@ -137,7 +137,7 @@ import type { InvitationInfo } from '../../core/models/auth.model';
                   [error]="getFieldError('confirmPassword')"
                 />
 
-                <app-button type="submit" [isLoading]="isSubmitting">
+                <app-button type="submit" [isLoading]="isSubmitting()">
                   Crea il tuo account
                 </app-button>
               </form>
@@ -164,8 +164,8 @@ export class AcceptInvitationComponent implements OnInit {
   readonly error = signal<string | null>(null);
   readonly invitationInfo = signal<InvitationInfo | null>(null);
 
-  serverError: string | null = null;
-  isSubmitting = false;
+  readonly serverError = signal<string | null>(null);
+  readonly isSubmitting = signal(false);
   private token = '';
 
   form = this.fb.group({
@@ -216,12 +216,12 @@ export class AcceptInvitationComponent implements OnInit {
     const { name, password, confirmPassword } = this.form.getRawValue();
 
     if (password !== confirmPassword) {
-      this.serverError = 'Le password non coincidono';
+      this.serverError.set('Le password non coincidono');
       return;
     }
 
-    this.serverError = null;
-    this.isSubmitting = true;
+    this.serverError.set(null);
+    this.isSubmitting.set(true);
 
     try {
       const response = await this.authService.acceptInvitationApi({
@@ -232,9 +232,9 @@ export class AcceptInvitationComponent implements OnInit {
       this.authService.setAuth(response.accessToken, response.user);
       this.router.navigate(['/pro/dashboard'], { replaceUrl: true });
     } catch (err) {
-      this.serverError = getErrorMessage(err);
+      this.serverError.set(getErrorMessage(err));
     } finally {
-      this.isSubmitting = false;
+      this.isSubmitting.set(false);
     }
   }
 }

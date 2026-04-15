@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { UserService } from '../../core/services/user.service';
@@ -25,14 +25,14 @@ import { StepIndicatorComponent } from '../../shared/components/step-indicator/s
             This account will manage <span class="font-semibold text-gray-700">{{ setupService.studio()?.name }}</span>.
           </p>
 
-          @if (serverError) {
-            <div class="mb-4"><app-alert variant="error" [message]="serverError" (dismiss)="serverError = null" /></div>
+          @if (serverError()) {
+            <div class="mb-4"><app-alert variant="error" [message]="serverError()!" (dismiss)="serverError.set(null)" /></div>
           }
 
           <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
             <app-input label="Admin email" type="email" placeholder="admin@example.com" formControlName="email" [error]="getFieldError('email')" />
             <app-input label="Password" type="password" placeholder="Min. 8 characters" formControlName="password" [error]="getFieldError('password')" />
-            <app-button type="submit" [isLoading]="isLoading">Create Admin User</app-button>
+            <app-button type="submit" [isLoading]="isLoading()">Create Admin User</app-button>
           </form>
         </app-card>
       </div>
@@ -46,8 +46,8 @@ export class CreateAdminUserComponent implements OnInit {
   readonly setupService = inject(SetupService);
 
   setupSteps = ['Create Studio', 'Create Admin', 'Dashboard'];
-  serverError: string | null = null;
-  isLoading = false;
+  readonly serverError = signal<string | null>(null);
+  readonly isLoading = signal(false);
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -76,8 +76,8 @@ export class CreateAdminUserComponent implements OnInit {
     const studio = this.setupService.studio();
     if (!studio) return;
 
-    this.serverError = null;
-    this.isLoading = true;
+    this.serverError.set(null);
+    this.isLoading.set(true);
 
     const v = this.form.getRawValue();
     this.userService.createAppUser({
@@ -91,7 +91,7 @@ export class CreateAdminUserComponent implements OnInit {
         this.setupService.completeSetup();
         this.router.navigate(['/dashboard']);
       },
-      error: (err) => { this.serverError = getErrorMessage(err); this.isLoading = false; },
+      error: (err) => { this.serverError.set(getErrorMessage(err)); this.isLoading.set(false); },
     });
   }
 }

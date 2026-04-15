@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
@@ -32,9 +32,9 @@ function matchPasswords(control: AbstractControl): ValidationErrors | null {
         </div>
 
         <app-card>
-          @if (serverError) {
+          @if (serverError()) {
             <div class="mb-4">
-              <app-alert variant="error" [message]="serverError" (dismiss)="serverError = null" />
+              <app-alert variant="error" [message]="serverError()!" (dismiss)="serverError.set(null)" />
             </div>
           }
 
@@ -79,7 +79,7 @@ function matchPasswords(control: AbstractControl): ValidationErrors | null {
               formControlName="confirmPassword"
               [error]="getFieldError('confirmPassword')"
             />
-            <app-button type="submit" [isLoading]="isLoading">Registrati</app-button>
+            <app-button type="submit" [isLoading]="isLoading()">Registrati</app-button>
           </form>
 
           <p class="mt-6 text-center text-sm text-gray-500">
@@ -104,8 +104,8 @@ export class RegisterComponent {
     confirmPassword: ['', [Validators.required]],
   }, { validators: matchPasswords });
 
-  serverError: string | null = null;
-  isLoading = false;
+  readonly serverError = signal<string | null>(null);
+  readonly isLoading = signal(false);
 
   getFieldError(field: string): string {
     const control = this.form.get(field);
@@ -125,17 +125,17 @@ export class RegisterComponent {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
 
-    this.serverError = null;
-    this.isLoading = true;
+    this.serverError.set(null);
+    this.isLoading.set(true);
 
     try {
       const { name, studioName, email, password } = this.form.getRawValue();
       await this.authService.registerApi({ name: name!, studioName: studioName!, email: email!, password: password! });
       this.router.navigate(['/verifica-email'], { replaceUrl: true, state: { email: email } });
     } catch (error) {
-      this.serverError = getErrorMessage(error);
+      this.serverError.set(getErrorMessage(error));
     } finally {
-      this.isLoading = false;
+      this.isLoading.set(false);
     }
   }
 }
