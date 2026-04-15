@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import type { AuthUser } from '../models/auth.model';
-import type { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, AcceptInvitationRequest } from '../models/auth.model';
+import type { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, AcceptInvitationRequest, VerifyEmailRequest, ResendVerificationRequest } from '../models/auth.model';
 import { environment } from '../../environments/environment';
 import { StudioService } from './studio.service';
 
@@ -88,6 +88,20 @@ export class AuthService {
   registerApi(payload: RegisterRequest): Promise<RegisterResponse> {
     return firstValueFrom(
       this.http.post<RegisterResponse>(`${environment.apiBaseUrl}/auth/register`, payload),
+    );
+  }
+
+  /** Verify email with 6-digit code */
+  verifyEmailApi(payload: VerifyEmailRequest): Promise<LoginResponse> {
+    return firstValueFrom(
+      this.http.post<LoginResponse>(`${environment.apiBaseUrl}/auth/verify-email`, payload),
+    );
+  }
+
+  /** Resend verification code */
+  resendVerificationApi(payload: ResendVerificationRequest): Promise<void> {
+    return firstValueFrom(
+      this.http.post<void>(`${environment.apiBaseUrl}/auth/resend-verification`, payload),
     );
   }
 

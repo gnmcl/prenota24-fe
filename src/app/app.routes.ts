@@ -22,6 +22,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/register/register.component').then(m => m.RegisterComponent),
   },
   {
+    path: 'verifica-email',
+    loadComponent: () => import('./features/verify-email/verify-email.component').then(m => m.VerifyEmailComponent),
+  },
+  {
     path: 'invito/:token',
     loadComponent: () => import('./features/accept-invitation/accept-invitation.component').then(m => m.AcceptInvitationComponent),
   },

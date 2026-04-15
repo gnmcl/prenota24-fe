@@ -33,8 +33,19 @@ export interface RegisterRequest {
 }
 
 export interface RegisterResponse {
-  accessToken: string;
-  user: AuthUser;
+  email: string;
+  message: string;
+}
+
+/* ── Email verification ─────────────────── */
+
+export interface VerifyEmailRequest {
+  email: string;
+  code: string;
+}
+
+export interface ResendVerificationRequest {
+  email: string;
 }
 
 /* ── Invitation ──────────────────────────── */

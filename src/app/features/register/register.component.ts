@@ -130,9 +130,8 @@ export class RegisterComponent {
 
     try {
       const { name, studioName, email, password } = this.form.getRawValue();
-      const response = await this.authService.registerApi({ name: name!, studioName: studioName!, email: email!, password: password! });
-      this.authService.setAuth(response.accessToken, response.user);
-      this.router.navigate(['/dashboard'], { replaceUrl: true });
+      await this.authService.registerApi({ name: name!, studioName: studioName!, email: email!, password: password! });
+      this.router.navigate(['/verifica-email'], { replaceUrl: true, state: { email: email } });
     } catch (error) {
       this.serverError = getErrorMessage(error);
     } finally {
