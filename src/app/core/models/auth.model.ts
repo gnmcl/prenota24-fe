@@ -27,6 +27,7 @@ export interface LoginResponse {
 
 export interface RegisterRequest {
   name: string;
+  studioName: string;
   email: string;
   password: string;
 }

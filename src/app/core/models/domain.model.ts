@@ -25,6 +25,13 @@ export interface CreateStudioRequest {
   phone?: string;
 }
 
+export interface EditStudioRequest {
+  name?: string;
+  email?: string;
+  phone?: string;
+  timezone?: string;
+}
+
 /* ── AppUser ────────────────────────────── */
 
 export interface AppUser {

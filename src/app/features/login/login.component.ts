@@ -14,10 +14,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, PageShellComponent, CardComponent, ButtonComponent, InputComponent, AlertComponent],
   template: `
-    @if (authService.isAuthenticated()) {
-      <!-- Will be redirected by guard, but just in case -->
-    } @else {
-      <app-page-shell>
+    <app-page-shell>
         <div class="mx-auto max-w-sm pt-12">
           <div class="mb-8 text-center">
             <h2 class="text-2xl font-bold text-gray-900">Bentornato</h2>
@@ -60,13 +57,20 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
           </app-card>
         </div>
       </app-page-shell>
-    }
   `,
 })
 export class LoginComponent {
   readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
+
+  constructor() {
+    if (this.authService.isAuthenticated()) {
+      const user = this.authService.user();
+      const target = user?.role === 'PROFESSIONAL' ? '/pro/dashboard' : '/dashboard';
+      this.router.navigate([target], { replaceUrl: true });
+    }
+  }
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],

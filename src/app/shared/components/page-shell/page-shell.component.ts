@@ -1,10 +1,12 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { StudioService } from '../../../core/services/studio.service';
 
 interface NavItem {
   path: string;
   label: string;
+  icon?: string;
 }
 
 @Component({
@@ -31,7 +33,13 @@ interface NavItem {
                 @for (item of navItems(); track item.path) {
                   <a [routerLink]="item.path" routerLinkActive="bg-indigo-50 text-indigo-700"
                     class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">
-                    {{ item.label }}
+                    @if (item.icon) {
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="item.icon" />
+                      </svg>
+                    } @else {
+                      {{ item.label }}
+                    }
                   </a>
                 }
               </nav>
@@ -47,8 +55,17 @@ interface NavItem {
                 </span>
               }
               <span class="hidden sm:block text-sm text-gray-500">
-                {{ authService.user()!.name || authService.user()!.email }}
+                {{ studioService.studio()?.name || authService.user()!.name || authService.user()!.email }}
               </span>
+              @if (!isProfessional()) {
+                <a routerLink="/settings" routerLinkActive="text-indigo-600"
+                  class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                  title="Impostazioni">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </a>
+              }
               <button
                 (click)="handleLogout()"
                 class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
@@ -76,7 +93,12 @@ interface NavItem {
           <nav class="md:hidden border-t border-gray-100 bg-white px-4 pb-3 pt-2 space-y-1">
             @for (item of navItems(); track item.path) {
               <a [routerLink]="item.path" (click)="mobileMenuOpen.set(false)"
-                class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">
+                class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">
+                @if (item.icon) {
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="item.icon" />
+                  </svg>
+                }
                 {{ item.label }}
               </a>
             }
@@ -93,14 +115,24 @@ interface NavItem {
 })
 export class PageShellComponent {
   readonly authService = inject(AuthService);
+  readonly studioService = inject(StudioService);
   private readonly router = inject(Router);
   readonly mobileMenuOpen = signal(false);
 
+  constructor() {
+    const user = this.authService.user();
+    if (user && user.role === 'ADMIN' && !this.studioService.studio()) {
+      this.studioService.getMyStudio(user.studioId).subscribe();
+    }
+  }
+
   readonly isProfessional = computed(() => this.authService.user()?.role === 'PROFESSIONAL');
 
-  readonly homeLink = computed(() =>
-    this.isProfessional() ? '/pro/dashboard' : '/dashboard'
-  );
+  readonly homeLink = computed(() => {
+    const user = this.authService.user();
+    if (!user) return '/';
+    return user.role === 'PROFESSIONAL' ? '/pro/dashboard' : '/dashboard';
+  });
 
   readonly navItems = computed<NavItem[]>(() => {
     const user = this.authService.user();

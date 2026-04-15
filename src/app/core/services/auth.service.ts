@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import type { AuthUser } from '../models/auth.model';
 import type { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, AcceptInvitationRequest } from '../models/auth.model';
 import { environment } from '../../environments/environment';
+import { StudioService } from './studio.service';
 
 const STORAGE_KEY = 'prenota24-auth';
 
@@ -28,6 +29,7 @@ export class AuthService {
   constructor(
     private readonly http: HttpClient,
     private readonly router: Router,
+    private readonly studioService: StudioService,
   ) {
     this.hydrate();
   }
@@ -71,6 +73,7 @@ export class AuthService {
   logout(): void {
     this._accessToken.set(null);
     this._user.set(null);
+    this.studioService.clear();
     this.persist();
   }
 

@@ -40,12 +40,20 @@ function matchPasswords(control: AbstractControl): ValidationErrors | null {
 
           <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
             <app-input
-              label="Nome"
+              label="Il tuo nome"
               type="text"
               placeholder="Mario Rossi"
               autocomplete="name"
               formControlName="name"
               [error]="getFieldError('name')"
+            />
+            <app-input
+              label="Nome studio"
+              type="text"
+              placeholder="Studio Rossi"
+              autocomplete="organization"
+              formControlName="studioName"
+              [error]="getFieldError('studioName')"
             />
             <app-input
               label="Email"
@@ -90,6 +98,7 @@ export class RegisterComponent {
 
   form = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(200)]],
+    studioName: ['', [Validators.required, Validators.maxLength(255)]],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(128)]],
     confirmPassword: ['', [Validators.required]],
@@ -102,7 +111,7 @@ export class RegisterComponent {
     const control = this.form.get(field);
     if (!control?.touched || !control.errors) return '';
     if (control.errors['required']) {
-      const labels: Record<string, string> = { name: 'Il nome è obbligatorio', email: "L'email è obbligatoria", password: 'La password è obbligatoria', confirmPassword: 'Conferma la password' };
+      const labels: Record<string, string> = { name: 'Il nome è obbligatorio', studioName: 'Il nome dello studio è obbligatorio', email: "L'email è obbligatoria", password: 'La password è obbligatoria', confirmPassword: 'Conferma la password' };
       return labels[field] || 'Campo obbligatorio';
     }
     if (control.errors['email']) return 'Inserisci un indirizzo email valido';
@@ -120,8 +129,8 @@ export class RegisterComponent {
     this.isLoading = true;
 
     try {
-      const { name, email, password } = this.form.getRawValue();
-      const response = await this.authService.registerApi({ name: name!, email: email!, password: password! });
+      const { name, studioName, email, password } = this.form.getRawValue();
+      const response = await this.authService.registerApi({ name: name!, studioName: studioName!, email: email!, password: password! });
       this.authService.setAuth(response.accessToken, response.user);
       this.router.navigate(['/dashboard'], { replaceUrl: true });
     } catch (error) {
