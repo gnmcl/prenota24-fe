@@ -121,6 +121,7 @@ export interface CreateReservationRequest {
 
 export interface ApiErrorResponse {
   status: number;
+  error?: string;
   message: string;
   errors?: Record<string, string>;
 }

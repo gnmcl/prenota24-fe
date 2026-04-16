@@ -42,6 +42,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
       const normalised: ApiErrorResponse = {
         status: error.status || 0,
+        error: error.error?.error,
         message: error.error?.message ?? error.message ?? 'Network error – please check your connection.',
         errors: error.error?.errors,
       };

@@ -105,6 +105,10 @@ export class VerifyEmailComponent implements OnInit {
     this.email = history.state?.email || '';
     if (!this.email) {
       this.router.navigate(['/registrati'], { replaceUrl: true });
+      return;
+    }
+    if (history.state?.resend) {
+      this.onResend();
     }
   }
 

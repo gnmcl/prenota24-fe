@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
-import { getErrorMessage } from '../../shared/utils/errors';
+import { getErrorMessage, isApiError } from '../../shared/utils/errors';
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
@@ -104,6 +104,11 @@ export class LoginComponent {
       const target = response.user.role === 'PROFESSIONAL' ? '/pro/dashboard' : '/dashboard';
       this.router.navigate([target], { replaceUrl: true });
     } catch (error) {
+      if (isApiError(error) && error.error === 'EMAIL_NOT_VERIFIED') {
+        const email = this.form.getRawValue().email;
+        this.router.navigate(['/verifica-email'], { replaceUrl: true, state: { email, resend: true } });
+        return;
+      }
       this.serverError.set(getErrorMessage(error));
     } finally {
       this.isLoading.set(false);
