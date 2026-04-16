@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
-import { catchError, throwError } from 'rxjs';
+import { catchError, switchMap, throwError, from } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import type { ApiErrorResponse } from '../models/domain.model';
 
@@ -19,6 +19,21 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
+      // Skip refresh for auth endpoints to avoid infinite loops
+      if (error.status === 401 && !req.url.includes('/auth/')) {
+        return from(authService.refreshAccessToken()).pipe(
+          switchMap(response => {
+            const retryReq = req.clone({
+              setHeaders: { Authorization: `Bearer ${response.accessToken}` },
+            });
+            return next(retryReq);
+          }),
+          catchError(() => {
+            return throwError(() => error.error as ApiErrorResponse);
+          }),
+        );
+      }
+
       if (error.status === 401) {
         authService.logout();
         window.location.href = '/accedi';

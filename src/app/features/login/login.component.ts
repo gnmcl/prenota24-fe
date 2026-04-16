@@ -100,7 +100,7 @@ export class LoginComponent {
     try {
       const { email, password } = this.form.getRawValue();
       const response = await this.authService.loginApi({ email: email!, password: password! });
-      this.authService.setAuth(response.accessToken, response.user);
+      this.authService.setAuth(response.accessToken, response.user, response.refreshToken);
       const target = response.user.role === 'PROFESSIONAL' ? '/pro/dashboard' : '/dashboard';
       this.router.navigate([target], { replaceUrl: true });
     } catch (error) {

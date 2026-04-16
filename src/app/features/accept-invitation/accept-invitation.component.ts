@@ -229,7 +229,7 @@ export class AcceptInvitationComponent implements OnInit {
         name: name!,
         password: password!,
       });
-      this.authService.setAuth(response.accessToken, response.user);
+      this.authService.setAuth(response.accessToken, response.user, response.refreshToken);
       this.router.navigate(['/pro/dashboard'], { replaceUrl: true });
     } catch (err) {
       this.serverError.set(getErrorMessage(err));

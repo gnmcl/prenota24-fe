@@ -12,6 +12,7 @@ const STORAGE_KEY = 'prenota24-auth';
 interface PersistedAuth {
   state: {
     accessToken: string | null;
+    refreshToken: string | null;
     user: AuthUser | null;
     isAuthenticated: boolean;
   };
@@ -20,7 +21,9 @@ interface PersistedAuth {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly _accessToken = signal<string | null>(null);
+  private readonly _refreshToken = signal<string | null>(null);
   private readonly _user = signal<AuthUser | null>(null);
+  private _refreshPromise: Promise<LoginResponse> | null = null;
 
   readonly accessToken = this._accessToken.asReadonly();
   readonly user = this._user.asReadonly();
@@ -42,6 +45,7 @@ export class AuthService {
         const parsed: PersistedAuth = JSON.parse(raw);
         if (parsed.state?.accessToken && parsed.state?.user) {
           this._accessToken.set(parsed.state.accessToken);
+          this._refreshToken.set(parsed.state.refreshToken ?? null);
           this._user.set(parsed.state.user);
         }
       }
@@ -55,6 +59,7 @@ export class AuthService {
     const state: PersistedAuth = {
       state: {
         accessToken: this._accessToken(),
+        refreshToken: this._refreshToken(),
         user: this._user(),
         isAuthenticated: this.isAuthenticated(),
       },
@@ -62,19 +67,52 @@ export class AuthService {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }
 
-  /** Store token + user after successful login/register */
-  setAuth(accessToken: string, user: AuthUser): void {
+  /** Store tokens + user after successful login/register/verify */
+  setAuth(accessToken: string, user: AuthUser, refreshToken?: string): void {
     this._accessToken.set(accessToken);
+    if (refreshToken) this._refreshToken.set(refreshToken);
     this._user.set(user);
     this.persist();
   }
 
   /** Clear everything on logout or 401 */
   logout(): void {
+    const rt = this._refreshToken();
     this._accessToken.set(null);
+    this._refreshToken.set(null);
     this._user.set(null);
     this.studioService.clear();
     this.persist();
+    // Best-effort server-side logout
+    if (rt) {
+      firstValueFrom(
+        this.http.post<void>(`${environment.apiBaseUrl}/auth/logout`, {}),
+      ).catch(() => {});
+    }
+  }
+
+  /** Attempt to refresh the access token using the stored refresh token */
+  async refreshAccessToken(): Promise<LoginResponse> {
+    const rt = this._refreshToken();
+    if (!rt) throw new Error('No refresh token');
+
+    // Deduplicate concurrent refresh calls
+    if (!this._refreshPromise) {
+      this._refreshPromise = firstValueFrom(
+        this.http.post<LoginResponse>(`${environment.apiBaseUrl}/auth/refresh`, { refreshToken: rt }),
+      ).then(response => {
+        this.setAuth(response.accessToken, response.user, response.refreshToken);
+        return response;
+      }).catch(err => {
+        this.logout();
+        this.router.navigate(['/accedi'], { replaceUrl: true });
+        throw err;
+      }).finally(() => {
+        this._refreshPromise = null;
+      });
+    }
+
+    return this._refreshPromise;
   }
 
   /** Authenticate a user with email + password */

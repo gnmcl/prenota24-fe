@@ -121,7 +121,7 @@ export class VerifyEmailComponent implements OnInit {
         email: this.email,
         code: this.form.getRawValue().code!,
       });
-      this.authService.setAuth(response.accessToken, response.user);
+      this.authService.setAuth(response.accessToken, response.user, response.refreshToken);
       this.router.navigate(['/dashboard'], { replaceUrl: true });
     } catch (error) {
       this.serverError.set(getErrorMessage(error));
