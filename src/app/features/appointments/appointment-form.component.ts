@@ -576,33 +576,50 @@ export class AppointmentFormComponent implements OnInit {
     const profId = this.selectedProfessionalId();
     if (!profId || !this.selectedDate() || !this.selectedStartTime()) return;
     this.checkingAvailability.set(true);
-    this.profService.getAvailableSlots(profId, this.selectedDate(), this.selectedDuration()).subscribe({
+
+    // Use a small duration (5 min) to get all granular availability windows
+    this.profService.getAvailableSlots(profId, this.selectedDate(), 5).subscribe({
       next: (slots) => {
-        // Check if the chosen time matches any available slot
+        if (slots.length === 0) {
+          this.isSlotAvailable.set(false);
+          this.checkingAvailability.set(false);
+          return;
+        }
+
+        // Merge consecutive/adjacent slots into continuous availability windows
+        // Each slot has start/end as ISO strings; convert to local minutes
+        const toLocalMinutes = (iso: string) => {
+          const d = new Date(iso);
+          return d.getHours() * 60 + d.getMinutes();
+        };
+
+        const sorted = [...slots].sort((a, b) => a.start.localeCompare(b.start));
+        const windows: { startMin: number; endMin: number }[] = [];
+        let curStart = toLocalMinutes(sorted[0].start);
+        let curEnd = toLocalMinutes(sorted[0].end);
+
+        for (let i = 1; i < sorted.length; i++) {
+          const sMin = toLocalMinutes(sorted[i].start);
+          const eMin = toLocalMinutes(sorted[i].end);
+          if (sMin <= curEnd) {
+            // Overlapping or adjacent → extend window
+            curEnd = Math.max(curEnd, eMin);
+          } else {
+            windows.push({ startMin: curStart, endMin: curEnd });
+            curStart = sMin;
+            curEnd = eMin;
+          }
+        }
+        windows.push({ startMin: curStart, endMin: curEnd });
+
+        // Check if the chosen appointment window fits entirely within any merged window
         const [h, m] = this.selectedStartTime().split(':').map(Number);
-        const chosenMinutes = h * 60 + m;
+        const chosenStart = h * 60 + m;
+        const chosenEnd = chosenStart + this.selectedDuration();
 
-        const available = slots.some((s) => {
-          const sDate = new Date(s.start);
-          const slotStartMin = sDate.getHours() * 60 + sDate.getMinutes();
-          // The chosen time must fall exactly at a slot start
-          // (or within the slot window for the same duration)
-          return slotStartMin === chosenMinutes;
-        });
+        const fits = windows.some((w) => chosenStart >= w.startMin && chosenEnd <= w.endMin);
 
-        // If no exact match, also check if the chosen time falls within any slot's range
-        // (for free-form time selection with 5-min granularity)
-        const withinRange = !available && slots.some((s) => {
-          const sDate = new Date(s.start);
-          const eDate = new Date(s.end);
-          const slotStartMin = sDate.getHours() * 60 + sDate.getMinutes();
-          const slotEndMin = eDate.getHours() * 60 + eDate.getMinutes();
-          // Our chosen appointment must fit entirely within an available slot
-          const chosenEndMin = chosenMinutes + this.selectedDuration();
-          return chosenMinutes >= slotStartMin && chosenEndMin <= slotEndMin;
-        });
-
-        this.isSlotAvailable.set(available || withinRange);
+        this.isSlotAvailable.set(fits);
         this.checkingAvailability.set(false);
       },
       error: () => {
@@ -646,10 +663,10 @@ export class AppointmentFormComponent implements OnInit {
     const time = this.selectedStartTime();
     if (!profId || !clientId || !date || !time) return;
 
-    // Build ISO datetime strings with Z suffix for java.time.Instant
-    const startIso = `${date}T${time}:00Z`;
+    // Convert local time to UTC ISO string for java.time.Instant
+    const startIso = new Date(`${date}T${time}:00`).toISOString();
     const endTime = this.computedEndTime();
-    const endIso = `${date}T${endTime}:00Z`;
+    const endIso = new Date(`${date}T${endTime}:00`).toISOString();
 
     this.isSaving.set(true);
     this.error.set('');
