@@ -586,21 +586,21 @@ export class AppointmentFormComponent implements OnInit {
           return;
         }
 
-        // Merge consecutive/adjacent slots into continuous availability windows
-        // Each slot has start/end as ISO strings; convert to local minutes
-        const toLocalMinutes = (iso: string) => {
+        // Merge consecutive/adjacent slots into continuous availability windows.
+        // Compare everything in UTC minutes to avoid any browser-timezone inconsistency.
+        const toUTCMinutes = (iso: string) => {
           const d = new Date(iso);
-          return d.getHours() * 60 + d.getMinutes();
+          return d.getUTCHours() * 60 + d.getUTCMinutes();
         };
 
-        const sorted = [...slots].sort((a, b) => a.start.localeCompare(b.start));
+        const sorted = [...slots].sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
         const windows: { startMin: number; endMin: number }[] = [];
-        let curStart = toLocalMinutes(sorted[0].start);
-        let curEnd = toLocalMinutes(sorted[0].end);
+        let curStart = toUTCMinutes(sorted[0].start);
+        let curEnd = toUTCMinutes(sorted[0].end);
 
         for (let i = 1; i < sorted.length; i++) {
-          const sMin = toLocalMinutes(sorted[i].start);
-          const eMin = toLocalMinutes(sorted[i].end);
+          const sMin = toUTCMinutes(sorted[i].start);
+          const eMin = toUTCMinutes(sorted[i].end);
           if (sMin <= curEnd) {
             // Overlapping or adjacent → extend window
             curEnd = Math.max(curEnd, eMin);
@@ -612,12 +612,12 @@ export class AppointmentFormComponent implements OnInit {
         }
         windows.push({ startMin: curStart, endMin: curEnd });
 
-        // Check if the chosen appointment window fits entirely within any merged window
-        const [h, m] = this.selectedStartTime().split(':').map(Number);
-        const chosenStart = h * 60 + m;
-        const chosenEnd = chosenStart + this.selectedDuration();
+        // Convert the user-selected local time to UTC minutes for comparison
+        const chosenStartUTC = new Date(`${this.selectedDate()}T${this.selectedStartTime()}:00`);
+        const chosenStartMin = chosenStartUTC.getUTCHours() * 60 + chosenStartUTC.getUTCMinutes();
+        const chosenEndMin = chosenStartMin + this.selectedDuration();
 
-        const fits = windows.some((w) => chosenStart >= w.startMin && chosenEnd <= w.endMin);
+        const fits = windows.some((w) => chosenStartMin >= w.startMin && chosenEndMin <= w.endMin);
 
         this.isSlotAvailable.set(fits);
         this.checkingAvailability.set(false);

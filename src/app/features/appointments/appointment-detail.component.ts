@@ -394,8 +394,11 @@ export class AppointmentDetailComponent implements OnInit {
 
   proposeNewTime(): void {
     if (!this.propStart || !this.propEnd) return;
+    // datetime-local value has no timezone (e.g. "2026-04-26T12:00"); convert to UTC ISO
+    const proposedStart = new Date(this.propStart).toISOString();
+    const proposedEnd = new Date(this.propEnd).toISOString();
     this.doAction(
-      () => this.aptService.proposeNewTime(this.apt()!.id, { proposedStart: this.propStart, proposedEnd: this.propEnd }),
+      () => this.aptService.proposeNewTime(this.apt()!.id, { proposedStart, proposedEnd }),
       () => this.showProposeForm.set(false),
     );
   }
