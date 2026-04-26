@@ -227,30 +227,34 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
               </div>
             </div>
 
-            @if (selectedDate) {
+            @if (selectedDate()) {
               <div class="mb-4 text-sm text-gray-600">
                 <span class="font-medium">{{ selectedDateLabel() }}</span>
               </div>
             }
 
             <!-- Free time picker (not fixed slots) -->
-            @if (selectedDate && selectedProfessionalId()) {
+            @if (selectedDate() && selectedProfessionalId()) {
               <div class="rounded-xl border border-gray-200 bg-gray-50/50 p-4">
                 <h4 class="text-sm font-semibold text-gray-700 mb-3">Scegli l'orario</h4>
 
                 <div class="grid gap-4 sm:grid-cols-3">
                   <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Inizio *</label>
-                    <input type="time" [(ngModel)]="selectedStartTime" (change)="onTimeChange()" step="300"
+                    <input type="time" [ngModel]="selectedStartTime()" (ngModelChange)="setStartTime($event)" step="300"
                       class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm bg-white shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
                   </div>
-                  @if (!selectedServiceId()) {
-                    <div>
-                      <label class="block text-xs font-medium text-gray-600 mb-1">Durata (min)</label>
-                      <input type="number" [(ngModel)]="selectedDuration" min="5" step="5" (change)="onTimeChange()"
+                  <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Durata (min)</label>
+                    @if (selectedServiceId()) {
+                      <div class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm bg-gray-100 text-gray-600">
+                        {{ selectedDuration() }}
+                      </div>
+                    } @else {
+                      <input type="number" [ngModel]="selectedDuration()" (ngModelChange)="setDuration($event)" min="5" step="5"
                         class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm bg-white shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
-                    </div>
-                  }
+                    }
+                  </div>
                   <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Fine</label>
                     <div class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm bg-gray-100 text-gray-600">
@@ -260,7 +264,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                 </div>
 
                 <!-- Availability indicator -->
-                @if (selectedStartTime) {
+                @if (selectedStartTime()) {
                   <div class="mt-3 flex items-center gap-2">
                     @if (checkingAvailability()) {
                       <div class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-600"></div>
@@ -279,8 +283,8 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                 <div class="mt-3 flex flex-wrap gap-2">
                   <span class="text-xs text-gray-400">Suggerimenti:</span>
                   @for (t of quickTimes; track t) {
-                    <button (click)="selectedStartTime = t; onTimeChange()" type="button"
-                      [class]="selectedStartTime === t
+                    <button (click)="setStartTime(t)" type="button"
+                      [class]="selectedStartTime() === t
                         ? 'rounded-full bg-indigo-600 px-3 py-1 text-xs font-medium text-white'
                         : 'rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-600 hover:bg-indigo-50 hover:border-indigo-200 transition-colors'">
                       {{ t }}
@@ -340,8 +344,8 @@ export class AppointmentFormComponent implements OnInit {
   readonly serviceSearchText = signal('');
   readonly professionalSearchText = signal('');
   clientSearch = '';
-  selectedDate = '';
-  selectedStartTime = '';
+  readonly selectedDate = signal('');
+  readonly selectedStartTime = signal('');
   notes = '';
 
   // Quick time suggestions
@@ -379,21 +383,23 @@ export class AppointmentFormComponent implements OnInit {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const dayDate = new Date(year, month, d);
       const isPast = dayDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      cells.push({ num: d, dateStr, isToday: dateStr === todayStr, isPast, isSelected: dateStr === this.selectedDate });
+      cells.push({ num: d, dateStr, isToday: dateStr === todayStr, isPast, isSelected: dateStr === this.selectedDate() });
     }
     return cells;
   });
 
   readonly selectedDateLabel = computed(() => {
-    if (!this.selectedDate) return '';
-    const parts = this.selectedDate.split('-');
+    const sd = this.selectedDate();
+    if (!sd) return '';
+    const parts = sd.split('-');
     const d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
     return d.toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
   });
 
   readonly computedEndTime = computed(() => {
-    if (!this.selectedStartTime) return '';
-    const [h, m] = this.selectedStartTime.split(':').map(Number);
+    const st = this.selectedStartTime();
+    if (!st) return '';
+    const [h, m] = st.split(':').map(Number);
     const totalMin = h * 60 + m + this.selectedDuration();
     const eh = Math.floor(totalMin / 60);
     const em = totalMin % 60;
@@ -427,7 +433,7 @@ export class AppointmentFormComponent implements OnInit {
   });
 
   readonly canSubmit = computed(() =>
-    !!this.selectedProfessionalId() && !!this.selectedClientId() && !!this.selectedDate && !!this.selectedStartTime && this.isSlotAvailable()
+    !!this.selectedProfessionalId() && !!this.selectedClientId() && !!this.selectedDate() && !!this.selectedStartTime() && this.isSlotAvailable()
   );
 
   private searchTimeout?: ReturnType<typeof setTimeout>;
@@ -450,14 +456,14 @@ export class AppointmentFormComponent implements OnInit {
     const profId = params.get('professionalId');
 
     if (date) {
-      this.selectedDate = date;
+      this.selectedDate.set(date);
       const parts = date.split('-');
       this.calMonth.set(+parts[1] - 1);
       this.calYear.set(+parts[0]);
     }
 
     if (time) {
-      this.selectedStartTime = time;
+      this.selectedStartTime.set(time);
     }
 
     if (profId) {
@@ -490,7 +496,7 @@ export class AppointmentFormComponent implements OnInit {
     this.selectedProfessionalId.set(pro.id);
     this.selectedProfessionalName.set(pro.firstName + ' ' + pro.lastName);
     this.isSlotAvailable.set(false);
-    if (this.selectedDate && this.selectedStartTime) this.checkAvailability();
+    if (this.selectedDate() && this.selectedStartTime()) this.checkAvailability();
   }
 
   clearProfessional(): void {
@@ -506,7 +512,7 @@ export class AppointmentFormComponent implements OnInit {
     this.selectedDuration.set(svc.durationMinutes);
     this.resetProfessionalIfNeeded();
     this.isSlotAvailable.set(false);
-    if (this.selectedDate && this.selectedStartTime && this.selectedProfessionalId()) this.checkAvailability();
+    if (this.selectedDate() && this.selectedStartTime() && this.selectedProfessionalId()) this.checkAvailability();
   }
 
   selectNoService(): void {
@@ -536,9 +542,19 @@ export class AppointmentFormComponent implements OnInit {
   }
 
   selectDate(dateStr: string): void {
-    this.selectedDate = dateStr;
+    this.selectedDate.set(dateStr);
     this.isSlotAvailable.set(false);
-    if (this.selectedProfessionalId() && this.selectedStartTime) this.checkAvailability();
+    if (this.selectedProfessionalId() && this.selectedStartTime()) this.checkAvailability();
+  }
+
+  setStartTime(time: string): void {
+    this.selectedStartTime.set(time);
+    this.onTimeChange();
+  }
+
+  setDuration(val: number): void {
+    this.selectedDuration.set(val);
+    this.onTimeChange();
   }
 
   getCalDayClass(day: { isSelected: boolean; isPast: boolean; isToday: boolean }): string {
@@ -558,12 +574,12 @@ export class AppointmentFormComponent implements OnInit {
   /** Check if the selected time slot is available */
   private checkAvailability(): void {
     const profId = this.selectedProfessionalId();
-    if (!profId || !this.selectedDate || !this.selectedStartTime) return;
+    if (!profId || !this.selectedDate() || !this.selectedStartTime()) return;
     this.checkingAvailability.set(true);
-    this.profService.getAvailableSlots(profId, this.selectedDate, this.selectedDuration()).subscribe({
+    this.profService.getAvailableSlots(profId, this.selectedDate(), this.selectedDuration()).subscribe({
       next: (slots) => {
         // Check if any available slot covers our chosen time
-        const [h, m] = this.selectedStartTime.split(':').map(Number);
+        const [h, m] = this.selectedStartTime().split(':').map(Number);
         const chosenMinutes = h * 60 + m;
         const available = slots.some((s) => {
           const sDate = new Date(s.start);
@@ -611,12 +627,14 @@ export class AppointmentFormComponent implements OnInit {
   onSubmit(): void {
     const profId = this.selectedProfessionalId();
     const clientId = this.selectedClientId();
-    if (!profId || !clientId || !this.selectedDate || !this.selectedStartTime) return;
+    const date = this.selectedDate();
+    const time = this.selectedStartTime();
+    if (!profId || !clientId || !date || !time) return;
 
-    // Build ISO datetime strings
-    const startIso = `${this.selectedDate}T${this.selectedStartTime}:00`;
+    // Build ISO datetime strings with Z suffix for java.time.Instant
+    const startIso = `${date}T${time}:00Z`;
     const endTime = this.computedEndTime();
-    const endIso = `${this.selectedDate}T${endTime}:00`;
+    const endIso = `${date}T${endTime}:00Z`;
 
     this.isSaving.set(true);
     this.error.set('');

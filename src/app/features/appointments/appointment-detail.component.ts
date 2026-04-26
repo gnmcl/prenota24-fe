@@ -362,9 +362,9 @@ export class AppointmentDetailComponent implements OnInit {
     this.actionLoading.set(true);
     this.error.set('');
 
-    const startIso = `${this.editDate}T${this.editStartTime}:00`;
+    const startIso = `${this.editDate}T${this.editStartTime}:00Z`;
     const endTime = this.editEndTimeComputed();
-    const endIso = `${this.editDate}T${endTime}:00`;
+    const endIso = `${this.editDate}T${endTime}:00Z`;
 
     this.aptService.update(a.id, {
       startDatetime: startIso,
