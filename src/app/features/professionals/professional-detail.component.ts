@@ -11,6 +11,14 @@ import type { ProfessionalResponse, AvailabilityResponse, AvailabilityExceptionR
 import { FormsModule } from '@angular/forms';
 
 const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
+const DAYS_SHORT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
+
+interface DaySlot {
+  dayOfWeek: number;
+  enabled: boolean;
+  startTime: string;
+  endTime: string;
+}
 
 @Component({
   selector: 'app-professional-detail',
@@ -40,8 +48,8 @@ const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Saba
                 {{ professional()!.firstName.charAt(0) }}{{ professional()!.lastName.charAt(0) }}
               </div>
               <div>
-                <h2 class="text-2xl font-bold text-gray-900">{{ professional()!.firstName }} {{ professional()!.lastName }}</h2>
-                <div class="flex items-center gap-2 mt-1">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900">{{ professional()!.firstName }} {{ professional()!.lastName }}</h2>
+                <div class="flex items-center gap-2 mt-1 flex-wrap">
                   <app-badge [variant]="professional()!.active ? 'green' : 'gray'">{{ professional()!.active ? 'Attivo' : 'Inattivo' }}</app-badge>
                   @if (professional()!.email) {
                     <span class="text-sm text-gray-500">{{ professional()!.email }}</span>
@@ -58,12 +66,12 @@ const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Saba
           </div>
 
           <!-- Tabs -->
-          <div class="mb-6 flex gap-1 border-b border-gray-200">
+          <div class="mb-6 flex gap-1 border-b border-gray-200 overflow-x-auto">
             @for (tab of tabs; track tab.key) {
               <button (click)="activeTab.set(tab.key)"
                 [class]="activeTab() === tab.key
-                  ? 'border-b-2 border-indigo-600 pb-3 px-4 text-sm font-semibold text-indigo-600'
-                  : 'pb-3 px-4 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors'">
+                  ? 'border-b-2 border-indigo-600 pb-3 px-3 sm:px-4 text-sm font-semibold text-indigo-600 whitespace-nowrap'
+                  : 'pb-3 px-3 sm:px-4 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors whitespace-nowrap'">
                 {{ tab.label }}
               </button>
             }
@@ -142,23 +150,80 @@ const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Saba
           <!-- Tab: Availability -->
           @if (activeTab() === 'availability') {
             <app-card>
-              <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">Orari settimanali</h3>
-              <div class="space-y-3">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+                <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-400">Orari settimanali</h3>
+                <div class="flex items-center gap-2">
+                  <button (click)="activateWeekdays()" type="button"
+                    class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                    Attiva Lun-Ven
+                  </button>
+                  <button (click)="activateAll()" type="button"
+                    class="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-100 transition-colors">
+                    Attiva tutti
+                  </button>
+                  <button (click)="deactivateAll()" type="button"
+                    class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-50 transition-colors">
+                    Disattiva tutti
+                  </button>
+                </div>
+              </div>
+
+              <!-- Preset selector -->
+              <div class="mb-5 flex flex-wrap items-center gap-2">
+                <span class="text-xs text-gray-400 font-medium">Preset:</span>
+                <button (click)="applyPreset('09:00', '18:00')" type="button"
+                  class="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-colors">
+                  9:00 – 18:00
+                </button>
+                <button (click)="applyPreset('09:00', '13:00')" type="button"
+                  class="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-colors">
+                  9:00 – 13:00
+                </button>
+                <button (click)="applyPreset('14:00', '20:00')" type="button"
+                  class="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-colors">
+                  14:00 – 20:00
+                </button>
+                <button (click)="applyPreset('08:00', '12:00')" type="button"
+                  class="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-colors">
+                  8:00 – 12:00
+                </button>
+              </div>
+
+              <div class="space-y-2">
                 @for (day of daySlots; track day.dayOfWeek) {
-                  <div class="flex items-center gap-3 rounded-lg border border-gray-100 p-3">
-                    <span class="w-24 text-sm font-medium text-gray-700">{{ dayName(day.dayOfWeek) }}</span>
-                    <label class="relative inline-flex cursor-pointer items-center">
-                      <input type="checkbox" [checked]="day.enabled" (change)="toggleDay(day.dayOfWeek)" class="peer sr-only" />
-                      <div class="h-5 w-9 rounded-full bg-gray-200 after:absolute after:start-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-indigo-600 peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
-                    </label>
+                  <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 rounded-xl border p-3 sm:p-4 transition-all duration-200"
+                    [class.border-indigo-200]="day.enabled"
+                    [class.bg-indigo-50/30]="day.enabled"
+                    [class.border-gray-100]="!day.enabled"
+                    [class.bg-gray-50/30]="!day.enabled">
+                    <div class="flex items-center gap-3 min-w-0 sm:w-36">
+                      <label class="relative inline-flex cursor-pointer items-center shrink-0">
+                        <input type="checkbox" [checked]="day.enabled" (change)="toggleDay(day.dayOfWeek)" class="peer sr-only" />
+                        <div class="h-6 w-11 rounded-full bg-gray-200 after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-indigo-600 peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+                      </label>
+                      <span class="text-sm font-medium" [class.text-gray-900]="day.enabled" [class.text-gray-400]="!day.enabled">
+                        <span class="hidden sm:inline">{{ dayName(day.dayOfWeek) }}</span>
+                        <span class="sm:hidden">{{ dayShortName(day.dayOfWeek) }}</span>
+                      </span>
+                    </div>
                     @if (day.enabled) {
-                      <input type="time" [value]="day.startTime" (change)="updateSlotTime(day.dayOfWeek, 'start', $event)"
-                        class="rounded border border-gray-200 px-2 py-1 text-sm" />
-                      <span class="text-gray-400">—</span>
-                      <input type="time" [value]="day.endTime" (change)="updateSlotTime(day.dayOfWeek, 'end', $event)"
-                        class="rounded border border-gray-200 px-2 py-1 text-sm" />
+                      <div class="flex items-center gap-2 sm:gap-3 flex-1">
+                        <div class="flex items-center gap-2 flex-1 sm:flex-none">
+                          <span class="text-xs text-gray-400 hidden sm:inline">Dalle</span>
+                          <input type="time" [value]="day.startTime" (change)="updateSlotTime(day.dayOfWeek, 'start', $event)"
+                            class="flex-1 sm:flex-none rounded-lg border border-gray-200 px-2.5 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+                        </div>
+                        <svg class="h-4 w-4 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                        <div class="flex items-center gap-2 flex-1 sm:flex-none">
+                          <span class="text-xs text-gray-400 hidden sm:inline">Alle</span>
+                          <input type="time" [value]="day.endTime" (change)="updateSlotTime(day.dayOfWeek, 'end', $event)"
+                            class="flex-1 sm:flex-none rounded-lg border border-gray-200 px-2.5 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+                        </div>
+                      </div>
                     } @else {
-                      <span class="text-sm text-gray-400">Non disponibile</span>
+                      <span class="text-sm text-gray-400 italic">Non disponibile</span>
                     }
                   </div>
                 }
@@ -176,19 +241,19 @@ const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Saba
               } @else {
                 <div class="space-y-2 mb-4">
                   @for (exc of exceptions(); track exc.id) {
-                    <div class="flex items-center justify-between rounded-lg border border-gray-100 px-4 py-3">
-                      <div>
+                    <div class="flex items-center justify-between rounded-lg border border-gray-100 px-3 sm:px-4 py-3">
+                      <div class="flex items-center gap-2 flex-wrap">
                         <span class="text-sm font-medium text-gray-900">{{ formatDate(exc.date) }}</span>
                         @if (exc.isUnavailable) {
-                          <app-badge variant="red" class="ml-2">Non disponibile</app-badge>
+                          <app-badge variant="red">Non disponibile</app-badge>
                         } @else {
-                          <span class="ml-2 text-sm text-gray-500">{{ exc.startTime }} - {{ exc.endTime }}</span>
+                          <span class="text-sm text-gray-500">{{ exc.startTime }} - {{ exc.endTime }}</span>
                         }
                         @if (exc.reason) {
-                          <span class="ml-2 text-xs text-gray-400">{{ exc.reason }}</span>
+                          <span class="text-xs text-gray-400 hidden sm:inline">{{ exc.reason }}</span>
                         }
                       </div>
-                      <button (click)="removeException(exc.id)" class="text-sm text-red-500 hover:text-red-700 transition-colors">Rimuovi</button>
+                      <button (click)="removeException(exc.id)" class="text-sm text-red-500 hover:text-red-700 transition-colors shrink-0">Rimuovi</button>
                     </div>
                   }
                 </div>
@@ -197,7 +262,7 @@ const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Saba
               <div class="mt-4 flex flex-wrap items-end gap-3 border-t border-gray-100 pt-4">
                 <div>
                   <label class="block text-xs text-gray-500 mb-1">Data</label>
-                  <input type="date" [(ngModel)]="newExcDate" class="rounded border border-gray-200 px-2 py-1.5 text-sm" />
+                  <input type="date" [(ngModel)]="newExcDate" class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm" />
                 </div>
                 <label class="flex items-center gap-2 text-sm text-gray-700">
                   <input type="checkbox" [(ngModel)]="newExcUnavailable" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
@@ -206,16 +271,16 @@ const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Saba
                 @if (!newExcUnavailable) {
                   <div>
                     <label class="block text-xs text-gray-500 mb-1">Dalle</label>
-                    <input type="time" [(ngModel)]="newExcStart" class="rounded border border-gray-200 px-2 py-1.5 text-sm" />
+                    <input type="time" [(ngModel)]="newExcStart" class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm" />
                   </div>
                   <div>
                     <label class="block text-xs text-gray-500 mb-1">Alle</label>
-                    <input type="time" [(ngModel)]="newExcEnd" class="rounded border border-gray-200 px-2 py-1.5 text-sm" />
+                    <input type="time" [(ngModel)]="newExcEnd" class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm" />
                   </div>
                 }
                 <div>
                   <label class="block text-xs text-gray-500 mb-1">Motivo</label>
-                  <input type="text" [(ngModel)]="newExcReason" placeholder="Opzionale" class="rounded border border-gray-200 px-2 py-1.5 text-sm" />
+                  <input type="text" [(ngModel)]="newExcReason" placeholder="Opzionale" class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm" />
                 </div>
                 <app-button (click)="addException()" [disabled]="!newExcDate">Aggiungi</app-button>
               </div>
@@ -263,7 +328,7 @@ export class ProfessionalDetailComponent implements OnInit {
     { key: 'availability' as const, label: 'Disponibilità' },
   ];
 
-  daySlots: { dayOfWeek: number; enabled: boolean; startTime: string; endTime: string }[] = [];
+  daySlots: DaySlot[] = [];
 
   // Exception form
   newExcDate = '';
@@ -314,9 +379,40 @@ export class ProfessionalDetailComponent implements OnInit {
     return DAYS[dow - 1] ?? '';
   }
 
+  dayShortName(dow: number): string {
+    return DAYS_SHORT[dow - 1] ?? '';
+  }
+
   toggleDay(dow: number): void {
     const idx = this.daySlots.findIndex((d) => d.dayOfWeek === dow);
     if (idx >= 0) this.daySlots[idx].enabled = !this.daySlots[idx].enabled;
+  }
+
+  /** Activate Monday-Friday with current times */
+  activateWeekdays(): void {
+    this.daySlots.forEach((d) => {
+      d.enabled = d.dayOfWeek <= 5;
+    });
+  }
+
+  /** Activate all days Mon-Sun */
+  activateAll(): void {
+    this.daySlots.forEach((d) => { d.enabled = true; });
+  }
+
+  /** Deactivate all days */
+  deactivateAll(): void {
+    this.daySlots.forEach((d) => { d.enabled = false; });
+  }
+
+  /** Apply a time preset to all currently enabled days */
+  applyPreset(start: string, end: string): void {
+    this.daySlots.forEach((d) => {
+      if (d.enabled) {
+        d.startTime = start;
+        d.endTime = end;
+      }
+    });
   }
 
   updateSlotTime(dow: number, which: 'start' | 'end', event: Event): void {

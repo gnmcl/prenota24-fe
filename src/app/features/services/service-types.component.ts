@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { CardComponent } from '../../shared/components/card/card.component';
@@ -21,9 +21,9 @@ const PRESET_COLORS = ['#4F46E5', '#7C3AED', '#059669', '#D97706', '#DC2626', '#
   template: `
     <app-page-shell>
       <div class="mx-auto max-w-4xl">
-        <div class="mb-6 flex items-center justify-between">
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h2 class="text-2xl font-bold text-gray-900">Servizi</h2>
+            <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Servizi</h2>
             <p class="mt-1 text-sm text-gray-500">Configura i servizi offerti dal tuo studio</p>
           </div>
           <app-button (click)="openForm()">
@@ -38,60 +38,9 @@ const PRESET_COLORS = ['#4F46E5', '#7C3AED', '#059669', '#D97706', '#DC2626', '#
           <app-alert variant="error" [message]="error()" class="mb-4" />
         }
 
-        @if (isLoading()) {
-          <div class="flex justify-center py-12">
-            <div class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
-          </div>
-        } @else if (services().length === 0 && !showForm()) {
-          <app-empty-state
-            icon="🛠️"
-            title="Nessun servizio"
-            description="Crea il primo servizio per categorizzare i tuoi appuntamenti."
-            actionLabel="Crea servizio"
-            (action)="openForm()"
-          />
-        } @else {
-          <div class="space-y-3">
-            @for (svc of services(); track svc.id) {
-              <app-card extraClass="!p-5">
-                <div class="flex items-center justify-between gap-4">
-                  <div class="flex items-center gap-3 min-w-0">
-                    <span class="h-4 w-4 rounded-full shrink-0" [style.background-color]="svc.color || '#94A3B8'"></span>
-                    <div class="min-w-0">
-                      <div class="flex items-center gap-2">
-                        <span class="font-semibold text-gray-900 truncate">{{ svc.name }}</span>
-                        <app-badge [variant]="svc.active ? 'green' : 'gray'">{{ svc.active ? 'Attivo' : 'Inattivo' }}</app-badge>
-                      </div>
-                      <div class="flex items-center gap-2 text-sm text-gray-500">
-                        <span>{{ svc.durationMinutes }} min</span>
-                        @if (svc.price) {
-                          <span class="text-gray-300">·</span>
-                          <span>€{{ svc.price }}</span>
-                        }
-                        @if (svc.professionalIds.length > 0) {
-                          <span class="text-gray-300">·</span>
-                          <span>{{ svc.professionalIds.length }} professionista/i</span>
-                        }
-                        @if (svc.description) {
-                          <span class="text-gray-300">·</span>
-                          <span class="truncate">{{ svc.description }}</span>
-                        }
-                      </div>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-2 shrink-0">
-                    <button (click)="editService(svc)" class="text-sm text-indigo-600 hover:text-indigo-700 font-medium transition-colors">Modifica</button>
-                    <button (click)="confirmDelete(svc)" class="text-sm text-red-500 hover:text-red-700 font-medium transition-colors">Elimina</button>
-                  </div>
-                </div>
-              </app-card>
-            }
-          </div>
-        }
-
-        <!-- Create / Edit form (inline) -->
+        <!-- Create / Edit form (ABOVE the list) -->
         @if (showForm()) {
-          <app-card extraClass="mt-6">
+          <app-card extraClass="mb-6 border-indigo-200 !border-2">
             <h3 class="mb-4 text-lg font-semibold text-gray-900">{{ editingId() ? 'Modifica servizio' : 'Nuovo servizio' }}</h3>
             <div class="grid gap-4 sm:grid-cols-2">
               <div>
@@ -108,7 +57,7 @@ const PRESET_COLORS = ['#4F46E5', '#7C3AED', '#059669', '#D97706', '#DC2626', '#
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Colore</label>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
                   @for (c of presetColors; track c) {
                     <button (click)="formColor = c" type="button"
                       class="h-7 w-7 rounded-full border-2 transition-transform"
@@ -160,6 +109,71 @@ const PRESET_COLORS = ['#4F46E5', '#7C3AED', '#059669', '#D97706', '#DC2626', '#
           </app-card>
         }
 
+        @if (isLoading()) {
+          <div class="flex justify-center py-12">
+            <div class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+          </div>
+        } @else if (services().length === 0 && !showForm()) {
+          <app-empty-state
+            icon="🛠️"
+            title="Nessun servizio"
+            description="Crea il primo servizio per categorizzare i tuoi appuntamenti."
+            actionLabel="Crea servizio"
+            (action)="openForm()"
+          />
+        } @else {
+          <!-- Search bar -->
+          @if (services().length > 0) {
+            <div class="mb-4">
+              <div class="relative">
+                <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <input
+                  type="text"
+                  [ngModel]="searchQuery()"
+                  (ngModelChange)="searchQuery.set($event)"
+                  placeholder="Cerca servizio..."
+                  class="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+                />
+              </div>
+            </div>
+          }
+
+          <div class="space-y-3">
+            @for (svc of filteredServices(); track svc.id) {
+              <app-card extraClass="!p-4 sm:!p-5">
+                <div class="flex items-center justify-between gap-3 sm:gap-4">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <span class="h-4 w-4 rounded-full shrink-0" [style.background-color]="svc.color || '#94A3B8'"></span>
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span class="font-semibold text-gray-900 truncate">{{ svc.name }}</span>
+                        <app-badge [variant]="svc.active ? 'green' : 'gray'">{{ svc.active ? 'Attivo' : 'Inattivo' }}</app-badge>
+                      </div>
+                      <div class="flex items-center gap-2 text-sm text-gray-500 flex-wrap">
+                        <span>{{ svc.durationMinutes }} min</span>
+                        @if (svc.price) {
+                          <span class="text-gray-300">·</span>
+                          <span>€{{ svc.price }}</span>
+                        }
+                        @if (svc.professionalIds.length > 0) {
+                          <span class="text-gray-300 hidden sm:inline">·</span>
+                          <span class="hidden sm:inline">{{ svc.professionalIds.length }} professionista/i</span>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button (click)="editService(svc)" class="text-sm text-indigo-600 hover:text-indigo-700 font-medium transition-colors">Modifica</button>
+                    <button (click)="confirmDelete(svc)" class="text-sm text-red-500 hover:text-red-700 font-medium transition-colors">Elimina</button>
+                  </div>
+                </div>
+              </app-card>
+            }
+          </div>
+        }
+
         <!-- Delete confirm -->
         <app-confirm-dialog
           [open]="deleteDialogOpen()"
@@ -188,6 +202,7 @@ export class ServiceTypesComponent implements OnInit {
   readonly deleteDialogOpen = signal(false);
   readonly isDeleting = signal(false);
   readonly presetColors = PRESET_COLORS;
+  readonly searchQuery = signal('');
 
   formName = '';
   formDuration = 30;
@@ -196,6 +211,13 @@ export class ServiceTypesComponent implements OnInit {
   formDescription = '';
   formProfessionalIds = new Set<string>();
   private deleteTarget: ServiceTypeResponse | null = null;
+
+  readonly filteredServices = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    const all = this.services();
+    if (!q) return all;
+    return all.filter((s) => s.name.toLowerCase().includes(q) || (s.description ?? '').toLowerCase().includes(q));
+  });
 
   ngOnInit(): void {
     this.svcService.list().subscribe({
@@ -229,6 +251,8 @@ export class ServiceTypesComponent implements OnInit {
     this.formDescription = svc.description ?? '';
     this.formProfessionalIds = new Set(svc.professionalIds ?? []);
     this.showForm.set(true);
+    // scroll to top to see the form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   saveService(): void {
