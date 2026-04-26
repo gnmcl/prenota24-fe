@@ -578,16 +578,31 @@ export class AppointmentFormComponent implements OnInit {
     this.checkingAvailability.set(true);
     this.profService.getAvailableSlots(profId, this.selectedDate(), this.selectedDuration()).subscribe({
       next: (slots) => {
-        // Check if any available slot covers our chosen time
+        // Check if the chosen time matches any available slot
         const [h, m] = this.selectedStartTime().split(':').map(Number);
         const chosenMinutes = h * 60 + m;
+
         const available = slots.some((s) => {
           const sDate = new Date(s.start);
-          const slotMin = sDate.getHours() * 60 + sDate.getMinutes();
-          return slotMin <= chosenMinutes && chosenMinutes < slotMin + this.selectedDuration();
+          const slotStartMin = sDate.getHours() * 60 + sDate.getMinutes();
+          // The chosen time must fall exactly at a slot start
+          // (or within the slot window for the same duration)
+          return slotStartMin === chosenMinutes;
         });
-        // Also accept if no slots returned but endpoint didn't fail (e.g., manual time may still work)
-        this.isSlotAvailable.set(available || slots.length > 0);
+
+        // If no exact match, also check if the chosen time falls within any slot's range
+        // (for free-form time selection with 5-min granularity)
+        const withinRange = !available && slots.some((s) => {
+          const sDate = new Date(s.start);
+          const eDate = new Date(s.end);
+          const slotStartMin = sDate.getHours() * 60 + sDate.getMinutes();
+          const slotEndMin = eDate.getHours() * 60 + eDate.getMinutes();
+          // Our chosen appointment must fit entirely within an available slot
+          const chosenEndMin = chosenMinutes + this.selectedDuration();
+          return chosenMinutes >= slotStartMin && chosenEndMin <= slotEndMin;
+        });
+
+        this.isSlotAvailable.set(available || withinRange);
         this.checkingAvailability.set(false);
       },
       error: () => {
