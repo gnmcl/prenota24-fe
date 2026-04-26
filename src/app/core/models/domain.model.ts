@@ -319,6 +319,9 @@ export interface CreateAppointmentRequest {
 export interface UpdateAppointmentRequest {
   notes?: string;
   serviceTypeId?: UUID;
+  startDatetime?: string;
+  endDatetime?: string;
+  professionalId?: UUID;
 }
 
 export interface ProposeNewTimeRequest {

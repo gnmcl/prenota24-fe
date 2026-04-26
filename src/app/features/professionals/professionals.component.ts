@@ -1,5 +1,6 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
@@ -11,14 +12,14 @@ import type { ProfessionalResponse } from '../../core/models/domain.model';
 @Component({
   selector: 'app-professionals',
   standalone: true,
-  imports: [RouterLink, PageShellComponent, CardComponent, ButtonComponent, BadgeComponent, EmptyStateComponent],
+  imports: [RouterLink, FormsModule, PageShellComponent, CardComponent, ButtonComponent, BadgeComponent, EmptyStateComponent],
   template: `
     <app-page-shell>
       <div class="mx-auto max-w-4xl">
         <!-- Header -->
-        <div class="mb-6 flex items-center justify-between">
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 class="text-2xl font-bold text-gray-900">Team</h2>
+            <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Team</h2>
             <p class="mt-1 text-sm text-gray-500">Gestisci i professionisti del tuo studio</p>
           </div>
           <a routerLink="/professionisti/nuovo">
@@ -31,11 +32,29 @@ import type { ProfessionalResponse } from '../../core/models/domain.model';
           </a>
         </div>
 
+        <!-- Search -->
+        @if (!isLoading() && professionals().length > 0) {
+          <div class="mb-6">
+            <div class="relative">
+              <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              <input
+                type="text"
+                [ngModel]="searchQuery()"
+                (ngModelChange)="searchQuery.set($event)"
+                placeholder="Cerca per nome, email o telefono..."
+                class="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+              />
+            </div>
+          </div>
+        }
+
         @if (isLoading()) {
           <div class="flex justify-center py-12">
             <div class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
           </div>
-        } @else if (professionals().length === 0) {
+        } @else if (filteredProfessionals().length === 0 && professionals().length === 0) {
           <app-empty-state
             icon="👤"
             title="Nessun professionista"
@@ -43,13 +62,17 @@ import type { ProfessionalResponse } from '../../core/models/domain.model';
             actionLabel="Aggiungi professionista"
             actionRoute="/professionisti/nuovo"
           />
+        } @else if (filteredProfessionals().length === 0) {
+          <app-card extraClass="text-center">
+            <p class="text-gray-400">Nessun risultato per "{{ searchQuery() }}"</p>
+          </app-card>
         } @else {
           <div class="grid gap-4 sm:grid-cols-2">
-            @for (pro of professionals(); track pro.id) {
+            @for (pro of filteredProfessionals(); track pro.id) {
               <a [routerLink]="['/professionisti', pro.id]" class="block">
                 <app-card extraClass="hover:shadow-md transition-shadow !p-5">
                   <div class="flex items-center gap-3">
-                    <div class="flex h-11 w-11 items-center justify-center rounded-full bg-violet-100 text-sm font-bold text-violet-700">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-violet-100 to-indigo-100 text-sm font-bold text-violet-700">
                       {{ pro.firstName.charAt(0) }}{{ pro.lastName.charAt(0) }}
                     </div>
                     <div class="min-w-0 flex-1">
@@ -77,6 +100,18 @@ export class ProfessionalsComponent implements OnInit {
 
   readonly professionals = signal<ProfessionalResponse[]>([]);
   readonly isLoading = signal(true);
+  readonly searchQuery = signal('');
+
+  readonly filteredProfessionals = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    const all = this.professionals();
+    if (!q) return all;
+    return all.filter((p) =>
+      (p.firstName + ' ' + p.lastName).toLowerCase().includes(q) ||
+      (p.email ?? '').toLowerCase().includes(q) ||
+      (p.phone ?? '').toLowerCase().includes(q)
+    );
+  });
 
   ngOnInit(): void {
     this.profService.list().subscribe({

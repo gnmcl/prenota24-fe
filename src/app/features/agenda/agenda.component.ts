@@ -7,11 +7,25 @@ import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { AppointmentService } from '../../core/services/appointment.service';
 import { ProfessionalService } from '../../core/services/professional.service';
 import { ServiceTypeService } from '../../core/services/service-type.service';
-import type { AppointmentResponse, AppointmentStatus, ProfessionalResponse, ServiceTypeResponse } from '../../core/models/domain.model';
+import type {
+  AppointmentResponse,
+  AppointmentStatus,
+  ProfessionalResponse,
+  ServiceTypeResponse,
+  AvailabilityResponse,
+  AvailabilityExceptionResponse,
+} from '../../core/models/domain.model';
 
 const HOUR_START = 7;
 const HOUR_END = 21;
 const SLOT_HEIGHT = 60; // px per hour
+const SNAP_MINUTES = 5; // snap to 5 min grid
+
+interface ProfAvailability {
+  profId: string;
+  slots: AvailabilityResponse[];
+  exceptions: AvailabilityExceptionResponse[];
+}
 
 @Component({
   selector: 'app-agenda',
@@ -35,16 +49,16 @@ const SLOT_HEIGHT = 60; // px per hour
                 <span class="sm:hidden">Nuovo</span>
               </app-button>
             </a>
-            <div class="flex gap-1 rounded-lg border border-gray-200 p-0.5">
+            <div class="flex gap-1 rounded-lg border border-gray-200 p-0.5 bg-white">
               <button (click)="viewMode.set('list')"
                 [class]="viewMode() === 'list'
-                  ? 'rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white'
+                  ? 'rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm'
                   : 'rounded-md px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors'">
                 Lista
               </button>
               <button (click)="viewMode.set('calendar')"
                 [class]="viewMode() === 'calendar'
-                  ? 'rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white'
+                  ? 'rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm'
                   : 'rounded-md px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors'">
                 Calendario
               </button>
@@ -55,7 +69,7 @@ const SLOT_HEIGHT = 60; // px per hour
         <!-- Day navigation -->
         <div class="mb-4 flex items-center gap-4">
           <button (click)="prevDay()"
-            class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 active:bg-gray-100 transition-colors shrink-0">
+            class="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 active:bg-gray-100 transition-colors shrink-0 shadow-sm">
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
             </svg>
@@ -67,7 +81,7 @@ const SLOT_HEIGHT = 60; // px per hour
             }
           </div>
           <button (click)="nextDay()"
-            class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 active:bg-gray-100 transition-colors shrink-0">
+            class="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 active:bg-gray-100 transition-colors shrink-0 shadow-sm">
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>
@@ -79,8 +93,10 @@ const SLOT_HEIGHT = 60; // px per hour
           @for (d of weekDays(); track d.date) {
             <button (click)="goToDate(d.date)"
               [class]="d.date === currentDate()
-                ? 'rounded-lg bg-indigo-600 px-1 sm:px-2 py-2 text-center text-white shadow-sm'
-                : 'rounded-lg border border-gray-200 px-1 sm:px-2 py-2 text-center text-gray-700 hover:bg-gray-50 transition-colors'">
+                ? 'rounded-xl bg-indigo-600 px-1 sm:px-2 py-2 text-center text-white shadow-sm'
+                : d.isToday
+                  ? 'rounded-xl border-2 border-indigo-300 px-1 sm:px-2 py-2 text-center text-indigo-700 hover:bg-indigo-50 transition-colors'
+                  : 'rounded-xl border border-gray-200 px-1 sm:px-2 py-2 text-center text-gray-700 hover:bg-gray-50 transition-colors'">
               <div class="text-[10px] sm:text-xs">{{ d.dayLabel }}</div>
               <div class="text-sm font-semibold">{{ d.dayNum }}</div>
             </button>
@@ -104,7 +120,7 @@ const SLOT_HEIGHT = 60; // px per hour
                   <a [routerLink]="['/appuntamenti', apt.id]">
                     <app-card extraClass="hover:shadow-md transition-shadow !p-4 sm:!p-5">
                       <div class="flex items-center gap-3 sm:gap-4">
-                        <div class="flex flex-col items-center rounded-lg bg-indigo-50 px-2.5 py-1.5 sm:px-3 sm:py-2 text-center shrink-0">
+                        <div class="flex flex-col items-center rounded-xl bg-gradient-to-b from-indigo-50 to-indigo-100/50 px-2.5 py-1.5 sm:px-3 sm:py-2 text-center shrink-0">
                           <span class="text-base sm:text-lg font-bold text-indigo-700">{{ formatTime(apt.startDatetime) }}</span>
                           <span class="text-[10px] sm:text-xs text-indigo-500">{{ formatTime(apt.endDatetime) }}</span>
                         </div>
@@ -131,22 +147,18 @@ const SLOT_HEIGHT = 60; // px per hour
             }
           }
 
-          <!-- CALENDAR VIEW: columns = professionals, rows = time -->
+          <!-- CALENDAR VIEW -->
           @if (viewMode() === 'calendar') {
-            <!-- Service color legend -->
+            <!-- Legend -->
             @if (serviceTypes().length > 0) {
-              <div class="mb-4 flex flex-wrap items-center gap-3">
-                <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Servizi:</span>
+              <div class="mb-4 flex flex-wrap items-center gap-3 px-1">
+                <span class="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider">Servizi:</span>
                 @for (svc of serviceTypes(); track svc.id) {
                   <div class="flex items-center gap-1.5">
-                    <span class="h-3 w-3 rounded-full shrink-0" [style.background-color]="svc.color || '#D1D5DB'"></span>
-                    <span class="text-xs text-gray-600">{{ svc.name }}</span>
+                    <span class="h-2.5 w-2.5 rounded-full shrink-0" [style.background-color]="svc.color || '#D1D5DB'"></span>
+                    <span class="text-[10px] sm:text-xs text-gray-600">{{ svc.name }}</span>
                   </div>
                 }
-                <div class="flex items-center gap-1.5">
-                  <span class="h-3 w-3 rounded-full shrink-0 bg-gray-300"></span>
-                  <span class="text-xs text-gray-600">Altro</span>
-                </div>
               </div>
             }
 
@@ -155,22 +167,22 @@ const SLOT_HEIGHT = 60; // px per hour
                 <p class="text-gray-400">Nessun professionista attivo nello studio.</p>
               </app-card>
             } @else {
-              <div class="rounded-xl border border-gray-200 bg-white overflow-x-auto -mx-4 sm:mx-0">
-                <!-- Calendar header: professional names -->
+              <div class="rounded-2xl border border-gray-200/80 bg-white overflow-x-auto -mx-4 sm:mx-0 shadow-[var(--shadow-card)]">
+                <!-- Header: professional names -->
                 <div class="grid border-b border-gray-200 sticky top-0 bg-white z-10" [style.grid-template-columns]="calendarGridCols()">
-                  <div class="border-r border-gray-100 bg-gray-50 min-w-[44px] sm:min-w-[56px]"></div>
+                  <div class="border-r border-gray-100 bg-gray-50/80 min-w-[44px] sm:min-w-[56px]"></div>
                   @for (pro of activeProfessionals(); track pro.id) {
                     <div class="border-r border-gray-100 px-2 sm:px-3 py-2 sm:py-3 text-center last:border-r-0 min-w-[100px] sm:min-w-[140px]">
                       <div class="text-xs sm:text-sm font-semibold text-gray-900 truncate">{{ pro.firstName }} {{ pro.lastName }}</div>
                     </div>
                   }
                 </div>
-                <!-- Calendar body -->
+                <!-- Body -->
                 <div class="relative grid" [style.grid-template-columns]="calendarGridCols()" [style.height.px]="calendarHeight">
                   <!-- Time labels -->
                   <div class="border-r border-gray-100 min-w-[44px] sm:min-w-[56px]">
                     @for (h of hours; track h) {
-                      <div class="absolute pr-1 sm:pr-2 text-right text-[10px] sm:text-xs text-gray-400"
+                      <div class="absolute pr-1 sm:pr-2 text-right text-[10px] sm:text-xs text-gray-400 font-medium"
                         [style.top.px]="(h - hourStart) * slotHeight"
                         [style.width.px]="isMobile ? 44 : 56"
                         [style.line-height.px]="0">
@@ -181,28 +193,37 @@ const SLOT_HEIGHT = 60; // px per hour
                   <!-- Professional columns -->
                   @for (pro of activeProfessionals(); track pro.id) {
                     <div class="relative border-r border-gray-100 last:border-r-0 min-w-[100px] sm:min-w-[140px]">
-                      <!-- Hour grid lines (clickable slots) -->
+                      <!-- Hour grid lines -->
                       @for (h of hours; track h) {
-                        <button (click)="onSlotClick(pro.id, h, 0)"
-                          class="absolute inset-x-0 border-t border-gray-100 cursor-pointer hover:bg-indigo-50/40 transition-colors"
-                          [style.top.px]="(h - hourStart) * slotHeight"
-                          [style.height.px]="slotHeight / 2"
-                          title="{{ h }}:00 – {{ pro.firstName }}">
-                        </button>
-                        <button (click)="onSlotClick(pro.id, h, 30)"
-                          class="absolute inset-x-0 cursor-pointer hover:bg-indigo-50/40 transition-colors"
-                          [style.top.px]="(h - hourStart) * slotHeight + slotHeight / 2"
-                          [style.height.px]="slotHeight / 2"
-                          title="{{ h }}:30 – {{ pro.firstName }}">
-                        </button>
+                        <div class="absolute inset-x-0 border-t border-gray-100"
+                          [style.top.px]="(h - hourStart) * slotHeight">
+                        </div>
+                        <div class="absolute inset-x-0 border-t border-gray-50"
+                          [style.top.px]="(h - hourStart) * slotHeight + slotHeight / 2">
+                        </div>
                       }
-                      <!-- Appointments for this professional (layered on top) -->
+
+                      <!-- Unavailability overlays -->
+                      @for (block of getUnavailableBlocks(pro.id); track $index) {
+                        <div class="absolute inset-x-0 z-[2] pointer-events-none"
+                          [style.top.px]="block.topPx"
+                          [style.height.px]="block.heightPx">
+                          <div class="h-full w-full bg-gray-200/40" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(156,163,175,0.15) 4px, rgba(156,163,175,0.15) 8px)"></div>
+                        </div>
+                      }
+
+                      <!-- Clickable area (continuous, computes precise time from Y pos) -->
+                      <div class="absolute inset-0 z-[3] cursor-pointer"
+                        (click)="onColumnClick($event, pro.id)">
+                      </div>
+
+                      <!-- Appointments (on top of clickable area) -->
                       @for (apt of appointmentsForProfessional(pro.id); track apt.id) {
                         <a [routerLink]="['/appuntamenti', apt.id]"
-                          class="absolute inset-x-0.5 mx-0.5 rounded-md px-1 sm:px-1.5 py-0.5 text-xs overflow-hidden cursor-pointer hover:opacity-90 transition-opacity border-l-3 z-[5]"
+                          class="absolute inset-x-0.5 mx-0.5 rounded-lg px-1.5 sm:px-2 py-0.5 text-xs overflow-hidden cursor-pointer hover:opacity-90 transition-opacity border-l-[3px] z-[6] shadow-sm"
                           [style.top.px]="calendarTop(apt)"
                           [style.height.px]="calendarBlockHeight(apt)"
-                          [style.min-height.px]="20"
+                          [style.min-height.px]="22"
                           [style.background-color]="aptBg(apt)"
                           [style.border-left-color]="aptBorder(apt)">
                           <div class="font-semibold truncate leading-tight text-gray-900 text-[10px] sm:text-xs">
@@ -246,6 +267,7 @@ export class AgendaComponent implements OnInit {
   readonly allAppointments = signal<AppointmentResponse[]>([]);
   readonly activeProfessionals = signal<ProfessionalResponse[]>([]);
   readonly serviceTypes = signal<ServiceTypeResponse[]>([]);
+  readonly profAvailabilities = signal<ProfAvailability[]>([]);
   readonly isLoading = signal(true);
 
   readonly hourStart = HOUR_START;
@@ -276,6 +298,7 @@ export class AgendaComponent implements OnInit {
   readonly isToday = computed(() => this.currentDate() === this.toDateStr(new Date()));
 
   readonly weekDays = computed(() => {
+    const todayStr = this.toDateStr(new Date());
     const parts = this.currentDate().split('-');
     const cur = new Date(+parts[0], +parts[1] - 1, +parts[2]);
     const dow = cur.getDay() || 7;
@@ -284,17 +307,39 @@ export class AgendaComponent implements OnInit {
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(monday);
       d.setDate(monday.getDate() + i);
+      const dateStr = this.toDateStr(d);
       return {
-        date: this.toDateStr(d),
+        date: dateStr,
         dayLabel: d.toLocaleDateString('it-IT', { weekday: 'short' }),
         dayNum: d.getDate(),
+        isToday: dateStr === todayStr,
       };
     });
   });
 
   ngOnInit(): void {
     this.isMobile = window.innerWidth < 640;
-    this.profService.list().subscribe({ next: (list) => this.activeProfessionals.set(list.filter((p) => p.active)) });
+    this.profService.list().subscribe({
+      next: (list) => {
+        const active = list.filter((p) => p.active);
+        this.activeProfessionals.set(active);
+        // Load availability for each professional
+        active.forEach((pro) => {
+          this.profService.getAvailability(pro.id).subscribe({
+            next: (slots) => {
+              this.profService.getExceptions(pro.id).subscribe({
+                next: (exceptions) => {
+                  this.profAvailabilities.update((arr) => [
+                    ...arr.filter((a) => a.profId !== pro.id),
+                    { profId: pro.id, slots, exceptions },
+                  ]);
+                },
+              });
+            },
+          });
+        });
+      },
+    });
     this.svcService.list().subscribe({ next: (list) => this.serviceTypes.set(list.filter((s) => s.active)) });
     this.loadAppointments();
   }
@@ -307,13 +352,121 @@ export class AgendaComponent implements OnInit {
     this.loadAppointments();
   }
 
-  /** Click on a calendar time slot → navigate to appointment creation with pre-filled data */
-  onSlotClick(professionalId: string, hour: number, minutes: number): void {
+  /** Click anywhere on a professional's column → compute precise time from Y position */
+  onColumnClick(event: MouseEvent, professionalId: string): void {
+    // Don't handle if clicking on an appointment link (those have z-index above)
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'A' || target.closest('a')) return;
+
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const clickY = event.clientY - rect.top;
+
+    // Convert pixel position to minutes from hourStart
+    const totalMinutesFromStart = (clickY / SLOT_HEIGHT) * 60;
+    const rawMinutes = HOUR_START * 60 + totalMinutesFromStart;
+
+    // Snap to nearest SNAP_MINUTES
+    const snappedMinutes = Math.round(rawMinutes / SNAP_MINUTES) * SNAP_MINUTES;
+    const hours = Math.floor(snappedMinutes / 60);
+    const minutes = snappedMinutes % 60;
+
+    // Check if this time is within the professional's availability
+    if (!this.isTimeAvailable(professionalId, hours, minutes)) return;
+
     const date = this.currentDate();
-    const time = `${String(hour).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    const time = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
     this.router.navigate(['/appuntamenti/nuovo'], {
       queryParams: { date, time, professionalId },
     });
+  }
+
+  /** Check if a specific time is within the professional's availability for current day */
+  isTimeAvailable(professionalId: string, hour: number, minute: number): boolean {
+    const avail = this.profAvailabilities().find((a) => a.profId === professionalId);
+    if (!avail) return true; // No availability data = available
+
+    const parts = this.currentDate().split('-');
+    const dayDate = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+    let dayOfWeek = dayDate.getDay();
+    if (dayOfWeek === 0) dayOfWeek = 7; // Sun = 7
+
+    // Check exceptions first
+    const exception = avail.exceptions.find((e) => e.date === this.currentDate());
+    if (exception) {
+      if (exception.isUnavailable) return false;
+      if (exception.startTime && exception.endTime) {
+        const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+        return timeStr >= exception.startTime && timeStr < exception.endTime;
+      }
+    }
+
+    // Check regular availability
+    const slot = avail.slots.find((s) => s.dayOfWeek === dayOfWeek);
+    if (!slot) return false; // No slot for this day = unavailable
+
+    const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+    return timeStr >= slot.startTime && timeStr < slot.endTime;
+  }
+
+  /** Get unavailable time blocks for a professional on the current date (for overlay rendering) */
+  getUnavailableBlocks(professionalId: string): { topPx: number; heightPx: number }[] {
+    const avail = this.profAvailabilities().find((a) => a.profId === professionalId);
+    if (!avail) return [];
+
+    const parts = this.currentDate().split('-');
+    const dayDate = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+    let dayOfWeek = dayDate.getDay();
+    if (dayOfWeek === 0) dayOfWeek = 7;
+
+    // Check for exception
+    const exception = avail.exceptions.find((e) => e.date === this.currentDate());
+    if (exception?.isUnavailable) {
+      // Entire day unavailable
+      return [{ topPx: 0, heightPx: this.calendarHeight }];
+    }
+
+    let availStart: string | null = null;
+    let availEnd: string | null = null;
+
+    if (exception?.startTime && exception?.endTime) {
+      availStart = exception.startTime;
+      availEnd = exception.endTime;
+    } else {
+      const slot = avail.slots.find((s) => s.dayOfWeek === dayOfWeek);
+      if (!slot) {
+        // No availability for this day → entire day unavailable
+        return [{ topPx: 0, heightPx: this.calendarHeight }];
+      }
+      availStart = slot.startTime;
+      availEnd = slot.endTime;
+    }
+
+    const blocks: { topPx: number; heightPx: number }[] = [];
+    const toMinutes = (t: string) => {
+      const [h, m] = t.split(':').map(Number);
+      return h * 60 + m;
+    };
+
+    const startMin = toMinutes(availStart);
+    const endMin = toMinutes(availEnd);
+    const calStartMin = HOUR_START * 60;
+    const calEndMin = HOUR_END * 60;
+
+    // Block before available time
+    if (startMin > calStartMin) {
+      const topPx = 0;
+      const heightPx = ((startMin - calStartMin) / 60) * SLOT_HEIGHT;
+      blocks.push({ topPx, heightPx });
+    }
+
+    // Block after available time
+    if (endMin < calEndMin) {
+      const topPx = ((endMin - calStartMin) / 60) * SLOT_HEIGHT;
+      const heightPx = ((calEndMin - endMin) / 60) * SLOT_HEIGHT;
+      blocks.push({ topPx, heightPx });
+    }
+
+    return blocks;
   }
 
   appointmentsForProfessional(professionalId: string): AppointmentResponse[] {
@@ -336,14 +489,12 @@ export class AgendaComponent implements OnInit {
     return (durationMinutes / 60) * SLOT_HEIGHT;
   }
 
-  /** Background color based on service type color, with a lighter tint */
   aptBg(apt: AppointmentResponse): string {
     const hex = apt.serviceTypeColor;
-    if (!hex) return '#F3F4F6'; // gray-100 fallback
-    return hex + '20'; // hex + 12% opacity
+    if (!hex) return '#F3F4F6';
+    return hex + '20';
   }
 
-  /** Left border color = full service color */
   aptBorder(apt: AppointmentResponse): string {
     return apt.serviceTypeColor || '#9CA3AF';
   }
@@ -377,7 +528,6 @@ export class AgendaComponent implements OnInit {
     });
   }
 
-  /** Timezone-safe date string formatting (avoids UTC conversion issues) */
   private toDateStr(d: Date): string {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
