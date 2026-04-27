@@ -7,7 +7,7 @@ import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { ProfessionalService } from '../../core/services/professional.service';
 import { InvitationService } from '../../core/services/invitation.service';
-import type { ProfessionalResponse, AvailabilityResponse, AvailabilityExceptionResponse, AvailabilitySlotRequest, InvitationResponse } from '../../core/models/domain.model';
+import type { ProfessionalResponse, AvailabilityResponse, AvailabilityExceptionResponse, AvailabilitySlotRequest, InvitationResponse, AvailabilityExceptionSlot } from '../../core/models/domain.model';
 import { FormsModule } from '@angular/forms';
 
 const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
@@ -241,48 +241,84 @@ interface DaySlot {
               } @else {
                 <div class="space-y-2 mb-4">
                   @for (exc of exceptions(); track exc.id) {
-                    <div class="flex items-center justify-between rounded-lg border border-gray-100 px-3 sm:px-4 py-3">
-                      <div class="flex items-center gap-2 flex-wrap">
-                        <span class="text-sm font-medium text-gray-900">{{ formatDate(exc.date) }}</span>
-                        @if (exc.isUnavailable) {
-                          <app-badge variant="red">Non disponibile</app-badge>
-                        } @else {
-                          <span class="text-sm text-gray-500">{{ exc.startTime }} - {{ exc.endTime }}</span>
-                        }
-                        @if (exc.reason) {
-                          <span class="text-xs text-gray-400 hidden sm:inline">{{ exc.reason }}</span>
+                    <div class="flex items-start justify-between rounded-lg border border-gray-100 px-3 sm:px-4 py-3">
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                          <span class="text-sm font-medium text-gray-900">{{ formatDate(exc.date) }}</span>
+                          @if (exc.isUnavailableAllDay) {
+                            <app-badge variant="red">Giornata chiusa</app-badge>
+                          }
+                          @if (exc.reason) {
+                            <span class="text-xs text-gray-400 hidden sm:inline">{{ exc.reason }}</span>
+                          }
+                        </div>
+                        @if (!exc.isUnavailableAllDay && exc.slots.length > 0) {
+                          <div class="mt-1.5 space-y-0.5">
+                            @for (slot of exc.slots; track slot.id) {
+                              <div class="text-sm text-gray-500">
+                                Non disponibile: {{ slot.startTime }} – {{ slot.endTime }}
+                              </div>
+                            }
+                          </div>
                         }
                       </div>
-                      <button (click)="removeException(exc.id)" class="text-sm text-red-500 hover:text-red-700 transition-colors shrink-0">Rimuovi</button>
+                      <button (click)="removeException(exc.id)" class="text-sm text-red-500 hover:text-red-700 transition-colors shrink-0 ml-3">Rimuovi</button>
                     </div>
                   }
                 </div>
               }
               <!-- Add exception form -->
-              <div class="mt-4 flex flex-wrap items-end gap-3 border-t border-gray-100 pt-4">
-                <div>
-                  <label class="block text-xs text-gray-500 mb-1">Data</label>
-                  <input type="date" [(ngModel)]="newExcDate" class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm" />
-                </div>
-                <label class="flex items-center gap-2 text-sm text-gray-700">
-                  <input type="checkbox" [(ngModel)]="newExcUnavailable" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                  Tutto il giorno
-                </label>
-                @if (!newExcUnavailable) {
+              <div class="mt-4 border-t border-gray-100 pt-4">
+                <div class="space-y-4">
                   <div>
-                    <label class="block text-xs text-gray-500 mb-1">Dalle</label>
-                    <input type="time" [(ngModel)]="newExcStart" class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm" />
+                    <label class="block text-xs text-gray-500 mb-1">Data</label>
+                    <input type="date" [(ngModel)]="newExcDate" class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm" />
                   </div>
+                  <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                    <input type="checkbox" [(ngModel)]="newExcUnavailableAllDay" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                    Giornata intera non disponibile
+                  </label>
+                  @if (!newExcUnavailableAllDay) {
+                    <div class="rounded-lg border border-gray-100 p-3 bg-gray-50/50">
+                      <p class="text-xs font-medium text-gray-500 mb-2">Fasce di indisponibilità</p>
+                      <div class="space-y-2">
+                        @for (slot of newExcSlots; track $index) {
+                          <div class="flex items-center gap-2">
+                            <input type="time" [(ngModel)]="slot.startTime"
+                              class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:outline-none bg-white" />
+                            <span class="text-gray-400 text-xs">–</span>
+                            <input type="time" [(ngModel)]="slot.endTime"
+                              class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:outline-none bg-white" />
+                            <button (click)="removeSlot($index)"
+                              class="text-red-400 hover:text-red-600 transition-colors text-sm font-medium ml-1">
+                              ✕
+                            </button>
+                            @if (slot.startTime && slot.endTime && slot.startTime >= slot.endTime) {
+                              <span class="text-xs text-red-500">Orario non valido</span>
+                            }
+                          </div>
+                        }
+                      </div>
+                      <button (click)="addSlot()" type="button"
+                        class="mt-2 inline-flex items-center gap-1 rounded-md border border-dashed border-gray-300 px-3 py-1.5 text-xs text-gray-500 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
+                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Aggiungi fascia
+                      </button>
+                      @if (slotError) {
+                        <p class="mt-2 text-xs text-red-500">{{ slotError }}</p>
+                      }
+                    </div>
+                  }
                   <div>
-                    <label class="block text-xs text-gray-500 mb-1">Alle</label>
-                    <input type="time" [(ngModel)]="newExcEnd" class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm" />
+                    <label class="block text-xs text-gray-500 mb-1">Motivo</label>
+                    <input type="text" [(ngModel)]="newExcReason" placeholder="Opzionale" class="w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm" />
                   </div>
-                }
-                <div>
-                  <label class="block text-xs text-gray-500 mb-1">Motivo</label>
-                  <input type="text" [(ngModel)]="newExcReason" placeholder="Opzionale" class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm" />
+                  <div class="flex justify-end">
+                    <app-button (click)="addException()" [disabled]="!newExcDate">Aggiungi</app-button>
+                  </div>
                 </div>
-                <app-button (click)="addException()" [disabled]="!newExcDate">Aggiungi</app-button>
               </div>
             </app-card>
           }
@@ -332,10 +368,10 @@ export class ProfessionalDetailComponent implements OnInit {
 
   // Exception form
   newExcDate = '';
-  newExcUnavailable = true;
-  newExcStart = '09:00';
-  newExcEnd = '18:00';
+  newExcUnavailableAllDay = true;
+  newExcSlots: AvailabilityExceptionSlot[] = [];
   newExcReason = '';
+  slotError = '';
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id')!;
@@ -439,13 +475,35 @@ export class ProfessionalDetailComponent implements OnInit {
     });
   }
 
+  addSlot(): void {
+    this.newExcSlots = [...this.newExcSlots, { startTime: '09:00', endTime: '10:00' }];
+    this.slotError = '';
+  }
+
+  removeSlot(index: number): void {
+    this.newExcSlots = this.newExcSlots.filter((_, i) => i !== index);
+  }
+
   addException(): void {
     if (!this.newExcDate) return;
+    this.slotError = '';
+
+    if (!this.newExcUnavailableAllDay) {
+      if (this.newExcSlots.length === 0) {
+        this.slotError = 'Aggiungi almeno una fascia oraria di indisponibilità';
+        return;
+      }
+      const invalid = this.newExcSlots.find((s) => s.startTime >= s.endTime);
+      if (invalid) {
+        this.slotError = "L'orario di inizio deve essere precedente all'orario di fine per ogni fascia";
+        return;
+      }
+    }
+
     const payload = {
       date: this.newExcDate,
-      isUnavailable: this.newExcUnavailable,
-      startTime: this.newExcUnavailable ? undefined : this.newExcStart,
-      endTime: this.newExcUnavailable ? undefined : this.newExcEnd,
+      isUnavailableAllDay: this.newExcUnavailableAllDay,
+      slots: this.newExcUnavailableAllDay ? [] : this.newExcSlots,
       reason: this.newExcReason || undefined,
     };
     this.profService.addException(this.professional()!.id, payload).subscribe({
@@ -453,6 +511,8 @@ export class ProfessionalDetailComponent implements OnInit {
         this.exceptions.update((list) => [...list, exc]);
         this.newExcDate = '';
         this.newExcReason = '';
+        this.newExcSlots = [];
+        this.newExcUnavailableAllDay = true;
       },
     });
   }

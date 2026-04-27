@@ -393,10 +393,12 @@ export class AgendaComponent implements OnInit {
     // Check exceptions first
     const exception = avail.exceptions.find((e) => e.date === this.currentDate());
     if (exception) {
-      if (exception.isUnavailable) return false;
-      if (exception.startTime && exception.endTime) {
+      if (exception.isUnavailableAllDay) return false;
+      if (exception.slots.length > 0) {
         const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-        return timeStr >= exception.startTime && timeStr < exception.endTime;
+        // Time is unavailable if it falls within any exception slot
+        const inExcSlot = exception.slots.some((s) => timeStr >= s.startTime && timeStr < s.endTime);
+        if (inExcSlot) return false;
       }
     }
 
@@ -420,25 +422,16 @@ export class AgendaComponent implements OnInit {
 
     // Check for exception
     const exception = avail.exceptions.find((e) => e.date === this.currentDate());
-    if (exception?.isUnavailable) {
+    if (exception?.isUnavailableAllDay) {
       // Entire day unavailable
       return [{ topPx: 0, heightPx: this.calendarHeight }];
     }
 
-    let availStart: string | null = null;
-    let availEnd: string | null = null;
-
-    if (exception?.startTime && exception?.endTime) {
-      availStart = exception.startTime;
-      availEnd = exception.endTime;
-    } else {
-      const slot = avail.slots.find((s) => s.dayOfWeek === dayOfWeek);
-      if (!slot) {
-        // No availability for this day → entire day unavailable
-        return [{ topPx: 0, heightPx: this.calendarHeight }];
-      }
-      availStart = slot.startTime;
-      availEnd = slot.endTime;
+    // If the exception has specific unavailable slots, overlay those on top of regular availability
+    const slot = avail.slots.find((s) => s.dayOfWeek === dayOfWeek);
+    if (!slot) {
+      // No availability for this day → entire day unavailable
+      return [{ topPx: 0, heightPx: this.calendarHeight }];
     }
 
     const blocks: { topPx: number; heightPx: number }[] = [];
@@ -447,6 +440,8 @@ export class AgendaComponent implements OnInit {
       return h * 60 + m;
     };
 
+    const availStart = slot.startTime;
+    const availEnd = slot.endTime;
     const startMin = toMinutes(availStart);
     const endMin = toMinutes(availEnd);
     const calStartMin = HOUR_START * 60;
@@ -464,6 +459,19 @@ export class AgendaComponent implements OnInit {
       const topPx = ((endMin - calStartMin) / 60) * SLOT_HEIGHT;
       const heightPx = ((calEndMin - endMin) / 60) * SLOT_HEIGHT;
       blocks.push({ topPx, heightPx });
+    }
+
+    // Add exception slot blocks (unavailable ranges within the working day)
+    if (exception && exception.slots.length > 0) {
+      for (const excSlot of exception.slots) {
+        const excStartMin = toMinutes(excSlot.startTime);
+        const excEndMin = toMinutes(excSlot.endTime);
+        const topPx = ((Math.max(excStartMin, calStartMin) - calStartMin) / 60) * SLOT_HEIGHT;
+        const bottomPx = ((Math.min(excEndMin, calEndMin) - calStartMin) / 60) * SLOT_HEIGHT;
+        if (bottomPx > topPx) {
+          blocks.push({ topPx, heightPx: bottomPx - topPx });
+        }
+      }
     }
 
     return blocks;

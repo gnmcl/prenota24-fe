@@ -169,20 +169,29 @@ export interface AvailabilitySlotRequest {
   endTime: string;
 }
 
+export interface AvailabilityExceptionSlot {
+  startTime: string; // "HH:mm"
+  endTime: string;   // "HH:mm"
+}
+
+export interface AvailabilityExceptionSlotResponse {
+  id: string;
+  startTime: string;
+  endTime: string;
+}
+
 export interface AvailabilityExceptionResponse {
   id: UUID;
   date: string;
-  isUnavailable: boolean;
-  startTime: string | null;
-  endTime: string | null;
-  reason: string | null;
+  isUnavailableAllDay: boolean;
+  slots: AvailabilityExceptionSlotResponse[];
+  reason?: string;
 }
 
 export interface CreateAvailabilityExceptionRequest {
   date: string;
-  isUnavailable: boolean;
-  startTime?: string;
-  endTime?: string;
+  isUnavailableAllDay: boolean;
+  slots: AvailabilityExceptionSlot[];
   reason?: string;
 }
 
