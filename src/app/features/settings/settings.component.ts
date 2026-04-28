@@ -9,20 +9,7 @@ import { StudioService } from "../../core/services/studio.service";
 import { AuthService } from "../../core/services/auth.service";
 import { getErrorMessage } from "../../shared/utils/errors";
 
-const TIMEZONES = [
-  'Europe/Rome',
-  'Europe/London',
-  'Europe/Paris',
-  'Europe/Berlin',
-  'America/New_York',
-  'America/Chicago',
-  'America/Los_Angeles',
-  'America/Sao_Paulo',
-  'Asia/Tokyo',
-  'Asia/Dubai',
-  'Australia/Sydney',
-  'UTC',
-];
+type Section = 'account' | 'studio';
 
 @Component({
   selector: 'app-settings',
@@ -30,150 +17,335 @@ const TIMEZONES = [
   imports: [ReactiveFormsModule, PageShellComponent, CardComponent, ButtonComponent, InputComponent, AlertComponent],
   template: `
     <app-page-shell>
-      <div class="mx-auto max-w-2xl pt-12">
-        <h1 class="text-3xl font-bold text-gray-900 mb-8">Impostazioni</h1>
+      <div class="mx-auto max-w-5xl">
+        <h1 class="mb-8 text-2xl font-bold text-[var(--text-primary)]">Impostazioni</h1>
 
-        <app-card>
-          <h2 class="text-xl font-semibold text-gray-800 mb-6">Informazioni studio</h2>
+        <div class="flex gap-8">
+          <!-- Main content -->
+          <div class="min-w-0 flex-1">
 
-          @if (loadError()) {
-            <app-alert variant="error" [message]="loadError()!" class="mb-4" />
-          }
+            <!-- ══ ACCOUNT section ══ -->
+            @if (activeSection() === 'account') {
 
-          @if (isLoading()) {
-            <div class="flex justify-center py-8">
-              <svg class="animate-spin h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-              </svg>
-            </div>
-          } @else {
-            @if (successMessage()) {
-              <div class="mb-4">
-                <app-alert variant="success" [message]="successMessage()!" (dismiss)="successMessage.set(null)" />
-              </div>
+              <!-- Email -->
+              <app-card extraClass="mb-6">
+                <h2 class="mb-1 text-base font-semibold text-[var(--text-primary)]">Indirizzo email</h2>
+                <p class="mb-5 text-sm text-[var(--text-secondary)]">Modifica la email con cui accedi. Richiede la password attuale come conferma.</p>
+
+                @if (emailSuccess()) {
+                  <div class="mb-4"><app-alert variant="success" [message]="emailSuccess()!" (dismiss)="emailSuccess.set(null)" /></div>
+                }
+                @if (emailError()) {
+                  <div class="mb-4"><app-alert variant="error" [message]="emailError()!" (dismiss)="emailError.set(null)" /></div>
+                }
+
+                <form [formGroup]="emailForm" (ngSubmit)="onChangeEmail()" class="flex flex-col gap-4">
+                  <app-input
+                    label="Email attuale"
+                    [value]="authService.user()?.email ?? ''"
+                    [readonly]="true"
+                  />
+                  <app-input
+                    label="Nuova email"
+                    type="email"
+                    placeholder="nuova@email.com"
+                    formControlName="newEmail"
+                    [error]="emailFieldError('newEmail')"
+                  />
+                  <app-input
+                    label="Password attuale"
+                    type="password"
+                    placeholder="••••••••"
+                    formControlName="emailPassword"
+                    [error]="emailFieldError('emailPassword')"
+                  />
+                  <div class="flex justify-end pt-1">
+                    <app-button type="submit" [isLoading]="isSavingEmail()">Aggiorna email</app-button>
+                  </div>
+                </form>
+              </app-card>
+
+              <!-- Password -->
+              <app-card>
+                <h2 class="mb-1 text-base font-semibold text-[var(--text-primary)]">Password</h2>
+                <p class="mb-5 text-sm text-[var(--text-secondary)]">Scegli una password sicura di almeno 8 caratteri. Effettuerai il logout su tutti gli altri dispositivi.</p>
+
+                @if (passwordSuccess()) {
+                  <div class="mb-4"><app-alert variant="success" [message]="passwordSuccess()!" (dismiss)="passwordSuccess.set(null)" /></div>
+                }
+                @if (passwordError()) {
+                  <div class="mb-4"><app-alert variant="error" [message]="passwordError()!" (dismiss)="passwordError.set(null)" /></div>
+                }
+
+                <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" class="flex flex-col gap-4">
+                  <app-input
+                    label="Password attuale"
+                    type="password"
+                    placeholder="••••••••"
+                    formControlName="currentPassword"
+                    [error]="passwordFieldError('currentPassword')"
+                  />
+                  <app-input
+                    label="Nuova password"
+                    type="password"
+                    placeholder="••••••••"
+                    formControlName="newPassword"
+                    [error]="passwordFieldError('newPassword')"
+                  />
+                  <app-input
+                    label="Conferma nuova password"
+                    type="password"
+                    placeholder="••••••••"
+                    formControlName="confirmPassword"
+                    [error]="passwordFieldError('confirmPassword')"
+                  />
+                  <div class="flex justify-end pt-1">
+                    <app-button type="submit" [isLoading]="isSavingPassword()">Aggiorna password</app-button>
+                  </div>
+                </form>
+              </app-card>
             }
-            @if (saveError()) {
-              <div class="mb-4">
-                <app-alert variant="error" [message]="saveError()!" (dismiss)="saveError.set(null)" />
-              </div>
-            }
 
-            <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
-              <app-input
-                label="Nome studio"
-                type="text"
-                placeholder="Il mio studio"
-                formControlName="name"
-                [error]="getFieldError('name')"
-              />
+            <!-- ══ STUDIO section ══ -->
+            @if (activeSection() === 'studio') {
+              <app-card>
+                <h2 class="mb-1 text-base font-semibold text-[var(--text-primary)]">Informazioni studio</h2>
+                <p class="mb-5 text-sm text-[var(--text-secondary)]">Modifica i dati di contatto del tuo studio.</p>
 
-              <app-input
-                label="Email"
-                type="email"
-                placeholder="studio@esempio.com"
-                formControlName="email"
-              />
-
-              <app-input
-                label="Telefono"
-                type="tel"
-                placeholder="+39 02 1234567"
-                formControlName="phone"
-              />
-
-              <div class="flex flex-col gap-1">
-                <label class="text-sm font-medium text-gray-700">Fuso orario</label>
-                <select
-                  formControlName="timezone"
-                  class="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                >
-                  @for (tz of timezones; track tz) {
-                    <option [value]="tz">{{ tz }}</option>
+                @if (studioLoading()) {
+                  <div class="flex justify-center py-8">
+                    <div class="h-6 w-6 animate-spin rounded-full border-4 border-[var(--surface-card-border)] border-t-[var(--color-primary)]"></div>
+                  </div>
+                } @else {
+                  @if (studioLoadError()) {
+                    <div class="mb-4"><app-alert variant="error" [message]="studioLoadError()!" /></div>
                   }
-                </select>
-              </div>
+                  @if (studioSuccess()) {
+                    <div class="mb-4"><app-alert variant="success" [message]="studioSuccess()!" (dismiss)="studioSuccess.set(null)" /></div>
+                  }
+                  @if (studioSaveError()) {
+                    <div class="mb-4"><app-alert variant="error" [message]="studioSaveError()!" (dismiss)="studioSaveError.set(null)" /></div>
+                  }
 
-              <div class="flex justify-end pt-2">
-                <app-button type="submit" [isLoading]="isSaving()">Salva modifiche</app-button>
-              </div>
-            </form>
-          }
-        </app-card>
+                  <form [formGroup]="studioForm" (ngSubmit)="onSubmitStudio()" class="flex flex-col gap-4">
+                    <app-input
+                      label="Nome studio"
+                      type="text"
+                      placeholder="Il mio studio"
+                      formControlName="name"
+                      [error]="studioFieldError('name')"
+                    />
+                    <app-input
+                      label="Email di contatto"
+                      type="email"
+                      placeholder="studio@esempio.com"
+                      formControlName="email"
+                    />
+                    <app-input
+                      label="Telefono"
+                      type="tel"
+                      placeholder="+39 02 1234567"
+                      formControlName="phone"
+                    />
+                    <div class="flex justify-end pt-1">
+                      <app-button type="submit" [isLoading]="isSavingStudio()">Salva modifiche</app-button>
+                    </div>
+                  </form>
+                }
+              </app-card>
+            }
+          </div>
+
+          <!-- Right sticky nav -->
+          <div class="hidden shrink-0 lg:block" style="width: 140px">
+            <div class="sticky top-24 flex flex-col gap-1">
+              @for (section of sections; track section.key) {
+                <button
+                  type="button"
+                  (click)="activeSection.set(section.key)"
+                  [class]="navButtonClass(section.key)"
+                >
+                  {{ section.label }}
+                </button>
+              }
+            </div>
+          </div>
+        </div>
       </div>
     </app-page-shell>
   `,
 })
 export class SettingsComponent implements OnInit {
+  readonly authService = inject(AuthService);
   private readonly studioService = inject(StudioService);
-  private readonly authService = inject(AuthService);
   private readonly fb = inject(FormBuilder);
 
-  readonly timezones = TIMEZONES;
+  readonly activeSection = signal<Section>('account');
 
-  isLoading = signal(true);
-  isSaving = signal(false);
-  loadError = signal<string | null>(null);
-  saveError = signal<string | null>(null);
-  successMessage = signal<string | null>(null);
+  readonly sections: { key: Section; label: string }[] = [
+    { key: 'account', label: 'Account' },
+    { key: 'studio', label: 'Studio' },
+  ];
 
-  form = this.fb.group({
+  // ── Account: email ─────────────────────────────────────────────
+  readonly isSavingEmail = signal(false);
+  readonly emailSuccess = signal<string | null>(null);
+  readonly emailError = signal<string | null>(null);
+
+  readonly emailForm = this.fb.group({
+    newEmail: ['', [Validators.required, Validators.email]],
+    emailPassword: ['', Validators.required],
+  });
+
+  // ── Account: password ───────────────────────────────────────────
+  readonly isSavingPassword = signal(false);
+  readonly passwordSuccess = signal<string | null>(null);
+  readonly passwordError = signal<string | null>(null);
+
+  readonly passwordForm = this.fb.group(
+    {
+      currentPassword: ['', Validators.required],
+      newPassword: ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', Validators.required],
+    },
+    { validators: this.passwordsMatchValidator }
+  );
+
+  // ── Studio ──────────────────────────────────────────────────────
+  readonly studioLoading = signal(true);
+  readonly isSavingStudio = signal(false);
+  readonly studioLoadError = signal<string | null>(null);
+  readonly studioSaveError = signal<string | null>(null);
+  readonly studioSuccess = signal<string | null>(null);
+
+  readonly studioForm = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(255)]],
     email: [''],
     phone: [''],
-    timezone: ['Europe/Rome'],
   });
 
   ngOnInit(): void {
     const studioId = this.authService.user()!.studioId;
     this.studioService.getMyStudio(studioId).subscribe({
       next: (studio) => {
-        this.form.patchValue({
-          name: studio.name,
-          email: studio.email ?? '',
-          phone: studio.phone ?? '',
-          timezone: studio.timezone,
-        });
-        this.isLoading.set(false);
+        this.studioForm.patchValue({ name: studio.name, email: studio.email ?? '', phone: studio.phone ?? '' });
+        this.studioLoading.set(false);
       },
       error: (err) => {
-        this.loadError.set(getErrorMessage(err));
-        this.isLoading.set(false);
+        this.studioLoadError.set(getErrorMessage(err));
+        this.studioLoading.set(false);
       },
     });
   }
 
-  getFieldError(field: string): string {
-    const control = this.form.get(field);
+  async onChangeEmail(): Promise<void> {
+    this.emailForm.markAllAsTouched();
+    if (this.emailForm.invalid) return;
+
+    this.emailError.set(null);
+    this.emailSuccess.set(null);
+    this.isSavingEmail.set(true);
+
+    const { newEmail, emailPassword } = this.emailForm.getRawValue();
+    try {
+      await this.authService.changeEmail(emailPassword!, newEmail!);
+      this.emailSuccess.set('Email aggiornata con successo.');
+      this.emailForm.reset();
+    } catch (err) {
+      this.emailError.set(getErrorMessage(err));
+    } finally {
+      this.isSavingEmail.set(false);
+    }
+  }
+
+  async onChangePassword(): Promise<void> {
+    this.passwordForm.markAllAsTouched();
+    if (this.passwordForm.invalid) return;
+
+    this.passwordError.set(null);
+    this.passwordSuccess.set(null);
+    this.isSavingPassword.set(true);
+
+    const { currentPassword, newPassword } = this.passwordForm.getRawValue();
+    try {
+      await this.authService.changePassword(currentPassword!, newPassword!);
+      this.passwordSuccess.set('Password aggiornata. Potresti dover accedere di nuovo su altri dispositivi.');
+      this.passwordForm.reset();
+    } catch (err) {
+      this.passwordError.set(getErrorMessage(err));
+    } finally {
+      this.isSavingPassword.set(false);
+    }
+  }
+
+  onSubmitStudio(): void {
+    this.studioForm.markAllAsTouched();
+    if (this.studioForm.invalid) return;
+
+    this.studioSaveError.set(null);
+    this.studioSuccess.set(null);
+    this.isSavingStudio.set(true);
+
+    const { name, email, phone } = this.studioForm.getRawValue();
+    this.studioService.editStudio({
+      name: name ?? undefined,
+      email: email || undefined,
+      phone: phone || undefined,
+    }).subscribe({
+      next: () => {
+        this.studioSuccess.set('Modifiche salvate con successo.');
+        this.isSavingStudio.set(false);
+      },
+      error: (err) => {
+        this.studioSaveError.set(getErrorMessage(err));
+        this.isSavingStudio.set(false);
+      },
+    });
+  }
+
+  navButtonClass(key: Section): string {
+    const base = 'w-full rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors';
+    return this.activeSection() === key
+      ? `${base} bg-[var(--color-primary)] text-[var(--text-inverted)]`
+      : `${base} text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]`;
+  }
+
+  emailFieldError(field: string): string {
+    const control = this.emailForm.get(field);
+    if (!control?.touched || !control.errors) return '';
+    if (control.errors['required']) return 'Campo obbligatorio';
+    if (control.errors['email']) return 'Inserisci un indirizzo email valido';
+    return '';
+  }
+
+  passwordFieldError(field: string): string {
+    const control = this.passwordForm.get(field);
+    if (!control?.touched || !control.errors) return '';
+    if (control.errors['required']) return 'Campo obbligatorio';
+    if (control.errors['minlength']) return 'Almeno 8 caratteri';
+    if (control.errors['passwordsMismatch']) return 'Le password non coincidono';
+    return '';
+  }
+
+  studioFieldError(field: string): string {
+    const control = this.studioForm.get(field);
     if (!control?.touched || !control.errors) return '';
     if (control.errors['required'] || control.errors['minlength']) return 'Il nome è obbligatorio';
     if (control.errors['maxlength']) return 'Massimo 255 caratteri';
     return '';
   }
 
-  onSubmit(): void {
-    this.form.markAllAsTouched();
-    if (this.form.invalid) return;
-
-    this.saveError.set(null);
-    this.successMessage.set(null);
-    this.isSaving.set(true);
-
-    const { name, email, phone, timezone } = this.form.getRawValue();
-    this.studioService.editStudio({
-      name: name ?? undefined,
-      email: email || undefined,
-      phone: phone || undefined,
-      timezone: timezone ?? undefined,
-    }).subscribe({
-      next: () => {
-        this.successMessage.set('Modifiche salvate con successo.');
-        this.isSaving.set(false);
-      },
-      error: (err) => {
-        this.saveError.set(getErrorMessage(err));
-        this.isSaving.set(false);
-      },
-    });
+  private passwordsMatchValidator(group: import('@angular/forms').AbstractControl) {
+    const newPwd = group.get('newPassword')?.value;
+    const confirm = group.get('confirmPassword')?.value;
+    if (newPwd && confirm && newPwd !== confirm) {
+      group.get('confirmPassword')?.setErrors({ passwordsMismatch: true });
+      return { passwordsMismatch: true };
+    }
+    const confirmCtrl = group.get('confirmPassword');
+    if (confirmCtrl?.errors?.['passwordsMismatch']) {
+      confirmCtrl.setErrors(null);
+    }
+    return null;
   }
 }

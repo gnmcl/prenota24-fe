@@ -152,4 +152,32 @@ export class AuthService {
       this.http.post<LoginResponse>(`${environment.apiBaseUrl}/auth/accept-invitation`, payload),
     );
   }
+
+  /** Change the authenticated user's password */
+  changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    return firstValueFrom(
+      this.http.patch<void>(`${environment.apiBaseUrl}/account/change-password`, {
+        currentPassword,
+        newPassword,
+      }),
+    );
+  }
+
+  /** Change the authenticated user's email. Returns the updated AuthUser. */
+  changeEmail(currentPassword: string, newEmail: string): Promise<AuthUser> {
+    return firstValueFrom(
+      this.http.patch<AuthUser>(`${environment.apiBaseUrl}/account/change-email`, {
+        currentPassword,
+        newEmail,
+      }),
+    ).then((updated) => {
+      // Keep in-memory user signal in sync
+      const current = this._user();
+      if (current) {
+        this._user.set({ ...current, email: updated.email });
+        this.persist();
+      }
+      return updated;
+    });
+  }
 }
