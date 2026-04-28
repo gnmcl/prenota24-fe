@@ -113,6 +113,53 @@ import { RouterLink } from '@angular/router';
         </div>
       </section>
 
+      <!-- Value proposition strip -->
+      <section class="pb-16 sm:pb-20">
+        <div class="mx-auto max-w-6xl px-4 sm:px-6">
+          <div class="rounded-2xl border border-gray-100 bg-white p-6 sm:p-8 shadow-sm">
+            <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+              <div class="max-w-2xl">
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-600">Perche scegliere Prenota24</p>
+                <h2 class="mt-2 text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">
+                  Semplice da usare, potente da gestire.
+                </h2>
+                <p class="mt-3 text-sm leading-relaxed text-gray-500 sm:text-base">
+                  Dalla modalita agenda alla creazione eventi, Prenota24 ti aiuta a trasformare la gestione quotidiana
+                  in un flusso rapido, chiaro e mobile-first.
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-3">
+                <a routerLink="/registrati" class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-200 transition-all hover:-translate-y-0.5 hover:shadow-lg">
+                  Inizia ora
+                </a>
+                <a routerLink="/accedi" class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition-all hover:border-gray-300 hover:bg-gray-50">
+                  Vedi la piattaforma
+                </a>
+              </div>
+            </div>
+
+            <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div class="rounded-xl border border-indigo-100 bg-indigo-50/70 p-4">
+                <p class="text-sm font-semibold text-indigo-900">Modalita Agenda</p>
+                <p class="mt-1 text-xs text-indigo-700/80">Controlla la giornata per professionista e ottimizza gli slot in tempo reale.</p>
+              </div>
+              <div class="rounded-xl border border-violet-100 bg-violet-50/70 p-4">
+                <p class="text-sm font-semibold text-violet-900">Eventi in autonomia</p>
+                <p class="mt-1 text-xs text-violet-700/80">Crea, pubblica e monitora eventi con pagina prenotazione dedicata.</p>
+              </div>
+              <div class="rounded-xl border border-emerald-100 bg-emerald-50/70 p-4">
+                <p class="text-sm font-semibold text-emerald-900">UX immediata</p>
+                <p class="mt-1 text-xs text-emerald-700/80">Interfaccia chiara e intuitiva per lavorare bene dal primo accesso.</p>
+              </div>
+              <div class="rounded-xl border border-sky-100 bg-sky-50/70 p-4">
+                <p class="text-sm font-semibold text-sky-900">100% mobile compatibile</p>
+                <p class="mt-1 text-xs text-sky-700/80">Tutte le funzionalita principali funzionano in modo fluido su smartphone.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- How it works -->
       <section class="bg-gray-50 py-16 sm:py-20 lg:py-28">
         <div class="mx-auto max-w-6xl px-4 sm:px-6">
