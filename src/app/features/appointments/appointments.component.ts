@@ -18,8 +18,8 @@ import type { AppointmentResponse, AppointmentStatus, Page } from '../../core/mo
         <!-- Header -->
         <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 class="text-2xl font-bold text-gray-900">Appuntamenti</h2>
-            <p class="mt-1 text-sm text-gray-500">Gestisci tutti gli appuntamenti del tuo studio</p>
+            <h2 class="text-2xl font-bold text-[var(--text-primary)]">Appuntamenti</h2>
+            <p class="mt-1 text-sm text-[var(--text-secondary)]">Gestisci tutti gli appuntamenti del tuo studio</p>
           </div>
           <a routerLink="/appuntamenti/nuovo">
             <app-button>
@@ -36,8 +36,8 @@ import type { AppointmentResponse, AppointmentStatus, Page } from '../../core/mo
           @for (filter of statusFilters; track filter.value) {
             <button (click)="setStatusFilter(filter.value)"
               [class]="activeFilter() === filter.value
-                ? 'rounded-full bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white'
-                : 'rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors'">
+                ? 'rounded-full bg-[var(--button-primary-bg)] px-4 py-1.5 text-sm font-medium text-[var(--text-inverted)]'
+                : 'rounded-full border border-[var(--surface-subtle-border)] bg-[var(--surface-subtle)] px-4 py-1.5 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-colors'">
               {{ filter.label }}
             </button>
           }
@@ -45,7 +45,7 @@ import type { AppointmentResponse, AppointmentStatus, Page } from '../../core/mo
 
         @if (isLoading()) {
           <div class="flex justify-center py-12">
-            <div class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+            <div class="h-8 w-8 animate-spin rounded-full border-4 border-[var(--surface-card-border)] border-t-[var(--color-primary)]"></div>
           </div>
         } @else if (appointments().length === 0) {
           <app-empty-state
@@ -57,32 +57,32 @@ import type { AppointmentResponse, AppointmentStatus, Page } from '../../core/mo
           />
         } @else {
           <app-card extraClass="!p-0 overflow-hidden">
-            <div class="divide-y divide-gray-100">
+            <div class="divide-y divide-[var(--surface-card-border)]">
               @for (apt of appointments(); track apt.id) {
                 <a [routerLink]="['/appuntamenti', apt.id]"
-                  class="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
+                  class="flex items-center gap-4 px-5 py-4 hover:bg-[var(--surface-hover)] transition-colors">
                   <!-- Date badge -->
-                  <div class="hidden sm:flex flex-col items-center justify-center rounded-lg bg-indigo-50 px-3 py-2 text-center shrink-0">
-                    <span class="text-xs font-medium text-indigo-600">{{ monthShort(apt.startDatetime) }}</span>
-                    <span class="text-lg font-bold text-indigo-700">{{ dayNum(apt.startDatetime) }}</span>
+                  <div class="hidden sm:flex flex-col items-center justify-center rounded-lg bg-[var(--status-accent-bg)] px-3 py-2 text-center shrink-0">
+                    <span class="text-xs font-medium text-[var(--status-accent-text)]">{{ monthShort(apt.startDatetime) }}</span>
+                    <span class="text-lg font-bold text-[var(--status-accent-text)]">{{ dayNum(apt.startDatetime) }}</span>
                   </div>
                   <!-- Info -->
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-2">
-                      <span class="font-medium text-gray-900 truncate">{{ apt.clientFullName }}</span>
+                      <span class="font-medium text-[var(--text-primary)] truncate">{{ apt.clientFullName }}</span>
                       <app-badge [variant]="statusVariant(apt.status)">{{ statusLabel(apt.status) }}</app-badge>
                     </div>
-                    <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-sm text-gray-500">
+                    <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-sm text-[var(--text-secondary)]">
                       <span>{{ timeRange(apt.startDatetime, apt.endDatetime) }}</span>
                       @if (apt.serviceTypeName) {
-                        <span class="text-gray-300">·</span>
+                        <span class="text-[var(--text-tertiary)]">·</span>
                         <span>{{ apt.serviceTypeName }}</span>
                       }
-                      <span class="text-gray-300">·</span>
+                      <span class="text-[var(--text-tertiary)]">·</span>
                       <span>{{ apt.professionalFullName }}</span>
                     </div>
                   </div>
-                  <svg class="h-4 w-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-4 w-4 text-[var(--text-tertiary)] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                   </svg>
                 </a>
@@ -93,7 +93,7 @@ import type { AppointmentResponse, AppointmentStatus, Page } from '../../core/mo
           <!-- Pagination -->
           @if (page().totalPages > 1) {
             <div class="mt-6 flex items-center justify-between">
-              <span class="text-sm text-gray-500">{{ page().totalElements }} risultati</span>
+              <span class="text-sm text-[var(--text-secondary)]">{{ page().totalElements }} risultati</span>
               <div class="flex gap-2">
                 <app-button variant="secondary" [disabled]="page().first" (click)="goToPage(page().number - 1)">← Precedente</app-button>
                 <app-button variant="secondary" [disabled]="page().last" (click)="goToPage(page().number + 1)">Successiva →</app-button>

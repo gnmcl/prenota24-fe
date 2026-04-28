@@ -15,13 +15,13 @@ export class BadgeComponent {
   classes() {
     const base = 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold';
     const map: Record<string, string> = {
-      indigo: 'bg-indigo-50 text-indigo-700',
-      green: 'bg-green-50 text-green-700',
-      red: 'bg-red-50 text-red-700',
-      amber: 'bg-amber-50 text-amber-700',
-      gray: 'bg-gray-100 text-gray-600',
-      purple: 'bg-purple-50 text-purple-700',
-      blue: 'bg-blue-50 text-blue-700',
+      indigo: 'bg-[var(--status-accent-bg)] text-[var(--status-accent-text)]',
+      green: 'bg-[var(--status-success-bg)] text-[var(--status-success-text)]',
+      red: 'bg-[var(--status-danger-bg)] text-[var(--status-danger-text)]',
+      amber: 'bg-[var(--status-warning-bg)] text-[var(--status-warning-text)]',
+      gray: 'bg-[var(--status-neutral-bg)] text-[var(--status-neutral-text)]',
+      purple: 'bg-[var(--status-accent-bg)] text-[var(--status-accent-text)]',
+      blue: 'bg-[var(--status-info-bg)] text-[var(--status-info-text)]',
     };
     return `${base} ${map[this.variant()] ?? map['gray']}`;
   }

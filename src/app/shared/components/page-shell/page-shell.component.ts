@@ -2,6 +2,7 @@ import { Component, inject, signal, computed, HostListener } from '@angular/core
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { StudioService } from '../../../core/services/studio.service';
+import { ThemeService } from '../../../core/services/theme.service';
 
 interface NavItem {
   path: string;
@@ -14,25 +15,25 @@ interface NavItem {
   standalone: true,
   imports: [RouterLink, RouterLinkActive],
   template: `
-    <div class="min-h-screen bg-gray-50 pb-20 md:pb-0">
+    <div class="min-h-screen bg-[var(--surface-page)] pb-20 md:pb-0">
       <!-- Header -->
-      <header class="sticky top-0 z-30 border-b border-gray-200 bg-white/90 backdrop-blur-sm">
+      <header class="sticky top-0 z-30 border-b border-[var(--surface-header-border)] bg-[var(--surface-header)] backdrop-blur-sm">
         <div class="mx-auto flex h-14 sm:h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <div class="flex items-center gap-4 sm:gap-6">
             <a [routerLink]="homeLink()" class="flex items-center gap-2">
-              <span class="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 text-[10px] sm:text-xs font-black text-white shadow-md shadow-indigo-200">
+              <span class="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 text-[10px] sm:text-xs font-black text-white shadow-md shadow-indigo-200 dark:shadow-indigo-900/40">
                 P
               </span>
-              <span class="text-base sm:text-lg font-bold tracking-tight text-gray-900">
-                Prenota<span class="text-indigo-600">24</span>
+              <span class="text-base sm:text-lg font-bold tracking-tight text-[var(--text-primary)]">
+                Prenota<span class="text-indigo-600 dark:text-indigo-400">24</span>
               </span>
             </a>
 
             @if (authService.user()) {
               <nav class="hidden md:flex items-center gap-1">
                 @for (item of navItems(); track item.path) {
-                  <a [routerLink]="item.path" routerLinkActive="bg-indigo-50 text-indigo-700"
-                    class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">
+                  <a [routerLink]="item.path" routerLinkActive="bg-[var(--surface-active-nav)] text-indigo-700 dark:text-indigo-300"
+                    class="rounded-lg px-3 py-2 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-colors">
                     {{ item.label }}
                   </a>
                 }
@@ -43,53 +44,66 @@ interface NavItem {
           @if (authService.user()) {
             <div class="flex items-center gap-2 sm:gap-3">
               @if (isProfessional()) {
-                <span class="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-700">
+                <span class="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-violet-50 dark:bg-violet-500/10 px-2.5 py-1 text-xs font-medium text-violet-700 dark:text-violet-300">
                   <span class="h-1.5 w-1.5 rounded-full bg-violet-500"></span>
                   Professionista
                 </span>
               }
 
+              <!-- Dark mode toggle -->
+              <button (click)="themeService.toggle()" class="rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-colors" title="Tema">
+                @if (themeService.isDark()) {
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>
+                  </svg>
+                } @else {
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
+                  </svg>
+                }
+              </button>
+
               <!-- Studio name (clickable for dropdown) -->
               @if (!isProfessional()) {
                 <div class="relative">
                   <button (click)="studioDropdownOpen.set(!studioDropdownOpen())"
-                    class="hidden sm:flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">
+                    class="hidden sm:flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-colors">
                     <span class="max-w-[160px] truncate">{{ studioService.studio()?.name || authService.user()!.email }}</span>
-                    <svg class="h-3.5 w-3.5 text-gray-400 transition-transform" [class.rotate-180]="studioDropdownOpen()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="h-3.5 w-3.5 text-[var(--text-tertiary)] transition-transform" [class.rotate-180]="studioDropdownOpen()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                     </svg>
                   </button>
 
                   <!-- Studio info dropdown -->
                   @if (studioDropdownOpen()) {
-                    <div class="absolute right-0 top-full mt-2 w-72 rounded-xl border border-gray-200 bg-white p-4 shadow-lg z-50 animate-fade-in">
-                      <h4 class="text-sm font-semibold text-gray-900 mb-3">Informazioni studio</h4>
+                    <div class="absolute right-0 top-full mt-2 w-72 rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-card)] p-4 shadow-lg z-50 animate-fade-in">
+                      <h4 class="text-sm font-semibold text-[var(--text-primary)] mb-3">Informazioni studio</h4>
                       @if (studioService.studio()) {
                         <dl class="space-y-2.5">
                           <div>
-                            <dt class="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Nome</dt>
-                            <dd class="text-sm text-gray-900">{{ studioService.studio()!.name }}</dd>
+                            <dt class="text-[10px] font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Nome</dt>
+                            <dd class="text-sm text-[var(--text-primary)]">{{ studioService.studio()!.name }}</dd>
                           </div>
                           @if (studioService.studio()!.email) {
                             <div>
-                              <dt class="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Email</dt>
-                              <dd class="text-sm text-gray-700">{{ studioService.studio()!.email }}</dd>
+                              <dt class="text-[10px] font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Email</dt>
+                              <dd class="text-sm text-[var(--text-secondary)]">{{ studioService.studio()!.email }}</dd>
                             </div>
                           }
                           @if (studioService.studio()!.phone) {
                             <div>
-                              <dt class="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Telefono</dt>
-                              <dd class="text-sm text-gray-700">{{ studioService.studio()!.phone }}</dd>
+                              <dt class="text-[10px] font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Telefono</dt>
+                              <dd class="text-sm text-[var(--text-secondary)]">{{ studioService.studio()!.phone }}</dd>
                             </div>
                           }
                           <div>
-                            <dt class="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Fuso orario</dt>
-                            <dd class="text-sm text-gray-700">{{ studioService.studio()!.timezone }}</dd>
+                            <dt class="text-[10px] font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Fuso orario</dt>
+                            <dd class="text-sm text-[var(--text-secondary)]">{{ studioService.studio()!.timezone }}</dd>
                           </div>
                         </dl>
-                        <div class="mt-4 pt-3 border-t border-gray-100">
+                        <div class="mt-4 pt-3 border-t border-[var(--surface-card-border)]">
                           <a routerLink="/settings" (click)="studioDropdownOpen.set(false)"
-                            class="flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
+                            class="flex items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
@@ -97,14 +111,14 @@ interface NavItem {
                           </a>
                         </div>
                       } @else {
-                        <p class="text-sm text-gray-400">Caricamento...</p>
+                        <p class="text-sm text-[var(--text-tertiary)]">Caricamento...</p>
                       }
                     </div>
                   }
                 </div>
 
-                <a routerLink="/settings" routerLinkActive="text-indigo-600"
-                  class="hidden md:block rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                <a routerLink="/settings" routerLinkActive="text-indigo-600 dark:text-indigo-400"
+                  class="hidden md:block rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-colors"
                   title="Impostazioni">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -114,14 +128,14 @@ interface NavItem {
 
               <button
                 (click)="handleLogout()"
-                class="hidden sm:block rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                class="hidden sm:block rounded-lg border border-[var(--surface-card-border)] px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-colors"
               >
                 Esci
               </button>
 
               <!-- Mobile menu toggle -->
               <button (click)="mobileMenuOpen.set(!mobileMenuOpen())"
-                class="md:hidden rounded-lg p-2 text-gray-500 hover:bg-gray-100">
+                class="md:hidden rounded-lg p-2 text-[var(--text-tertiary)] hover:bg-[var(--surface-hover)]">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   @if (!mobileMenuOpen()) {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
@@ -137,11 +151,11 @@ interface NavItem {
         <!-- Mobile nav overlay -->
         @if (mobileMenuOpen()) {
           <div class="md:hidden fixed inset-0 top-14 z-40 bg-black/30 backdrop-blur-sm" (click)="mobileMenuOpen.set(false)"></div>
-          <nav class="md:hidden fixed top-14 left-0 right-0 z-50 border-t border-gray-100 bg-white px-4 pb-4 pt-2 space-y-1 shadow-lg max-h-[80vh] overflow-y-auto">
+          <nav class="md:hidden fixed top-14 left-0 right-0 z-50 border-t border-[var(--surface-card-border)] bg-[var(--surface-card)] px-4 pb-4 pt-2 space-y-1 shadow-lg max-h-[80vh] overflow-y-auto">
             @for (item of navItems(); track item.path) {
               <a [routerLink]="item.path" (click)="mobileMenuOpen.set(false)"
-                routerLinkActive="bg-indigo-50 text-indigo-700"
-                class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100">
+                routerLinkActive="bg-[var(--surface-active-nav)] text-indigo-700 dark:text-indigo-300"
+                class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]">
                 <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                   <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="item.icon" />
                 </svg>
@@ -150,15 +164,15 @@ interface NavItem {
             }
             @if (!isProfessional()) {
               <a routerLink="/settings" (click)="mobileMenuOpen.set(false)"
-                class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100">
+                class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]">
                 <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
                 Impostazioni
               </a>
             }
-            <div class="pt-2 border-t border-gray-100">
-              <button (click)="handleLogout()" class="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50">
+            <div class="pt-2 border-t border-[var(--surface-card-border)]">
+              <button (click)="handleLogout()" class="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10">
                 <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/>
                 </svg>
@@ -176,12 +190,12 @@ interface NavItem {
 
       <!-- Mobile bottom navigation -->
       @if (authService.user()) {
-        <nav class="md:hidden fixed bottom-0 left-0 right-0 z-30 border-t border-gray-200 bg-white/95 backdrop-blur-sm safe-bottom">
+        <nav class="md:hidden fixed bottom-0 left-0 right-0 z-30 border-t border-[var(--surface-header-border)] bg-[var(--surface-header)] backdrop-blur-sm safe-bottom">
           <div class="grid" [style.grid-template-columns]="'repeat(' + bottomNavItems().length + ', 1fr)'">
             @for (item of bottomNavItems(); track item.path) {
-              <a [routerLink]="item.path" routerLinkActive="text-indigo-600"
+              <a [routerLink]="item.path" routerLinkActive="text-indigo-600 dark:text-indigo-400"
                 [routerLinkActiveOptions]="{exact: item.path === '/dashboard' || item.path === '/pro/dashboard'}"
-                class="flex flex-col items-center gap-0.5 py-2 text-gray-400 transition-colors">
+                class="flex flex-col items-center gap-0.5 py-2 text-[var(--text-tertiary)] transition-colors">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                   <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="item.icon" />
                 </svg>
@@ -209,6 +223,7 @@ interface NavItem {
 export class PageShellComponent {
   readonly authService = inject(AuthService);
   readonly studioService = inject(StudioService);
+  readonly themeService = inject(ThemeService);
   private readonly router = inject(Router);
   readonly mobileMenuOpen = signal(false);
   readonly studioDropdownOpen = signal(false);

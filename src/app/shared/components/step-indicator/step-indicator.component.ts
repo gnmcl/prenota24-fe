@@ -13,9 +13,9 @@ import { NgClass } from '@angular/common';
             <span
               class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold"
               [ngClass]="{
-                'bg-indigo-600 text-white': idx < currentStep,
-                'border-2 border-indigo-600 text-indigo-600': idx === currentStep,
-                'border border-gray-300 text-gray-400': idx > currentStep
+                'bg-[var(--button-primary-bg)] text-[var(--text-inverted)]': idx < currentStep,
+                'border-2 border-[var(--color-primary)] text-[var(--color-primary)]': idx === currentStep,
+                'border border-[var(--surface-subtle-border)] text-[var(--text-tertiary)]': idx > currentStep
               }"
             >
               {{ idx < currentStep ? '✓' : idx + 1 }}
@@ -23,15 +23,15 @@ import { NgClass } from '@angular/common';
             <span
               class="text-sm font-medium"
               [ngClass]="{
-                'text-indigo-600': idx === currentStep,
-                'text-gray-700': idx < currentStep,
-                'text-gray-400': idx > currentStep
+                'text-[var(--color-primary)]': idx === currentStep,
+                'text-[var(--text-primary)]': idx < currentStep,
+                'text-[var(--text-tertiary)]': idx > currentStep
               }"
             >
               {{ step }}
             </span>
             @if (idx < steps.length - 1) {
-              <span class="mx-2 h-px w-8 bg-gray-300"></span>
+              <span class="mx-2 h-px w-8 bg-[var(--surface-subtle-border)]"></span>
             }
           </li>
         }

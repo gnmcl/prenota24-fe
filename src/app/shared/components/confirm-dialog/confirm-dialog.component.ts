@@ -12,9 +12,9 @@ import { ButtonComponent } from '../button/button.component';
           class="absolute inset-0 bg-black/40 backdrop-blur-sm"
           (click)="onCancel.emit()"
         ></div>
-        <div class="relative mx-4 w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
-          <h3 class="text-lg font-bold text-gray-900">{{ title }}</h3>
-          <p class="mt-2 text-sm text-gray-500">{{ message }}</p>
+        <div class="relative mx-4 w-full max-w-sm rounded-2xl border border-[var(--surface-card-border)] bg-[var(--surface-card)] p-6 shadow-2xl">
+          <h3 class="text-lg font-bold text-[var(--text-primary)]">{{ title }}</h3>
+          <p class="mt-2 text-sm text-[var(--text-secondary)]">{{ message }}</p>
           <div class="mt-6 flex gap-3 justify-end">
             <app-button variant="secondary" (click)="onCancel.emit()" [disabled]="isLoading">
               Annulla

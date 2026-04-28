@@ -28,15 +28,15 @@ export class ButtonComponent {
 
   get buttonClasses(): string {
     const base =
-      'inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed';
+      'inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-card)] disabled:cursor-not-allowed';
 
     const variants: Record<string, string> = {
       primary:
-        'bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:ring-indigo-500 disabled:bg-indigo-400',
+        'bg-[var(--button-primary-bg)] text-[var(--text-inverted)] hover:bg-[var(--button-primary-hover)] focus-visible:ring-[var(--color-primary)] disabled:bg-[var(--button-primary-disabled)]',
       secondary:
-        'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus-visible:ring-gray-400 disabled:bg-gray-100',
+        'bg-[var(--button-secondary-bg)] text-[var(--text-primary)] border border-[var(--button-secondary-border)] hover:bg-[var(--button-secondary-hover)] focus-visible:ring-[var(--surface-card-border)] disabled:opacity-60',
       danger:
-        'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500 disabled:bg-red-400',
+        'bg-[var(--button-danger-bg)] text-[var(--text-inverted)] hover:bg-[var(--button-danger-hover)] focus-visible:ring-[var(--button-danger-bg)] disabled:bg-[var(--button-danger-disabled)]',
     };
 
     return `${base} ${variants[this.variant]} ${this.extraClass}`;

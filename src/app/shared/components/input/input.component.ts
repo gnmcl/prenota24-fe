@@ -15,7 +15,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
     <div class="flex flex-col gap-1.5">
       <label
         [attr.for]="inputId"
-        [class]="srOnlyLabel ? 'sr-only' : 'text-sm font-medium text-gray-700'"
+        [class]="srOnlyLabel ? 'sr-only' : 'text-sm font-medium text-[var(--text-secondary)]'"
       >
         {{ label }}
       </label>
@@ -35,7 +35,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
         [class]="inputClasses"
       />
       @if (error) {
-        <p [id]="inputId + '-error'" class="text-xs text-red-600" role="alert">
+        <p [id]="inputId + '-error'" class="text-xs text-[var(--status-danger-text)]" role="alert">
           {{ error }}
         </p>
       }
@@ -65,10 +65,10 @@ export class InputComponent implements ControlValueAccessor {
 
   get inputClasses(): string {
     const base =
-      'block w-full rounded-lg border px-3.5 py-2.5 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500';
+      'block w-full rounded-lg border bg-[var(--surface-input)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] shadow-sm placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]';
     const errorClass = this.error
-      ? 'border-red-400 ring-1 ring-red-400'
-      : 'border-gray-300';
+      ? 'border-[var(--status-danger-text)] ring-1 ring-[var(--status-danger-text)]'
+      : 'border-[var(--surface-input-border)]';
     return `${base} ${errorClass}`;
   }
 

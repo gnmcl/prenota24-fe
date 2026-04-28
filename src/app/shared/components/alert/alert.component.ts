@@ -31,9 +31,9 @@ export class AlertComponent {
 
   get variantClasses(): string {
     const map: Record<string, string> = {
-      error: 'bg-red-50 border-red-200 text-red-800',
-      success: 'bg-green-50 border-green-200 text-green-800',
-      info: 'bg-blue-50 border-blue-200 text-blue-800',
+      error: 'bg-[var(--status-danger-bg)] border-[color:var(--status-danger-text)]/35 text-[var(--status-danger-text)]',
+      success: 'bg-[var(--status-success-bg)] border-[color:var(--status-success-text)]/35 text-[var(--status-success-text)]',
+      info: 'bg-[var(--status-info-bg)] border-[color:var(--status-info-text)]/35 text-[var(--status-info-text)]',
     };
     return map[this.variant] || '';
   }

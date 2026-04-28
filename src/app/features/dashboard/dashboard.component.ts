@@ -16,105 +16,208 @@ import type { EventSummaryResponse, AppointmentResponse, AppointmentStatus } fro
   imports: [RouterLink, PageShellComponent, CardComponent, ButtonComponent, BadgeComponent],
   template: `
     <app-page-shell>
-      <div class="mx-auto max-w-5xl">
-        <div class="mb-8">
-          <h2 class="text-2xl font-bold text-gray-900">
-            Benvenuto{{ authService.user()?.name ? ', ' + authService.user()!.name : '' }}! 👋
-          </h2>
-          <p class="text-gray-500">Ecco il riepilogo del tuo studio</p>
-        </div>
-
-        <!-- Stats -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          <app-card extraClass="text-center !p-5">
-            <div class="text-3xl font-bold text-indigo-600">{{ todayAppointments().length }}</div>
-            <div class="text-xs text-gray-500 mt-1">Appuntamenti oggi</div>
-          </app-card>
-          <app-card extraClass="text-center !p-5">
-            <div class="text-3xl font-bold text-amber-600">{{ pendingCount() }}</div>
-            <div class="text-xs text-gray-500 mt-1">Da confermare</div>
-          </app-card>
-          <app-card extraClass="text-center !p-5">
-            <div class="text-3xl font-bold text-green-600">{{ clientCount() }}</div>
-            <div class="text-xs text-gray-500 mt-1">Clienti</div>
-          </app-card>
-          <app-card extraClass="text-center !p-5">
-            <div class="text-3xl font-bold text-purple-600">{{ publishedCount() }}</div>
-            <div class="text-xs text-gray-500 mt-1">Eventi attivi</div>
-          </app-card>
-        </div>
-
-        <!-- Quick Actions -->
-        <app-card extraClass="mb-8">
-          <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">Azioni rapide</h3>
-          <div class="flex flex-wrap gap-3">
-            <a routerLink="/appuntamenti/nuovo"><app-button>+ Nuovo appuntamento</app-button></a>
-            <a routerLink="/clienti/nuovo"><app-button variant="secondary">+ Nuovo cliente</app-button></a>
-            <a routerLink="/eventi/nuovo"><app-button variant="secondary">+ Nuovo evento</app-button></a>
+      <div class="mx-auto max-w-6xl">
+        <!-- Header row: greeting + quick actions -->
+        <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 class="text-2xl font-bold text-[var(--text-primary)]">
+              Benvenuto{{ authService.user()?.name ? ', ' + authService.user()!.name : '' }}! 👋
+            </h2>
+            <p class="mt-1 text-sm text-[var(--text-secondary)]">{{ todayFormatted }}</p>
           </div>
-        </app-card>
+          <div class="flex flex-wrap gap-2">
+            <a routerLink="/appuntamenti/nuovo"><app-button>+ Appuntamento</app-button></a>
+            <a routerLink="/clienti/nuovo"><app-button variant="secondary">+ Cliente</app-button></a>
+            <a routerLink="/eventi/nuovo"><app-button variant="secondary">+ Evento</app-button></a>
+          </div>
+        </div>
 
-        <div class="grid gap-6 lg:grid-cols-2">
-          <!-- Today's appointments -->
-          <app-card>
-            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">Appuntamenti di oggi</h3>
-            @if (isLoading()) {
-              <div class="flex justify-center py-4">
-                <div class="h-6 w-6 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+        <!-- Minimal stat pills -->
+        <div class="mb-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+          <div class="flex items-center gap-2">
+            <span class="flex h-2 w-2 rounded-full bg-[var(--color-primary)]"></span>
+            <span class="text-sm text-[var(--text-secondary)]">Oggi</span>
+            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ todayAppointments().length }}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="flex h-2 w-2 rounded-full bg-amber-500"></span>
+            <span class="text-sm text-[var(--text-secondary)]">Da confermare</span>
+            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ pendingCount() }}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="flex h-2 w-2 rounded-full bg-green-500"></span>
+            <span class="text-sm text-[var(--text-secondary)]">Clienti</span>
+            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ clientCount() }}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="flex h-2 w-2 rounded-full bg-purple-500"></span>
+            <span class="text-sm text-[var(--text-secondary)]">Eventi attivi</span>
+            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ publishedCount() }}</span>
+          </div>
+        </div>
+
+        <!-- Main content: appointments + calendar/event overview -->
+        <div class="grid items-stretch gap-6 lg:grid-cols-5">
+          <div class="h-full lg:col-span-3">
+            <app-card extraClass="h-full flex flex-col">
+              <div class="flex items-center justify-between mb-5">
+                <div>
+                  <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Appuntamenti</h3>
+                  <p class="mt-1 text-xs text-[var(--text-secondary)]">{{ selectedDateLabel() }}</p>
+                </div>
+                <a routerLink="/appuntamenti" class="text-xs font-medium text-[var(--color-primary)] hover:opacity-80 transition-opacity">Vedi tutti →</a>
               </div>
-            } @else if (todayAppointments().length === 0) {
-              <p class="py-4 text-center text-sm text-gray-400">Nessun appuntamento oggi</p>
-            } @else {
-              <div class="space-y-2">
-                @for (apt of todayAppointments().slice(0, 5); track apt.id) {
-                  <a [routerLink]="['/appuntamenti', apt.id]" class="flex items-center justify-between rounded-lg border border-gray-100 p-3 hover:bg-gray-50 transition-colors">
-                    <div class="min-w-0">
-                      <div class="flex items-center gap-2">
-                        <span class="font-medium text-gray-900 truncate">{{ apt.clientFullName }}</span>
-                        <app-badge [variant]="statusVariant(apt.status)">{{ statusLabel(apt.status) }}</app-badge>
+              <div class="flex-1 min-h-0">
+              @if (isLoading()) {
+                <div class="flex justify-center py-10">
+                  <div class="h-7 w-7 animate-spin rounded-full border-4 border-[var(--surface-card-border)] border-t-[var(--color-primary)]"></div>
+                </div>
+              } @else if (selectedDayAppointments().length === 0) {
+                <div class="flex flex-col items-center justify-center py-10 text-center">
+                  <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--surface-hover)]">
+                    <svg class="h-6 w-6 text-[var(--text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+                    </svg>
+                  </div>
+                  <p class="text-sm font-medium text-[var(--text-secondary)]">Nessun appuntamento per questa data</p>
+                  <p class="mt-1 text-xs text-[var(--text-tertiary)]">La giornata e libera</p>
+                </div>
+              } @else {
+                <div class="space-y-2 overflow-y-auto pr-1 max-h-[32rem]">
+                  @for (apt of selectedDayAppointments(); track apt.id) {
+                    <a [routerLink]="['/appuntamenti', apt.id]"
+                       class="group flex items-center gap-4 rounded-xl border border-[var(--surface-card-border)] p-3.5 hover:bg-[var(--surface-hover)] transition-all duration-150">
+                      <div class="shrink-0 w-[72px] text-center">
+                        <div class="text-sm font-semibold text-[var(--text-primary)]">{{ formatTime(apt.startDatetime) }}</div>
+                        <div class="text-[11px] text-[var(--text-tertiary)]">{{ formatTime(apt.endDatetime) }}</div>
                       </div>
-                      <span class="text-sm text-gray-500">{{ timeRange(apt.startDatetime, apt.endDatetime) }} · {{ apt.professionalFullName }}</span>
-                    </div>
-                    <svg class="h-4 w-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                    </svg>
-                  </a>
-                }
-              </div>
-              @if (todayAppointments().length > 5) {
-                <a routerLink="/appuntamenti" class="mt-3 block text-center text-sm text-indigo-600 hover:text-indigo-500 font-medium">Vedi tutti →</a>
+                      <div class="w-0.5 self-stretch rounded-full" [style.background-color]="apt.serviceTypeColor || '#6366f1'"></div>
+                      <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2">
+                          <span class="font-medium text-[var(--text-primary)] truncate">{{ apt.clientFullName }}</span>
+                          <app-badge [variant]="statusVariant(apt.status)">{{ statusLabel(apt.status) }}</app-badge>
+                        </div>
+                        <div class="mt-0.5 flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
+                          @if (apt.serviceTypeName) {
+                            <span class="truncate">{{ apt.serviceTypeName }}</span>
+                            <span class="text-[var(--text-tertiary)]">·</span>
+                          }
+                          <span class="truncate">{{ apt.professionalFullName }}</span>
+                        </div>
+                      </div>
+                      <svg class="h-4 w-4 text-[var(--text-tertiary)] group-hover:text-[var(--color-primary)] shrink-0 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                      </svg>
+                    </a>
+                  }
+                </div>
               }
-            }
-          </app-card>
+              </div>
+            </app-card>
+          </div>
 
-          <!-- Recent Events -->
-          <app-card>
-            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">Eventi recenti</h3>
-            @if (isLoading()) {
-              <div class="flex justify-center py-4">
-                <div class="h-6 w-6 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+          <div class="h-full lg:col-span-2">
+            <app-card extraClass="h-full flex flex-col">
+              <div class="flex items-center justify-between mb-5">
+                <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Calendario ed eventi</h3>
+                <a routerLink="/eventi" class="text-xs font-medium text-[var(--color-primary)] hover:opacity-80 transition-opacity">Tutti →</a>
               </div>
-            } @else if (recentEvents().length === 0) {
-              <p class="py-4 text-center text-sm text-gray-400">Nessun evento ancora</p>
-            } @else {
-              <div class="space-y-2">
-                @for (event of recentEvents(); track event.id) {
-                  <a [routerLink]="['/eventi', event.id]" class="flex items-center justify-between rounded-lg border border-gray-100 p-3 hover:bg-gray-50 transition-colors">
-                    <div>
-                      <span class="font-medium text-gray-900">{{ event.title }}</span>
-                      <span class="ml-2 text-sm text-gray-400">👥 {{ event.currentParticipants }}{{ event.maxParticipants ? '/' + event.maxParticipants : '' }}</span>
-                    </div>
-                    <svg class="h-4 w-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                    </svg>
-                  </a>
+
+              <div class="mb-4 flex items-center justify-between rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-hover)] px-3 py-2">
+                <button
+                  type="button"
+                  (click)="goToPreviousMonth()"
+                  class="rounded-md px-2 py-1 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-card)] hover:text-[var(--text-primary)]"
+                  aria-label="Mese precedente"
+                >
+                  ←
+                </button>
+                <button
+                  type="button"
+                  (click)="goToToday()"
+                  class="text-sm font-semibold text-[var(--text-primary)]"
+                >
+                  {{ monthLabel() }}
+                </button>
+                <button
+                  type="button"
+                  (click)="goToNextMonth()"
+                  class="rounded-md px-2 py-1 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-card)] hover:text-[var(--text-primary)]"
+                  aria-label="Mese successivo"
+                >
+                  →
+                </button>
+              </div>
+
+              <div class="grid grid-cols-7 gap-1 mb-2">
+                @for (weekday of weekdayLabels; track weekday) {
+                  <div class="py-1 text-center text-[11px] font-semibold uppercase tracking-wide text-[var(--text-tertiary)]">{{ weekday }}</div>
                 }
               </div>
-              @if (totalEvents() > 3) {
-                <a routerLink="/eventi" class="mt-3 block text-center text-sm text-indigo-600 hover:text-indigo-500 font-medium">Vedi tutti gli eventi →</a>
-              }
-            }
-          </app-card>
+
+              <div class="grid grid-cols-7 gap-1">
+                @for (day of calendarDays(); track day.dateKey) {
+                  <button
+                    type="button"
+                    (click)="selectDate(day.dateKey)"
+                    [class]="dayButtonClass(day)"
+                  >
+                    <span>{{ day.dayNumber }}</span>
+                    @if (day.appointmentCount > 0 || day.eventCount > 0) {
+                      <span class="absolute bottom-1 flex items-center gap-1">
+                        @if (day.appointmentCount > 0) {
+                          <span class="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]"></span>
+                        }
+                        @if (day.eventCount > 0) {
+                          <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                        }
+                      </span>
+                    }
+                  </button>
+                }
+              </div>
+
+              <div class="mt-5 flex-1 min-h-0 border-t border-[var(--surface-card-border)] pt-4">
+                <h4 class="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-tertiary)]">
+                  Eventi del {{ selectedDateShortLabel() }}
+                </h4>
+
+                @if (isLoading()) {
+                  <div class="flex justify-center py-8">
+                    <div class="h-6 w-6 animate-spin rounded-full border-4 border-[var(--surface-card-border)] border-t-[var(--color-primary)]"></div>
+                  </div>
+                } @else if (selectedDayEvents().length === 0) {
+                  <div class="flex flex-col items-center justify-center py-8 text-center">
+                    <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--surface-hover)]">
+                      <svg class="h-5 w-5 text-[var(--text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                      </svg>
+                    </div>
+                    <p class="text-sm text-[var(--text-secondary)]">Nessun evento in programma</p>
+                  </div>
+                } @else {
+                  <div class="space-y-2 overflow-y-auto max-h-52 pr-1">
+                    @for (event of selectedDayEvents(); track event.id) {
+                      <a
+                        [routerLink]="['/eventi', event.id]"
+                        class="group flex items-center justify-between rounded-xl border border-[var(--surface-card-border)] p-3 hover:bg-[var(--surface-hover)] transition-colors"
+                      >
+                        <div class="min-w-0">
+                          <div class="truncate text-sm font-medium text-[var(--text-primary)]">{{ event.title }}</div>
+                          <div class="mt-0.5 text-xs text-[var(--text-secondary)]">
+                            👥 {{ event.currentParticipants }}{{ event.maxParticipants ? '/' + event.maxParticipants : '' }}
+                          </div>
+                        </div>
+                        <svg class="ml-2 h-4 w-4 shrink-0 text-[var(--text-tertiary)] group-hover:text-[var(--color-primary)] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                      </a>
+                    }
+                  </div>
+                }
+              </div>
+            </app-card>
+          </div>
         </div>
       </div>
     </app-page-shell>
@@ -127,33 +230,124 @@ export class DashboardComponent implements OnInit {
   private readonly clientService = inject(ClientService);
 
   private readonly _events = signal<EventSummaryResponse[]>([]);
-  private readonly _todayApts = signal<AppointmentResponse[]>([]);
+  private readonly _appointments = signal<AppointmentResponse[]>([]);
   private readonly _pendingCount = signal(0);
   private readonly _clientCount = signal(0);
-  readonly isLoading = signal(true);
+  private readonly _isLoadingEvents = signal(true);
+  private readonly _isLoadingAppointments = signal(true);
 
-  readonly recentEvents = computed(() => this._events().slice(0, 3));
-  readonly totalEvents = computed(() => this._events().length);
+  readonly selectedDate = signal(this.toDateKey(new Date()));
+  readonly displayedMonth = signal(this.startOfMonth(new Date()));
+
+  readonly isLoading = computed(() => this._isLoadingEvents() || this._isLoadingAppointments());
+
   readonly publishedCount = computed(() => this._events().filter(e => e.status === 'PUBLISHED').length);
-  readonly todayAppointments = computed(() => this._todayApts());
+  readonly monthLabel = computed(() =>
+    this.displayedMonth().toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })
+  );
+
+  readonly appointmentCountByDate = computed(() => {
+    const map = new Map<string, number>();
+    for (const apt of this._appointments()) {
+      const key = this.toDateKey(new Date(apt.startDatetime));
+      map.set(key, (map.get(key) ?? 0) + 1);
+    }
+    return map;
+  });
+
+  readonly eventCountByDate = computed(() => {
+    const map = new Map<string, number>();
+    for (const event of this._events()) {
+      map.set(event.eventDate, (map.get(event.eventDate) ?? 0) + 1);
+    }
+    return map;
+  });
+
+  readonly calendarDays = computed(() => {
+    const currentMonth = this.displayedMonth();
+    const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+    const startWeekOffset = (firstDayOfMonth.getDay() + 6) % 7;
+    const gridStart = new Date(firstDayOfMonth);
+    gridStart.setDate(firstDayOfMonth.getDate() - startWeekOffset);
+
+    return Array.from({ length: 42 }, (_, index) => {
+      const date = new Date(gridStart);
+      date.setDate(gridStart.getDate() + index);
+      const dateKey = this.toDateKey(date);
+
+      return {
+        date,
+        dateKey,
+        dayNumber: date.getDate(),
+        isCurrentMonth: date.getMonth() === currentMonth.getMonth(),
+        isToday: dateKey === this.toDateKey(new Date()),
+        isSelected: dateKey === this.selectedDate(),
+        appointmentCount: this.appointmentCountByDate().get(dateKey) ?? 0,
+        eventCount: this.eventCountByDate().get(dateKey) ?? 0,
+      };
+    });
+  });
+
+  readonly selectedDayAppointments = computed(() => {
+    const selected = this.selectedDate();
+    return this._appointments()
+      .filter((apt) => this.toDateKey(new Date(apt.startDatetime)) === selected)
+      .sort((a, b) => new Date(a.startDatetime).getTime() - new Date(b.startDatetime).getTime());
+  });
+
+  readonly selectedDayEvents = computed(() =>
+    this._events().filter((event) => event.eventDate === this.selectedDate())
+  );
+
+  readonly selectedDateLabel = computed(() => {
+    const selected = new Date(`${this.selectedDate()}T00:00:00`);
+    return selected.toLocaleDateString('it-IT', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  });
+
+  readonly selectedDateShortLabel = computed(() => {
+    const selected = new Date(`${this.selectedDate()}T00:00:00`);
+    return selected.toLocaleDateString('it-IT', {
+      day: 'numeric',
+      month: 'long',
+    });
+  });
+
+  readonly todayAppointments = computed(() => {
+    const today = this.toDateKey(new Date());
+    return this._appointments().filter((apt) => this.toDateKey(new Date(apt.startDatetime)) === today);
+  });
+
+  readonly weekdayLabels = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
   readonly pendingCount = computed(() => this._pendingCount());
   readonly clientCount = computed(() => this._clientCount());
+
+  readonly todayFormatted = new Date().toLocaleDateString('it-IT', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
 
   ngOnInit(): void {
     this.eventService.getMyEvents().subscribe({
       next: (data) => {
         this._events.set(data);
-        this.isLoading.set(false);
+        this._isLoadingEvents.set(false);
       },
-      error: () => this.isLoading.set(false),
+      error: () => this._isLoadingEvents.set(false),
     });
 
-    // Load today's appointments
-    this.aptService.list(0, 50, 'CONFIRMED').subscribe({
+    this.aptService.list(0, 300).subscribe({
       next: (page) => {
-        const today = new Date().toDateString();
-        this._todayApts.set(page.content.filter((a) => new Date(a.startDatetime).toDateString() === today));
+        this._appointments.set(page.content);
+        this._isLoadingAppointments.set(false);
       },
+      error: () => this._isLoadingAppointments.set(false),
     });
 
     // Pending count
@@ -177,8 +371,63 @@ export class DashboardComponent implements OnInit {
     return map[status] ?? 'gray';
   }
 
-  timeRange(start: string, end: string): string {
-    const fmt = (d: Date) => d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-    return `${fmt(new Date(start))} – ${fmt(new Date(end))}`;
+  formatTime(iso: string): string {
+    return new Date(iso).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  formatEventDate(dateStr: string): string {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
+  }
+
+  selectDate(dateKey: string): void {
+    this.selectedDate.set(dateKey);
+    const selected = new Date(`${dateKey}T00:00:00`);
+    this.displayedMonth.set(this.startOfMonth(selected));
+  }
+
+  goToPreviousMonth(): void {
+    const month = this.displayedMonth();
+    this.displayedMonth.set(new Date(month.getFullYear(), month.getMonth() - 1, 1));
+  }
+
+  goToNextMonth(): void {
+    const month = this.displayedMonth();
+    this.displayedMonth.set(new Date(month.getFullYear(), month.getMonth() + 1, 1));
+  }
+
+  goToToday(): void {
+    const now = new Date();
+    this.selectedDate.set(this.toDateKey(now));
+    this.displayedMonth.set(this.startOfMonth(now));
+  }
+
+  dayButtonClass(day: {
+    isCurrentMonth: boolean;
+    isSelected: boolean;
+    isToday: boolean;
+  }): string {
+    if (day.isSelected) {
+      return 'relative flex h-11 w-full items-center justify-center rounded-lg text-sm font-semibold bg-[var(--color-primary)] text-[var(--text-inverted)] shadow-sm';
+    }
+
+    const base = 'relative flex h-11 w-full items-center justify-center rounded-lg text-sm font-medium transition-colors hover:bg-[var(--surface-hover)]';
+    const monthStyle = day.isCurrentMonth
+      ? 'text-[var(--text-primary)]'
+      : 'text-[var(--text-tertiary)]';
+    const todayStyle = day.isToday ? ' ring-1 ring-[var(--surface-card-border)]' : '';
+
+    return `${base} ${monthStyle}${todayStyle}`;
+  }
+
+  private startOfMonth(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), 1);
+  }
+
+  private toDateKey(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }
