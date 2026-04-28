@@ -17,10 +17,12 @@ const BASE = `${environment.apiBaseUrl}/appointments`;
 export class AppointmentService {
   constructor(private readonly http: HttpClient) {}
 
-  list(page = 0, size = 20, status?: string, professionalId?: string): Observable<Page<AppointmentResponse>> {
+  list(page = 0, size = 20, status?: string, professionalId?: string, startDate?: string, endDate?: string): Observable<Page<AppointmentResponse>> {
     let params = new HttpParams().set('page', page).set('size', size);
     if (status) params = params.set('status', status);
     if (professionalId) params = params.set('professionalId', professionalId);
+    if (startDate) params = params.set('startDate', startDate);
+    if (endDate) params = params.set('endDate', endDate);
     return this.http.get<Page<AppointmentResponse>>(BASE, { params });
   }
 

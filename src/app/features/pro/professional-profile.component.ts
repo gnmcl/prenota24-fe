@@ -2,13 +2,12 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { ProfessionalPortalService } from '../../core/services/professional-portal.service';
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { CardComponent } from '../../shared/components/card/card.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
 import type { ProfessionalDashboardResponse } from '../../core/models/domain.model';
 
 @Component({
   selector: 'app-professional-profile',
   standalone: true,
-  imports: [PageShellComponent, CardComponent, ButtonComponent],
+  imports: [PageShellComponent, CardComponent],
   template: `
     <app-page-shell>
       <div class="mx-auto max-w-3xl">

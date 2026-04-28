@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { ProfessionalPortalService } from '../../core/services/professional-portal.service';
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { CardComponent } from '../../shared/components/card/card.component';
@@ -16,7 +16,7 @@ const SLOT_HEIGHT = 60;
 @Component({
   selector: 'app-professional-appointments',
   standalone: true,
-  imports: [RouterLink, PageShellComponent, CardComponent, BadgeComponent, ButtonComponent, FormsModule],
+  imports: [PageShellComponent, CardComponent, BadgeComponent, ButtonComponent, FormsModule],
   template: `
     <app-page-shell>
       <div class="mx-auto max-w-5xl">

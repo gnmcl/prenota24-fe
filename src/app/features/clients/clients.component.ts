@@ -163,8 +163,8 @@ export class ClientsComponent implements OnInit {
     this.clientService.list(this.searchQuery(), this.currentPage()).subscribe({
       next: (page: Page<ClientSummaryResponse>) => {
         this.clients.set(page.content);
-        this.totalPages.set(page.totalPages);
-        this.totalElements.set(page.totalElements);
+        this.totalPages.set(page.page.totalPages);
+        this.totalElements.set(page.page.totalElements);
         this.isLoading.set(false);
       },
       error: (err) => {

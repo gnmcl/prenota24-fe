@@ -91,12 +91,12 @@ import type { AppointmentResponse, AppointmentStatus, Page } from '../../core/mo
           </app-card>
 
           <!-- Pagination -->
-          @if (page().totalPages > 1) {
+          @if (page().page.totalPages > 1) {
             <div class="mt-6 flex items-center justify-between">
-              <span class="text-sm text-[var(--text-secondary)]">{{ page().totalElements }} risultati</span>
+              <span class="text-sm text-[var(--text-secondary)]">{{ page().page.totalElements }} risultati</span>
               <div class="flex gap-2">
-                <app-button variant="secondary" [disabled]="page().first" (click)="goToPage(page().number - 1)">← Precedente</app-button>
-                <app-button variant="secondary" [disabled]="page().last" (click)="goToPage(page().number + 1)">Successiva →</app-button>
+                <app-button variant="secondary" [disabled]="page().page.number === 0" (click)="goToPage(page().page.number - 1)">← Precedente</app-button>
+                <app-button variant="secondary" [disabled]="page().page.number >= page().page.totalPages - 1" (click)="goToPage(page().page.number + 1)">Successiva →</app-button>
               </div>
             </div>
           }
@@ -109,7 +109,7 @@ export class AppointmentsComponent implements OnInit {
   private readonly aptService = inject(AppointmentService);
 
   readonly appointments = signal<AppointmentResponse[]>([]);
-  readonly page = signal<Page<AppointmentResponse>>({ content: [], totalElements: 0, totalPages: 0, size: 20, number: 0, first: true, last: true });
+  readonly page = signal<Page<AppointmentResponse>>({ content: [], page: { size: 20, number: 0, totalElements: 0, totalPages: 0 } });
   readonly isLoading = signal(true);
   readonly activeFilter = signal<string>('');
 

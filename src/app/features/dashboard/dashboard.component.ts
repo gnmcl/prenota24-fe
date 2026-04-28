@@ -1,4 +1,6 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
+import { toSignal, toObservable } from '@angular/core/rxjs-interop';
+import { catchError, map, of, switchMap } from 'rxjs';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { EventService } from '../../core/services/event.service';
@@ -223,32 +225,61 @@ import type { EventSummaryResponse, AppointmentResponse, AppointmentStatus } fro
     </app-page-shell>
   `,
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent {
   readonly authService = inject(AuthService);
   private readonly eventService = inject(EventService);
   private readonly aptService = inject(AppointmentService);
   private readonly clientService = inject(ClientService);
 
-  private readonly _events = signal<EventSummaryResponse[]>([]);
-  private readonly _appointments = signal<AppointmentResponse[]>([]);
-  private readonly _pendingCount = signal(0);
-  private readonly _clientCount = signal(0);
-  private readonly _isLoadingEvents = signal(true);
-  private readonly _isLoadingAppointments = signal(true);
-
   readonly selectedDate = signal(this.toDateKey(new Date()));
   readonly displayedMonth = signal(this.startOfMonth(new Date()));
 
-  readonly isLoading = computed(() => this._isLoadingEvents() || this._isLoadingAppointments());
+  private readonly _events = toSignal(
+    this.eventService.getMyEvents().pipe(catchError(() => of([] as EventSummaryResponse[])))
+  );
 
-  readonly publishedCount = computed(() => this._events().filter(e => e.status === 'PUBLISHED').length);
+  private readonly _appointments = toSignal(
+    toObservable(this.displayedMonth).pipe(
+      switchMap((month) => {
+        const startDate = this.toDateKey(new Date(month.getFullYear(), month.getMonth(), 1));
+        const endDate = this.toDateKey(new Date(month.getFullYear(), month.getMonth() + 1, 0));
+        return this.aptService.list(0, 500, undefined, undefined, startDate, endDate).pipe(
+          map((page) => page.content),
+          catchError(() => of([] as AppointmentResponse[]))
+        );
+      })
+    )
+  );
+
+  readonly pendingCount = toSignal(
+    this.aptService.list(0, 1, 'REQUESTED').pipe(
+      map((page) => page.page.totalElements),
+      catchError(() => of(0))
+    ),
+    { initialValue: 0 }
+  );
+
+  readonly clientCount = toSignal(
+    this.clientService.list(undefined, 0, 1).pipe(
+      map((page) => page.page.totalElements),
+      catchError(() => of(0))
+    ),
+    { initialValue: 0 }
+  );
+
+  readonly isLoading = computed(() => this._events() === undefined || this._appointments() === undefined);
+
+  readonly publishedCount = computed(() =>
+    (this._events() ?? []).filter((e) => e.status === 'PUBLISHED').length
+  );
+
   readonly monthLabel = computed(() =>
     this.displayedMonth().toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })
   );
 
   readonly appointmentCountByDate = computed(() => {
     const map = new Map<string, number>();
-    for (const apt of this._appointments()) {
+    for (const apt of this._appointments() ?? []) {
       const key = this.toDateKey(new Date(apt.startDatetime));
       map.set(key, (map.get(key) ?? 0) + 1);
     }
@@ -257,7 +288,7 @@ export class DashboardComponent implements OnInit {
 
   readonly eventCountByDate = computed(() => {
     const map = new Map<string, number>();
-    for (const event of this._events()) {
+    for (const event of this._events() ?? []) {
       map.set(event.eventDate, (map.get(event.eventDate) ?? 0) + 1);
     }
     return map;
@@ -290,13 +321,13 @@ export class DashboardComponent implements OnInit {
 
   readonly selectedDayAppointments = computed(() => {
     const selected = this.selectedDate();
-    return this._appointments()
+    return (this._appointments() ?? [])
       .filter((apt) => this.toDateKey(new Date(apt.startDatetime)) === selected)
       .sort((a, b) => new Date(a.startDatetime).getTime() - new Date(b.startDatetime).getTime());
   });
 
   readonly selectedDayEvents = computed(() =>
-    this._events().filter((event) => event.eventDate === this.selectedDate())
+    (this._events() ?? []).filter((event) => event.eventDate === this.selectedDate())
   );
 
   readonly selectedDateLabel = computed(() => {
@@ -319,12 +350,12 @@ export class DashboardComponent implements OnInit {
 
   readonly todayAppointments = computed(() => {
     const today = this.toDateKey(new Date());
-    return this._appointments().filter((apt) => this.toDateKey(new Date(apt.startDatetime)) === today);
+    return (this._appointments() ?? []).filter(
+      (apt) => this.toDateKey(new Date(apt.startDatetime)) === today
+    );
   });
 
   readonly weekdayLabels = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
-  readonly pendingCount = computed(() => this._pendingCount());
-  readonly clientCount = computed(() => this._clientCount());
 
   readonly todayFormatted = new Date().toLocaleDateString('it-IT', {
     weekday: 'long',
@@ -332,34 +363,6 @@ export class DashboardComponent implements OnInit {
     month: 'long',
     year: 'numeric',
   });
-
-  ngOnInit(): void {
-    this.eventService.getMyEvents().subscribe({
-      next: (data) => {
-        this._events.set(data);
-        this._isLoadingEvents.set(false);
-      },
-      error: () => this._isLoadingEvents.set(false),
-    });
-
-    this.aptService.list(0, 300).subscribe({
-      next: (page) => {
-        this._appointments.set(page.content);
-        this._isLoadingAppointments.set(false);
-      },
-      error: () => this._isLoadingAppointments.set(false),
-    });
-
-    // Pending count
-    this.aptService.list(0, 1, 'REQUESTED').subscribe({
-      next: (page) => this._pendingCount.set(page.totalElements),
-    });
-
-    // Client count
-    this.clientService.list(undefined, 0, 1).subscribe({
-      next: (page) => this._clientCount.set(page.totalElements),
-    });
-  }
 
   statusLabel(status: AppointmentStatus): string {
     const map: Record<string, string> = { REQUESTED: 'Da confermare', CONFIRMED: 'Confermato', PROPOSED_NEW_TIME: 'Proposta', CANCELLED: 'Cancellato', COMPLETED: 'Completato', NO_SHOW: 'Non presentato' };
@@ -383,7 +386,10 @@ export class DashboardComponent implements OnInit {
   selectDate(dateKey: string): void {
     this.selectedDate.set(dateKey);
     const selected = new Date(`${dateKey}T00:00:00`);
-    this.displayedMonth.set(this.startOfMonth(selected));
+    const newMonth = this.startOfMonth(selected);
+    if (this.toDateKey(newMonth) !== this.toDateKey(this.displayedMonth())) {
+      this.displayedMonth.set(newMonth);
+    }
   }
 
   goToPreviousMonth(): void {
