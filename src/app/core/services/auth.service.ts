@@ -6,6 +6,7 @@ import type { AuthUser } from '../models/auth.model';
 import type { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, AcceptInvitationRequest, VerifyEmailRequest, ResendVerificationRequest } from '../models/auth.model';
 import { environment } from '../../environments/environment';
 import { StudioService } from './studio.service';
+import { ThemeService } from './theme.service';
 
 const STORAGE_KEY = 'prenota24-auth';
 
@@ -33,6 +34,7 @@ export class AuthService {
     private readonly http: HttpClient,
     private readonly router: Router,
     private readonly studioService: StudioService,
+    private readonly themeService: ThemeService,
   ) {
     this.hydrate();
   }
@@ -82,6 +84,7 @@ export class AuthService {
     this._refreshToken.set(null);
     this._user.set(null);
     this.studioService.clear();
+    this.themeService.setLight();
     this.persist();
     // Best-effort server-side logout
     if (rt) {

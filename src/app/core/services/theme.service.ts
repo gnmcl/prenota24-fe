@@ -17,6 +17,10 @@ export class ThemeService {
     this.applyTheme(!this.isDark());
   }
 
+  setLight(): void {
+    this.applyTheme(false);
+  }
+
   private applyTheme(dark: boolean): void {
     this.isDark.set(dark);
     document.documentElement.classList.toggle('dark', dark);
