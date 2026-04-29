@@ -30,6 +30,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
         [attr.aria-invalid]="!!error"
         [attr.aria-describedby]="error ? inputId + '-error' : null"
         [value]="value"
+        [readOnly]="readonly"
         (input)="onInput($event)"
         (blur)="onTouched()"
         [class]="inputClasses"
@@ -52,6 +53,7 @@ export class InputComponent implements ControlValueAccessor {
   @Input() min = '';
   @Input() max = '';
   @Input() step = '';
+  @Input() readonly = false;
 
   value = '';
   // eslint-disable-next-line @typescript-eslint/no-empty-function
