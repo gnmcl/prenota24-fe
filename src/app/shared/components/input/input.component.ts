@@ -54,8 +54,7 @@ export class InputComponent implements ControlValueAccessor {
   @Input() max = '';
   @Input() step = '';
   @Input() readonly = false;
-
-  value = '';
+  @Input() value = '';
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   onChange: (value: string) => void = () => {};
   // eslint-disable-next-line @typescript-eslint/no-empty-function
