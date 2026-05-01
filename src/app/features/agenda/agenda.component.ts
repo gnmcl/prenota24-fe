@@ -356,7 +356,7 @@ export class AgendaComponent implements OnInit {
   readonly dayAppointments = computed(() => {
     const d = this.currentDate();
     return this.allAppointments()
-      .filter((a) => a.startDatetime.startsWith(d))
+      .filter((a) => a.startDatetime.startsWith(d) && ACTIVE_STATUSES.includes(a.status))
       .sort((a, b) => a.startDatetime.localeCompare(b.startDatetime));
   });
 
@@ -649,7 +649,7 @@ export class AgendaComponent implements OnInit {
   appointmentsForProfessional(professionalId: string): AppointmentResponse[] {
     const d = this.currentDate();
     return this.allAppointments()
-      .filter((a) => a.professionalId === professionalId && a.startDatetime.startsWith(d))
+      .filter((a) => a.professionalId === professionalId && a.startDatetime.startsWith(d) && ACTIVE_STATUSES.includes(a.status))
       .sort((a, b) => a.startDatetime.localeCompare(b.startDatetime));
   }
 
