@@ -60,8 +60,8 @@ import type { EventSummaryResponse, AppointmentResponse, AppointmentStatus } fro
 
         <!-- Main content: appointments + calendar/event overview -->
         <div class="grid items-stretch gap-6 lg:grid-cols-5">
-          <div class="h-full lg:col-span-3">
-            <app-card extraClass="h-full flex flex-col">
+          <div class="h-full lg:col-span-3 min-w-0">
+            <app-card extraClass="h-full flex flex-col overflow-hidden">
               <div class="flex items-center justify-between mb-5">
                 <div>
                   <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Appuntamenti</h3>
@@ -85,7 +85,7 @@ import type { EventSummaryResponse, AppointmentResponse, AppointmentStatus } fro
                   <p class="mt-1 text-xs text-[var(--text-tertiary)]">La giornata e libera</p>
                 </div>
               } @else {
-                <div class="space-y-2 overflow-y-auto pr-1 max-h-[32rem]">
+                <div class="space-y-2 overflow-y-auto overflow-x-hidden pr-1 max-h-[32rem]">
                   @for (apt of selectedDayAppointments(); track apt.id) {
                     <a [routerLink]="['/appuntamenti', apt.id]"
                        class="group flex items-center gap-3 rounded-xl border border-[var(--surface-card-border)] p-3.5 hover:bg-[var(--surface-hover)] transition-all duration-150 overflow-hidden min-w-0">
@@ -118,8 +118,8 @@ import type { EventSummaryResponse, AppointmentResponse, AppointmentStatus } fro
             </app-card>
           </div>
 
-          <div class="h-full lg:col-span-2">
-            <app-card extraClass="h-full flex flex-col">
+          <div class="h-full lg:col-span-2 min-w-0">
+            <app-card extraClass="h-full flex flex-col overflow-hidden">
               <div class="flex items-center justify-between mb-5">
                 <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Calendario ed eventi</h3>
                 <a routerLink="/eventi" class="text-xs font-medium text-[var(--color-primary)] hover:opacity-80 transition-opacity">Tutti →</a>
