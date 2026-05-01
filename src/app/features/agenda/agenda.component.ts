@@ -1,5 +1,7 @@
-import { Component, HostListener, inject, OnInit, signal, computed } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, DestroyRef, HostListener, inject, OnInit, signal, computed } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router, RouterLink, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs';
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
@@ -324,6 +326,7 @@ interface ProfAvailability {
 })
 export class AgendaComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly aptService = inject(AppointmentService);
   private readonly profService = inject(ProfessionalService);
   private readonly svcService = inject(ServiceTypeService);
@@ -459,6 +462,12 @@ export class AgendaComponent implements OnInit {
     });
     this.svcService.list().subscribe({ next: (list) => this.serviceTypes.set(list.filter((s) => s.active)) });
     this.loadAppointments();
+
+    this.router.events.pipe(
+      filter((e) => e instanceof NavigationEnd),
+      filter((e) => (e as NavigationEnd).urlAfterRedirects.startsWith('/agenda')),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(() => this.loadAppointments());
   }
 
   @HostListener('document:click')

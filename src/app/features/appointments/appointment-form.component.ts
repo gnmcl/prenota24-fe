@@ -30,185 +30,241 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
   imports: [RouterLink, FormsModule, PageShellComponent, CardComponent, ButtonComponent, AlertComponent],
   template: `
     <app-page-shell>
-      <div class="mx-auto max-w-2xl">
-        <a routerLink="/appuntamenti" class="mb-6 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors">
+      <div class="mx-auto max-w-2xl pb-10">
+        <a routerLink="/appuntamenti" class="mb-6 inline-flex items-center gap-1 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
           </svg>
           Torna alla lista
         </a>
 
-        <h2 class="mb-6 text-xl sm:text-2xl font-bold text-gray-900">Nuovo appuntamento</h2>
+        <h2 class="mb-6 text-xl sm:text-2xl font-bold text-[var(--text-primary)]">Nuovo appuntamento</h2>
+
+        <!-- Step progress indicator -->
+        <div class="mb-8 flex items-start">
+          @for (s of steps(); track s.n) {
+            <div class="flex flex-col items-center" [class]="s.n < 4 ? 'flex-1' : ''">
+              <div class="flex items-center w-full">
+                <button type="button"
+                  (click)="s.done ? goToStep(s.n) : null"
+                  [disabled]="!s.done && !s.active"
+                  class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all"
+                  [class]="s.done ? 'bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer' : s.active ? 'border-2 border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400' : 'border-2 border-[var(--surface-card-border)] text-[var(--text-tertiary)] cursor-not-allowed'">
+                  @if (s.done) {
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                  } @else {
+                    {{ s.n }}
+                  }
+                </button>
+                @if (s.n < 4) {
+                  <div class="h-0.5 flex-1 mx-1 rounded transition-colors" [class]="s.done ? 'bg-indigo-600' : 'bg-[var(--surface-card-border)]'"></div>
+                }
+              </div>
+              <span class="mt-1.5 text-[10px] font-medium leading-tight"
+                [class]="s.active ? 'text-indigo-600 dark:text-indigo-400' : s.done ? 'text-[var(--text-secondary)]' : 'text-[var(--text-tertiary)]'">
+                {{ s.label }}
+              </span>
+            </div>
+          }
+        </div>
 
         @if (error()) {
-          <app-alert variant="error" [message]="error()" class="mb-6" />
+          <app-alert variant="error" [message]="error()" class="mb-4" />
         }
 
-        <div class="space-y-5">
-          <!-- Step 1: Service -->
-          <app-card>
-            <h3 class="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">1. Servizio (opzionale)</h3>
-            <input type="text" [ngModel]="serviceSearchText()" (ngModelChange)="onServiceSearch($event)" placeholder="Cerca servizio per nome..."
-              class="mb-2 w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
-            @if (selectedServiceId()) {
-              <div class="mb-2 flex items-center gap-2 rounded-lg border-2 border-indigo-600 bg-indigo-50 px-3 py-2 text-sm">
-                @if (selectedServiceColor()) {
-                  <span class="h-3 w-3 rounded-full shrink-0" [style.background-color]="selectedServiceColor()"></span>
+        <!-- Completed steps summaries -->
+        @if (currentStep() > 1) {
+          <div class="mb-4 space-y-2">
+            <div class="flex items-center justify-between rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-hover)] px-4 py-2.5 text-sm">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white text-[10px] font-bold">✓</span>
+                <span class="text-[var(--text-tertiary)] shrink-0">Servizio:</span>
+                @if (selectedServiceId()) {
+                  <span class="flex items-center gap-1.5 min-w-0">
+                    @if (selectedServiceColor()) {
+                      <span class="h-2 w-2 shrink-0 rounded-full" [style.background-color]="selectedServiceColor()"></span>
+                    }
+                    <span class="font-medium text-[var(--text-primary)] truncate">{{ selectedServiceName() }}</span>
+                    <span class="text-[var(--text-tertiary)] shrink-0">· {{ selectedDuration() }} min</span>
+                  </span>
+                } @else {
+                  <span class="font-medium text-[var(--text-primary)]">Nessun servizio</span>
                 }
-                <span class="font-medium text-indigo-700">{{ selectedServiceName() }}</span>
-                <button (click)="selectNoService()" type="button" class="ml-auto text-gray-400 hover:text-gray-600">
-                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
+              </div>
+              <button (click)="goToStep(1)" type="button" class="ml-3 shrink-0 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:opacity-75 transition-opacity">Modifica</button>
+            </div>
+
+            @if (currentStep() > 2) {
+              <div class="flex items-center justify-between rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-hover)] px-4 py-2.5 text-sm">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white text-[10px] font-bold">✓</span>
+                  <span class="text-[var(--text-tertiary)] shrink-0">Professionista:</span>
+                  <span class="font-medium text-[var(--text-primary)] truncate">{{ selectedProfessionalName() }}</span>
+                </div>
+                <button (click)="goToStep(2)" type="button" class="ml-3 shrink-0 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:opacity-75 transition-opacity">Modifica</button>
               </div>
             }
-            <div class="max-h-52 overflow-y-auto space-y-1">
+
+            @if (currentStep() > 3) {
+              <div class="flex items-center justify-between rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-hover)] px-4 py-2.5 text-sm">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white text-[10px] font-bold">✓</span>
+                  <span class="text-[var(--text-tertiary)] shrink-0">Cliente:</span>
+                  <span class="font-medium text-[var(--text-primary)] truncate">{{ selectedClientName() }}</span>
+                </div>
+                <button (click)="goToStep(3)" type="button" class="ml-3 shrink-0 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:opacity-75 transition-opacity">Modifica</button>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Active step card -->
+        <app-card>
+          <!-- Step 1: Service -->
+          @if (currentStep() === 1) {
+            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Servizio <span class="normal-case font-normal">(opzionale)</span></h3>
+            <input type="text" [ngModel]="serviceSearchText()" (ngModelChange)="onServiceSearch($event)" placeholder="Cerca servizio per nome..."
+              class="mb-3 w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+            <div class="max-h-64 overflow-y-auto space-y-1">
               <button (click)="selectNoService()" type="button"
                 [class]="!selectedServiceId()
-                  ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 p-3 text-left text-sm transition-colors'
-                  : 'w-full rounded-lg border border-gray-200 p-3 text-left text-sm hover:bg-gray-50 transition-colors'">
-                <span class="font-medium text-gray-900">Nessun servizio</span>
-                <span class="block text-xs text-gray-400">Durata personalizzata</span>
+                  ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 p-3 text-left text-sm transition-colors'
+                  : 'w-full rounded-lg border border-[var(--surface-card-border)] p-3 text-left text-sm hover:bg-[var(--surface-hover)] transition-colors'">
+                <span class="font-medium text-[var(--text-primary)]">Nessun servizio</span>
+                <span class="block text-xs text-[var(--text-tertiary)]">Durata personalizzata</span>
               </button>
               @for (svc of filteredServices(); track svc.id) {
                 <button (click)="selectService(svc)" type="button"
                   [class]="selectedServiceId() === svc.id
-                    ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 p-3 text-left text-sm transition-colors'
-                    : 'w-full rounded-lg border border-gray-200 p-3 text-left text-sm hover:bg-gray-50 transition-colors'">
+                    ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 p-3 text-left text-sm transition-colors'
+                    : 'w-full rounded-lg border border-[var(--surface-card-border)] p-3 text-left text-sm hover:bg-[var(--surface-hover)] transition-colors'">
                   <div class="flex items-center gap-2">
                     @if (svc.color) {
                       <span class="h-3 w-3 rounded-full shrink-0" [style.background-color]="svc.color"></span>
                     }
-                    <span class="font-medium text-gray-900">{{ svc.name }}</span>
+                    <span class="font-medium text-[var(--text-primary)]">{{ svc.name }}</span>
                   </div>
-                  <span class="block text-xs text-gray-400">{{ svc.durationMinutes }} min {{ svc.price ? '· €' + svc.price : '' }}</span>
+                  <span class="block text-xs text-[var(--text-secondary)]">{{ svc.durationMinutes }} min{{ svc.price ? ' · €' + svc.price : '' }}</span>
                 </button>
               }
             </div>
-          </app-card>
+          }
 
           <!-- Step 2: Professional -->
-          <app-card>
-            <h3 class="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">2. Professionista</h3>
-            <input type="text" [ngModel]="professionalSearchText()" (ngModelChange)="onProfessionalSearch($event)" placeholder="Cerca professionista per nome o email..."
-              class="mb-2 w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
-            @if (selectedProfessionalId()) {
-              <div class="mb-2 flex items-center gap-2 rounded-lg border-2 border-indigo-600 bg-indigo-50 px-3 py-2 text-sm">
-                <span class="font-medium text-indigo-700">{{ selectedProfessionalName() }}</span>
-                <button (click)="clearProfessional()" type="button" class="ml-auto text-gray-400 hover:text-gray-600">
-                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-              </div>
-            }
+          @if (currentStep() === 2) {
+            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Professionista</h3>
+            <input type="text" [ngModel]="professionalSearchText()" (ngModelChange)="onProfessionalSearch($event)" placeholder="Cerca per nome o email..."
+              class="mb-3 w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
             @if (searchedProfessionals().length === 0) {
-              <p class="text-sm text-gray-400">Nessun professionista disponibile per il servizio selezionato.</p>
+              <p class="text-sm text-[var(--text-tertiary)]">Nessun professionista disponibile per il servizio selezionato.</p>
             } @else {
-              <div class="max-h-52 overflow-y-auto space-y-1">
+              <div class="max-h-64 overflow-y-auto space-y-1">
                 @for (pro of searchedProfessionals(); track pro.id) {
                   <button (click)="selectProfessional(pro)" type="button"
                     [class]="selectedProfessionalId() === pro.id
-                      ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 p-3 text-left transition-colors'
-                      : 'w-full rounded-lg border border-gray-200 p-3 text-left hover:bg-gray-50 transition-colors'">
-                    <span class="font-medium text-gray-900">{{ pro.firstName }} {{ pro.lastName }}</span>
+                      ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 p-3 text-left transition-colors'
+                      : 'w-full rounded-lg border border-[var(--surface-card-border)] p-3 text-left hover:bg-[var(--surface-hover)] transition-colors'">
+                    <span class="font-medium text-[var(--text-primary)]">{{ pro.firstName }} {{ pro.lastName }}</span>
                     @if (pro.email) {
-                      <span class="block text-xs text-gray-500">{{ pro.email }}</span>
+                      <span class="block text-xs text-[var(--text-secondary)]">{{ pro.email }}</span>
                     }
                   </button>
                 }
               </div>
             }
-          </app-card>
+          }
 
           <!-- Step 3: Client -->
-          <app-card>
-            <h3 class="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">3. Cliente</h3>
+          @if (currentStep() === 3) {
+            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Cliente</h3>
             <input type="text" [(ngModel)]="clientSearch" (input)="searchClients()" placeholder="Cerca cliente per nome o email..."
-              class="mb-3 w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+              class="mb-3 w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
             @if (clientResults().length > 0) {
               <div class="max-h-48 overflow-y-auto space-y-1 mb-3">
                 @for (c of clientResults(); track c.id) {
                   <button (click)="selectedClientId.set(c.id); selectedClientName.set(c.firstName + ' ' + c.lastName); showNewClientForm.set(false)" type="button"
                     [class]="selectedClientId() === c.id
-                      ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 px-3 py-2 text-left text-sm transition-colors'
-                      : 'w-full rounded-lg border border-gray-100 px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors'">
-                    <span class="font-medium">{{ c.firstName }} {{ c.lastName }}</span>
+                      ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-2 text-left text-sm transition-colors'
+                      : 'w-full rounded-lg border border-[var(--surface-card-border)] px-3 py-2 text-left text-sm hover:bg-[var(--surface-hover)] transition-colors'">
+                    <span class="font-medium text-[var(--text-primary)]">{{ c.firstName }} {{ c.lastName }}</span>
                     @if (c.email) {
-                      <span class="text-gray-400 ml-2">{{ c.email }}</span>
+                      <span class="text-[var(--text-tertiary)] ml-2">{{ c.email }}</span>
                     }
                   </button>
                 }
               </div>
             }
             @if (selectedClientName()) {
-              <div class="mb-3 flex items-center gap-2 rounded-lg border-2 border-indigo-600 bg-indigo-50 px-3 py-2 text-sm">
-                <span class="font-medium text-indigo-700">{{ selectedClientName() }}</span>
-                <button (click)="selectedClientId.set(null); selectedClientName.set('')" type="button" class="ml-auto text-gray-400 hover:text-gray-600">
+              <div class="mb-3 flex items-center gap-2 rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-2 text-sm">
+                <span class="font-medium text-indigo-700 dark:text-indigo-300">{{ selectedClientName() }}</span>
+                <button (click)="selectedClientId.set(null); selectedClientName.set('')" type="button" class="ml-auto text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">
                   <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
               </div>
             }
             @if (!showNewClientForm()) {
               <button (click)="showNewClientForm.set(true)" type="button"
-                class="flex items-center gap-2 text-sm text-indigo-600 font-medium hover:text-indigo-700 transition-colors mt-1">
+                class="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400 font-medium hover:opacity-75 transition-opacity mt-1">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
                 Crea nuovo cliente
               </button>
             } @else {
-              <div class="mt-3 rounded-lg border border-indigo-200 bg-indigo-50/30 p-4 space-y-3">
-                <h4 class="text-sm font-semibold text-gray-800">Nuovo cliente</h4>
+              <div class="mt-3 rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-hover)] p-4 space-y-3">
+                <h4 class="text-sm font-semibold text-[var(--text-primary)]">Nuovo cliente</h4>
                 <div class="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Nome *</label>
+                    <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1">Nome *</label>
                     <input type="text" [(ngModel)]="newClientFirstName"
-                      class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Cognome *</label>
+                    <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1">Cognome *</label>
                     <input type="text" [(ngModel)]="newClientLastName"
-                      class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Email</label>
+                    <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1">Email</label>
                     <input type="email" [(ngModel)]="newClientEmail"
-                      class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Telefono</label>
+                    <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1">Telefono</label>
                     <input type="tel" [(ngModel)]="newClientPhone"
-                      class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
                   </div>
                 </div>
                 <div class="flex items-center gap-2 pt-1">
                   <app-button [disabled]="!newClientFirstName.trim() || !newClientLastName.trim()" [isLoading]="creatingClient()" (click)="createNewClient()">
                     Crea e seleziona
                   </app-button>
-                  <button (click)="showNewClientForm.set(false)" type="button" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                  <button (click)="showNewClientForm.set(false)" type="button" class="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
                     Annulla
                   </button>
                 </div>
               </div>
             }
-          </app-card>
+          }
 
-          <!-- Step 4: Date + Slots -->
-          <app-card>
-            <h3 class="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">4. Data e ora</h3>
+          <!-- Step 4: Date, time and notes -->
+          @if (currentStep() === 4) {
+            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Data e ora</h3>
 
             <!-- Calendar -->
-            <div class="rounded-xl border border-gray-200 overflow-hidden mb-4">
-              <div class="flex items-center justify-between bg-gray-50 px-4 py-3">
-                <button (click)="calPrevMonth()" type="button" class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-colors">
+            <div class="rounded-xl border border-[var(--surface-card-border)] overflow-hidden mb-4">
+              <div class="flex items-center justify-between bg-[var(--surface-hover)] px-4 py-3 border-b border-[var(--surface-card-border)]">
+                <button (click)="calPrevMonth()" type="button" class="rounded-lg p-1.5 text-[var(--text-secondary)] hover:bg-[var(--surface-card)] hover:text-[var(--text-primary)] transition-colors">
                   <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                 </button>
-                <span class="text-sm font-semibold text-gray-900">{{ calMonthLabel() }}</span>
-                <button (click)="calNextMonth()" type="button" class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-colors">
+                <span class="text-sm font-semibold text-[var(--text-primary)]">{{ calMonthLabel() }}</span>
+                <button (click)="calNextMonth()" type="button" class="rounded-lg p-1.5 text-[var(--text-secondary)] hover:bg-[var(--surface-card)] hover:text-[var(--text-primary)] transition-colors">
                   <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                 </button>
               </div>
-              <div class="grid grid-cols-7 bg-gray-50 border-t border-gray-100">
+              <div class="grid grid-cols-7 border-b border-[var(--surface-card-border)] bg-[var(--surface-hover)]">
                 @for (day of daysOfWeek; track day) {
-                  <div class="py-2 text-center text-[10px] sm:text-xs font-medium text-gray-400 uppercase">{{ day }}</div>
+                  <div class="py-2 text-center text-[10px] sm:text-xs font-medium text-[var(--text-tertiary)] uppercase">{{ day }}</div>
                 }
               </div>
               <div class="grid grid-cols-7">
@@ -231,17 +287,17 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
             </div>
 
             @if (selectedDate()) {
-              <div class="mb-4 text-sm text-gray-600">
-                <span class="font-medium">{{ selectedDateLabel() }}</span>
+              <div class="mb-4 text-sm font-medium text-[var(--text-primary)]">
+                {{ selectedDateLabel() }}
               </div>
               @if (isDailyLimitReached()) {
-                <div class="mb-4 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+                <div class="mb-4 flex items-start gap-3 rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-4 py-3">
                   <svg class="mt-0.5 h-4 w-4 shrink-0 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
                   </svg>
                   <div>
-                    <p class="text-sm font-semibold text-red-700">Soglia massima raggiunta</p>
-                    <p class="text-xs text-red-600 mt-0.5">Il numero massimo di appuntamenti per questo giorno è stato raggiunto. Scegli un altro giorno.</p>
+                    <p class="text-sm font-semibold text-red-700 dark:text-red-400">Soglia massima raggiunta</p>
+                    <p class="text-xs text-red-600 dark:text-red-400 mt-0.5">Il numero massimo di appuntamenti per questo giorno è stato raggiunto. Scegli un altro giorno.</p>
                   </div>
                 </div>
               }
@@ -249,82 +305,86 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
 
             <!-- Slot picker -->
             @if (selectedDate() && selectedProfessionalId()) {
-              <div class="rounded-xl border border-gray-200 bg-gray-50/50 p-4">
+              <div class="rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-hover)] p-4 mb-4">
                 <div class="grid gap-4 sm:grid-cols-2 mb-4">
                   <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Orario *</label>
+                    <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1">Orario *</label>
                     <input type="time" [ngModel]="selectedStartTime()" (ngModelChange)="selectedStartTime.set($event)" step="300"
-                      class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm bg-white shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
                   </div>
                   <div>
                     @if (!selectedServiceId()) {
-                      <label class="block text-xs font-medium text-gray-600 mb-1">Durata (min)</label>
+                      <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1">Durata (min)</label>
                       <input type="number" [ngModel]="selectedDuration()" (ngModelChange)="setDuration($event)" min="5" step="5"
-                        class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm bg-white shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+                        class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
                     } @else {
-                      <label class="block text-xs font-medium text-gray-600 mb-1">Fine</label>
-                      <div class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm bg-gray-100 text-gray-600">
+                      <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1">Fine</label>
+                      <div class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-hover)] px-3 py-2.5 text-sm text-[var(--text-secondary)]">
                         {{ computedEndTime() || '—' }}
                       </div>
                     }
                   </div>
                 </div>
 
-                <!-- Availability indicator -->
                 @if (selectedStartTime()) {
                   <div class="mb-3 flex items-center gap-2">
                     @if (resolvedSlot()) {
                       <div class="h-2.5 w-2.5 rounded-full bg-emerald-500"></div>
-                      <span class="text-xs font-medium text-emerald-700">Orario disponibile</span>
+                      <span class="text-xs font-medium text-emerald-600 dark:text-emerald-400">Orario disponibile</span>
                     } @else {
                       <div class="h-2.5 w-2.5 rounded-full bg-red-400"></div>
-                      <span class="text-xs font-medium text-red-600">Orario non disponibile</span>
+                      <span class="text-xs font-medium text-red-600 dark:text-red-400">Orario non disponibile</span>
                     }
                   </div>
                 }
 
-                <!-- Available slot suggestions -->
                 @if (loadingSlots()) {
                   <div class="flex items-center gap-2">
-                    <div class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-600"></div>
-                    <span class="text-xs text-gray-400">Carico orari disponibili...</span>
+                    <div class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--surface-card-border)] border-t-indigo-600"></div>
+                    <span class="text-xs text-[var(--text-tertiary)]">Carico orari disponibili...</span>
                   </div>
                 } @else if (availableSlots().length > 0) {
                   <div class="flex flex-wrap items-center gap-2">
-                    <span class="text-xs text-gray-400">Disponibili:</span>
+                    <span class="text-xs text-[var(--text-tertiary)]">Disponibili:</span>
                     @for (slot of availableSlots(); track slot.start) {
                       <button (click)="selectSlot(slot)" type="button"
                         [class]="selectedStartTime() === formatSlotTime(slot.start)
                           ? 'rounded-full bg-indigo-600 px-3 py-1 text-xs font-medium text-white'
-                          : 'rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-600 hover:bg-indigo-50 hover:border-indigo-200 transition-colors'">
+                          : 'rounded-full border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-1 text-xs text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors'">
                         {{ formatSlotTime(slot.start) }}
                       </button>
                     }
                   </div>
-                } @else if (selectedDate() && selectedProfessionalId()) {
-                  <p class="text-xs text-gray-400">Nessun orario disponibile per questo giorno.</p>
+                } @else {
+                  <p class="text-xs text-[var(--text-tertiary)]">Nessun orario disponibile per questo giorno.</p>
                 }
               </div>
             }
-          </app-card>
 
-          <!-- Step 5: Notes -->
-          <app-card>
-            <h3 class="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">5. Note (opzionale)</h3>
-            <textarea [(ngModel)]="notes" rows="3" placeholder="Note sull'appuntamento..."
-              class="w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none resize-none transition-colors">
-            </textarea>
-          </app-card>
+            <!-- Notes -->
+            <div>
+              <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">Note <span class="font-normal text-[var(--text-tertiary)]">(opzionale)</span></label>
+              <textarea [(ngModel)]="notes" rows="3" placeholder="Note sull'appuntamento..."
+                class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none resize-none transition-colors">
+              </textarea>
+            </div>
+          }
+        </app-card>
 
-          <!-- Submit -->
-          <div class="flex items-center justify-end gap-3 pb-6">
-            <a routerLink="/appuntamenti">
-              <app-button variant="secondary">Annulla</app-button>
-            </a>
+        <!-- Navigation buttons -->
+        <div class="mt-5 flex items-center justify-between pb-8">
+          @if (currentStep() > 1) {
+            <app-button variant="secondary" (click)="prevStep()">← Indietro</app-button>
+          } @else {
+            <div></div>
+          }
+          @if (currentStep() < 4) {
+            <app-button [disabled]="!canAdvance()" (click)="nextStep()">Avanti →</app-button>
+          } @else {
             <app-button [disabled]="!canSubmit()" [isLoading]="isSaving()" (click)="onSubmit()">
               Crea appuntamento
             </app-button>
-          </div>
+          }
         </div>
       </div>
     </app-page-shell>
@@ -362,6 +422,7 @@ export class AppointmentFormComponent implements OnInit {
   clientSearch = '';
   readonly selectedDate = signal('');
   readonly selectedStartTime = signal('');
+  readonly currentStep = signal<1 | 2 | 3 | 4>(1);
   notes = '';
 
   // New client inline form
@@ -494,6 +555,22 @@ export class AppointmentFormComponent implements OnInit {
     !!this.selectedProfessionalId() && !!this.selectedClientId() && !!this.selectedDate() && !!this.resolvedSlot()
   );
 
+  readonly steps = computed(() => [
+    { n: 1 as const, label: 'Servizio', done: this.currentStep() > 1, active: this.currentStep() === 1 },
+    { n: 2 as const, label: 'Professionista', done: this.currentStep() > 2, active: this.currentStep() === 2 },
+    { n: 3 as const, label: 'Cliente', done: this.currentStep() > 3, active: this.currentStep() === 3 },
+    { n: 4 as const, label: 'Data e ora', done: false, active: this.currentStep() === 4 },
+  ]);
+
+  readonly canAdvance = computed(() => {
+    switch (this.currentStep()) {
+      case 1: return true;
+      case 2: return !!this.selectedProfessionalId();
+      case 3: return !!this.selectedClientId();
+      default: return false;
+    }
+  });
+
   private searchTimeout?: ReturnType<typeof setTimeout>;
   private loadSlotTimeout?: ReturnType<typeof setTimeout>;
 
@@ -526,7 +603,10 @@ export class AppointmentFormComponent implements OnInit {
 
     if (profId) {
       const pro = this.professionals().find((p) => p.id === profId);
-      if (pro) this.selectProfessional(pro);
+      if (pro) {
+        this.selectProfessional(pro);
+        this.currentStep.set(3);
+      }
     }
 
     if (date && profId) {
@@ -616,14 +696,18 @@ export class AppointmentFormComponent implements OnInit {
     if (this.selectedDate() && this.selectedProfessionalId()) this.loadAvailableSlots();
   }
 
+  goToStep(n: 1 | 2 | 3 | 4): void { this.currentStep.set(n); }
+  nextStep(): void { if (this.currentStep() < 4 && this.canAdvance()) this.currentStep.update((s) => (s + 1) as 1 | 2 | 3 | 4); }
+  prevStep(): void { if (this.currentStep() > 1) this.currentStep.update((s) => (s - 1) as 1 | 2 | 3 | 4); }
+
   getCalDayClass(day: { isSelected: boolean; isPast: boolean; isToday: boolean; capacityStatus: 'green' | 'yellow' | 'red' | null }): string {
     if (day.isSelected) return 'bg-indigo-600 text-white font-semibold rounded-lg shadow-sm';
-    if (day.isPast) return 'text-gray-300 cursor-not-allowed';
-    let base = day.isToday ? 'text-indigo-700 font-bold rounded-lg' : 'text-gray-700 rounded-lg';
-    if (day.capacityStatus === 'red') base += ' bg-red-100 hover:bg-red-200';
-    else if (day.capacityStatus === 'yellow') base += ' bg-amber-50 hover:bg-amber-100';
-    else if (day.capacityStatus === 'green') base += ' bg-emerald-50 hover:bg-emerald-100';
-    else base += day.isToday ? ' hover:bg-indigo-50' : ' hover:bg-gray-100';
+    if (day.isPast) return 'text-[var(--text-tertiary)] cursor-not-allowed';
+    let base = day.isToday ? 'text-indigo-600 dark:text-indigo-400 font-bold rounded-lg' : 'text-[var(--text-primary)] rounded-lg';
+    if (day.capacityStatus === 'red') base += ' bg-red-100 dark:bg-red-900/40 hover:bg-red-200 dark:hover:bg-red-900/60';
+    else if (day.capacityStatus === 'yellow') base += ' bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50';
+    else if (day.capacityStatus === 'green') base += ' bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50';
+    else base += ' hover:bg-[var(--surface-hover)]';
     return base;
   }
 
