@@ -17,6 +17,9 @@ export interface Studio {
   email: string | null;
   phone: string | null;
   timezone: string;
+  maxAppointmentsPerDay: number | null;
+  warningThreshold: number | null;
+  criticalThreshold: number | null;
 }
 
 export interface CreateStudioRequest {
@@ -30,6 +33,9 @@ export interface EditStudioRequest {
   email?: string;
   phone?: string;
   timezone?: string;
+  maxAppointmentsPerDay?: number | null;
+  warningThreshold?: number | null;
+  criticalThreshold?: number | null;
 }
 
 /* ── AppUser ────────────────────────────── */

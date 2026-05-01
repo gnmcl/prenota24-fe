@@ -147,6 +147,46 @@ type Section = 'account' | 'studio';
                       placeholder="+39 02 1234567"
                       formControlName="phone"
                     />
+
+                    <div class="mt-2 border-t border-[var(--surface-card-border)] pt-5">
+                      <h3 class="mb-1 text-sm font-semibold text-[var(--text-primary)]">Soglie di capacità giornaliera</h3>
+                      <p class="mb-4 text-xs text-[var(--text-secondary)]">
+                        Imposta un limite massimo e soglie per visualizzare gli indicatori colorati nell'agenda:
+                        verde sotto la soglia di avviso, giallo dalla soglia di avviso, rosso dalla soglia critica.
+                        La soglia di avviso deve essere inferiore a quella critica.
+                      </p>
+                      <div class="grid gap-4 sm:grid-cols-3">
+                        <app-input
+                          label="Massimo appuntamenti/giorno"
+                          type="number"
+                          placeholder="es. 30"
+                          min="1"
+                          step="1"
+                          formControlName="maxAppointmentsPerDay"
+                        />
+                        <app-input
+                          label="Soglia avviso (giallo)"
+                          type="number"
+                          placeholder="es. 20"
+                          min="1"
+                          step="1"
+                          formControlName="warningThreshold"
+                          [error]="studioForm.hasError('thresholdOrder') && studioForm.touched ? 'Deve essere < soglia critica' : ''"
+                        />
+                        <app-input
+                          label="Soglia critica (rosso)"
+                          type="number"
+                          placeholder="es. 28"
+                          min="1"
+                          step="1"
+                          formControlName="criticalThreshold"
+                        />
+                      </div>
+                      @if (studioForm.hasError('thresholdOrder') && studioForm.touched) {
+                        <p class="mt-2 text-xs text-[var(--status-danger-text)]">La soglia di avviso deve essere strettamente inferiore alla soglia critica.</p>
+                      }
+                    </div>
+
                     <div class="flex justify-end pt-1">
                       <app-button type="submit" [isLoading]="isSavingStudio()">Salva modifiche</app-button>
                     </div>
@@ -222,13 +262,23 @@ export class SettingsComponent implements OnInit {
     name: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(255)]],
     email: [''],
     phone: [''],
-  });
+    maxAppointmentsPerDay: [null as number | null],
+    warningThreshold: [null as number | null],
+    criticalThreshold: [null as number | null],
+  }, { validators: this.thresholdOrderValidator });
 
   ngOnInit(): void {
     const studioId = this.authService.user()!.studioId;
     this.studioService.getMyStudio(studioId).subscribe({
       next: (studio) => {
-        this.studioForm.patchValue({ name: studio.name, email: studio.email ?? '', phone: studio.phone ?? '' });
+        this.studioForm.patchValue({
+          name: studio.name,
+          email: studio.email ?? '',
+          phone: studio.phone ?? '',
+          maxAppointmentsPerDay: studio.maxAppointmentsPerDay ?? null,
+          warningThreshold: studio.warningThreshold ?? null,
+          criticalThreshold: studio.criticalThreshold ?? null,
+        });
         this.studioLoading.set(false);
       },
       error: (err) => {
@@ -286,11 +336,15 @@ export class SettingsComponent implements OnInit {
     this.studioSuccess.set(null);
     this.isSavingStudio.set(true);
 
-    const { name, email, phone } = this.studioForm.getRawValue();
+    const { name, email, phone, maxAppointmentsPerDay, warningThreshold, criticalThreshold } = this.studioForm.getRawValue();
+    const toNum = (v: number | null | undefined) => (v !== null && v !== undefined && v !== ('' as unknown as number) ? Number(v) : undefined);
     this.studioService.editStudio({
       name: name ?? undefined,
       email: email || undefined,
       phone: phone || undefined,
+      maxAppointmentsPerDay: toNum(maxAppointmentsPerDay),
+      warningThreshold: toNum(warningThreshold),
+      criticalThreshold: toNum(criticalThreshold),
     }).subscribe({
       next: () => {
         this.studioSuccess.set('Modifiche salvate con successo.');
@@ -345,6 +399,15 @@ export class SettingsComponent implements OnInit {
     const confirmCtrl = group.get('confirmPassword');
     if (confirmCtrl?.errors?.['passwordsMismatch']) {
       confirmCtrl.setErrors(null);
+    }
+    return null;
+  }
+
+  private thresholdOrderValidator(group: import('@angular/forms').AbstractControl) {
+    const warn = group.get('warningThreshold')?.value;
+    const crit = group.get('criticalThreshold')?.value;
+    if (warn !== null && warn !== '' && crit !== null && crit !== '' && Number(warn) >= Number(crit)) {
+      return { thresholdOrder: true };
     }
     return null;
   }

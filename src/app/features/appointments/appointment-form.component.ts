@@ -9,6 +9,8 @@ import { AppointmentService } from '../../core/services/appointment.service';
 import { ProfessionalService } from '../../core/services/professional.service';
 import { ClientService } from '../../core/services/client.service';
 import { ServiceTypeService } from '../../core/services/service-type.service';
+import { StudioService } from '../../core/services/studio.service';
+import { AuthService } from '../../core/services/auth.service';
 import type {
   ProfessionalResponse,
   ClientSummaryResponse,
@@ -188,7 +190,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
             }
           </app-card>
 
-          <!-- Step 4: Date + Time (free time picker) -->
+          <!-- Step 4: Date + Slots -->
           <app-card>
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">4. Data e ora</h3>
 
@@ -233,64 +235,38 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
               </div>
             }
 
-            <!-- Free time picker (not fixed slots) -->
+            <!-- Slot picker -->
             @if (selectedDate() && selectedProfessionalId()) {
               <div class="rounded-xl border border-gray-200 bg-gray-50/50 p-4">
-                <h4 class="text-sm font-semibold text-gray-700 mb-3">Scegli l'orario</h4>
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">Orari disponibili</h4>
 
-                <div class="grid gap-4 sm:grid-cols-3">
-                  <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Inizio *</label>
-                    <input type="time" [ngModel]="selectedStartTime()" (ngModelChange)="setStartTime($event)" step="300"
-                      class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm bg-white shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
-                  </div>
-                  <div>
+                @if (!selectedServiceId()) {
+                  <div class="mb-4">
                     <label class="block text-xs font-medium text-gray-600 mb-1">Durata (min)</label>
-                    @if (selectedServiceId()) {
-                      <div class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm bg-gray-100 text-gray-600">
-                        {{ selectedDuration() }}
-                      </div>
-                    } @else {
-                      <input type="number" [ngModel]="selectedDuration()" (ngModelChange)="setDuration($event)" min="5" step="5"
-                        class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm bg-white shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
-                    }
-                  </div>
-                  <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Fine</label>
-                    <div class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm bg-gray-100 text-gray-600">
-                      {{ computedEndTime() || '—' }}
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Availability indicator -->
-                @if (selectedStartTime()) {
-                  <div class="mt-3 flex items-center gap-2">
-                    @if (checkingAvailability()) {
-                      <div class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-600"></div>
-                      <span class="text-xs text-gray-400">Verifica disponibilità...</span>
-                    } @else if (isSlotAvailable()) {
-                      <div class="h-2.5 w-2.5 rounded-full bg-emerald-500"></div>
-                      <span class="text-xs font-medium text-emerald-700">Orario disponibile</span>
-                    } @else {
-                      <div class="h-2.5 w-2.5 rounded-full bg-red-500"></div>
-                      <span class="text-xs font-medium text-red-700">Orario non disponibile o con sovrapposizioni</span>
-                    }
+                    <input type="number" [ngModel]="selectedDuration()" (ngModelChange)="setDuration($event)" min="5" step="5"
+                      class="w-36 rounded-lg border border-gray-200 px-3 py-2.5 text-sm bg-white shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
                   </div>
                 }
 
-                <!-- Quick time suggestions -->
-                <div class="mt-3 flex flex-wrap gap-2">
-                  <span class="text-xs text-gray-400">Suggerimenti:</span>
-                  @for (t of quickTimes; track t) {
-                    <button (click)="setStartTime(t)" type="button"
-                      [class]="selectedStartTime() === t
-                        ? 'rounded-full bg-indigo-600 px-3 py-1 text-xs font-medium text-white'
-                        : 'rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-600 hover:bg-indigo-50 hover:border-indigo-200 transition-colors'">
-                      {{ t }}
-                    </button>
-                  }
-                </div>
+                @if (loadingSlots()) {
+                  <div class="flex items-center gap-2 py-3">
+                    <div class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-600"></div>
+                    <span class="text-xs text-gray-400">Carico orari disponibili...</span>
+                  </div>
+                } @else if (availableSlots().length === 0) {
+                  <p class="text-sm text-gray-400 py-2">Nessun orario disponibile per questo giorno.</p>
+                } @else {
+                  <div class="flex flex-wrap gap-2">
+                    @for (slot of availableSlots(); track slot.start) {
+                      <button (click)="selectSlot(slot)" type="button"
+                        [class]="selectedSlot()?.start === slot.start
+                          ? 'rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-sm'
+                          : 'rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-700 hover:border-indigo-300 hover:bg-indigo-50 transition-colors'">
+                        {{ formatSlotTime(slot.start) }}
+                      </button>
+                    }
+                  </div>
+                }
               </div>
             }
           </app-card>
@@ -324,14 +300,17 @@ export class AppointmentFormComponent implements OnInit {
   private readonly profService = inject(ProfessionalService);
   private readonly clientService = inject(ClientService);
   private readonly svcService = inject(ServiceTypeService);
+  private readonly studioService = inject(StudioService);
+  private readonly authService = inject(AuthService);
 
   readonly professionals = signal<ProfessionalResponse[]>([]);
   readonly services = signal<ServiceTypeResponse[]>([]);
   readonly clientResults = signal<ClientSummaryResponse[]>([]);
   readonly isSaving = signal(false);
   readonly error = signal('');
-  readonly checkingAvailability = signal(false);
-  readonly isSlotAvailable = signal(false);
+  readonly availableSlots = signal<TimeSlotResponse[]>([]);
+  readonly loadingSlots = signal(false);
+  readonly selectedSlot = signal<TimeSlotResponse | null>(null);
 
   readonly selectedProfessionalId = signal<UUID | null>(null);
   readonly selectedProfessionalName = signal('');
@@ -345,12 +324,7 @@ export class AppointmentFormComponent implements OnInit {
   readonly professionalSearchText = signal('');
   clientSearch = '';
   readonly selectedDate = signal('');
-  readonly selectedStartTime = signal('');
   notes = '';
-
-  // Quick time suggestions
-  readonly quickTimes = ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-    '12:00', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00'];
 
   // New client inline form
   readonly showNewClientForm = signal(false);
@@ -396,15 +370,7 @@ export class AppointmentFormComponent implements OnInit {
     return d.toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
   });
 
-  readonly computedEndTime = computed(() => {
-    const st = this.selectedStartTime();
-    if (!st) return '';
-    const [h, m] = st.split(':').map(Number);
-    const totalMin = h * 60 + m + this.selectedDuration();
-    const eh = Math.floor(totalMin / 60);
-    const em = totalMin % 60;
-    return `${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}`;
-  });
+  readonly studioTimezone = computed(() => this.studioService.studio()?.timezone ?? 'Europe/Rome');
 
   readonly filteredServices = computed(() => {
     const q = this.serviceSearchText().toLowerCase().trim();
@@ -433,13 +399,17 @@ export class AppointmentFormComponent implements OnInit {
   });
 
   readonly canSubmit = computed(() =>
-    !!this.selectedProfessionalId() && !!this.selectedClientId() && !!this.selectedDate() && !!this.selectedStartTime() && this.isSlotAvailable()
+    !!this.selectedProfessionalId() && !!this.selectedClientId() && !!this.selectedDate() && !!this.selectedSlot()
   );
 
   private searchTimeout?: ReturnType<typeof setTimeout>;
-  private availCheckTimeout?: ReturnType<typeof setTimeout>;
+  private loadSlotTimeout?: ReturnType<typeof setTimeout>;
 
   ngOnInit(): void {
+    const user = this.authService.user();
+    if (user) {
+      this.studioService.getMyStudio(user.studioId).subscribe();
+    }
     this.profService.list().subscribe({
       next: (list) => {
         this.professionals.set(list.filter((p) => p.active));
@@ -452,7 +422,6 @@ export class AppointmentFormComponent implements OnInit {
   private applyQueryParams(): void {
     const params = this.route.snapshot.queryParamMap;
     const date = params.get('date');
-    const time = params.get('time');
     const profId = params.get('professionalId');
 
     if (date) {
@@ -462,17 +431,13 @@ export class AppointmentFormComponent implements OnInit {
       this.calYear.set(+parts[0]);
     }
 
-    if (time) {
-      this.selectedStartTime.set(time);
-    }
-
     if (profId) {
       const pro = this.professionals().find((p) => p.id === profId);
       if (pro) this.selectProfessional(pro);
     }
 
-    if (date && time && profId) {
-      this.checkAvailability();
+    if (date && profId) {
+      this.loadAvailableSlots();
     }
   }
 
@@ -495,14 +460,15 @@ export class AppointmentFormComponent implements OnInit {
   selectProfessional(pro: ProfessionalResponse): void {
     this.selectedProfessionalId.set(pro.id);
     this.selectedProfessionalName.set(pro.firstName + ' ' + pro.lastName);
-    this.isSlotAvailable.set(false);
-    if (this.selectedDate() && this.selectedStartTime()) this.checkAvailability();
+    this.selectedSlot.set(null);
+    if (this.selectedDate()) this.loadAvailableSlots();
   }
 
   clearProfessional(): void {
     this.selectedProfessionalId.set(null);
     this.selectedProfessionalName.set('');
-    this.isSlotAvailable.set(false);
+    this.selectedSlot.set(null);
+    this.availableSlots.set([]);
   }
 
   selectService(svc: ServiceTypeResponse): void {
@@ -511,8 +477,8 @@ export class AppointmentFormComponent implements OnInit {
     this.selectedServiceColor.set(svc.color ?? null);
     this.selectedDuration.set(svc.durationMinutes);
     this.resetProfessionalIfNeeded();
-    this.isSlotAvailable.set(false);
-    if (this.selectedDate() && this.selectedStartTime() && this.selectedProfessionalId()) this.checkAvailability();
+    this.selectedSlot.set(null);
+    if (this.selectedDate() && this.selectedProfessionalId()) this.loadAvailableSlots();
   }
 
   selectNoService(): void {
@@ -521,7 +487,8 @@ export class AppointmentFormComponent implements OnInit {
     this.selectedServiceColor.set(null);
     this.selectedDuration.set(30);
     this.resetProfessionalIfNeeded();
-    this.isSlotAvailable.set(false);
+    this.selectedSlot.set(null);
+    if (this.selectedDate() && this.selectedProfessionalId()) this.loadAvailableSlots();
   }
 
   private resetProfessionalIfNeeded(): void {
@@ -543,18 +510,14 @@ export class AppointmentFormComponent implements OnInit {
 
   selectDate(dateStr: string): void {
     this.selectedDate.set(dateStr);
-    this.isSlotAvailable.set(false);
-    if (this.selectedProfessionalId() && this.selectedStartTime()) this.checkAvailability();
-  }
-
-  setStartTime(time: string): void {
-    this.selectedStartTime.set(time);
-    this.onTimeChange();
+    this.selectedSlot.set(null);
+    if (this.selectedProfessionalId()) this.loadAvailableSlots();
   }
 
   setDuration(val: number): void {
     this.selectedDuration.set(val);
-    this.onTimeChange();
+    this.selectedSlot.set(null);
+    if (this.selectedDate() && this.selectedProfessionalId()) this.loadAvailableSlots();
   }
 
   getCalDayClass(day: { isSelected: boolean; isPast: boolean; isToday: boolean }): string {
@@ -564,68 +527,31 @@ export class AppointmentFormComponent implements OnInit {
     return 'text-gray-700 hover:bg-gray-100 rounded-lg';
   }
 
-  /** When time or duration changes, check availability with a debounce */
-  onTimeChange(): void {
-    this.isSlotAvailable.set(false);
-    clearTimeout(this.availCheckTimeout);
-    this.availCheckTimeout = setTimeout(() => this.checkAvailability(), 400);
+  private loadAvailableSlots(): void {
+    const profId = this.selectedProfessionalId();
+    const date = this.selectedDate();
+    const duration = this.selectedDuration();
+    if (!profId || !date || duration < 5) return;
+    clearTimeout(this.loadSlotTimeout);
+    this.loadSlotTimeout = setTimeout(() => {
+      this.availableSlots.set([]);
+      this.loadingSlots.set(true);
+      this.profService.getAvailableSlots(profId, date, duration).subscribe({
+        next: (slots) => { this.availableSlots.set(slots); this.loadingSlots.set(false); },
+        error: () => this.loadingSlots.set(false),
+      });
+    }, 300);
   }
 
-  /** Check if the selected time slot is available */
-  private checkAvailability(): void {
-    const profId = this.selectedProfessionalId();
-    if (!profId || !this.selectedDate() || !this.selectedStartTime()) return;
-    this.checkingAvailability.set(true);
+  selectSlot(slot: TimeSlotResponse): void {
+    this.selectedSlot.set(slot);
+  }
 
-    // Use a small duration (5 min) to get all granular availability windows
-    this.profService.getAvailableSlots(profId, this.selectedDate(), 5).subscribe({
-      next: (slots) => {
-        if (slots.length === 0) {
-          this.isSlotAvailable.set(false);
-          this.checkingAvailability.set(false);
-          return;
-        }
-
-        // Merge consecutive/adjacent slots into continuous availability windows.
-        // Compare everything in UTC minutes to avoid any browser-timezone inconsistency.
-        const toUTCMinutes = (iso: string) => {
-          const d = new Date(iso);
-          return d.getUTCHours() * 60 + d.getUTCMinutes();
-        };
-
-        const sorted = [...slots].sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
-        const windows: { startMin: number; endMin: number }[] = [];
-        let curStart = toUTCMinutes(sorted[0].start);
-        let curEnd = toUTCMinutes(sorted[0].end);
-
-        for (let i = 1; i < sorted.length; i++) {
-          const sMin = toUTCMinutes(sorted[i].start);
-          const eMin = toUTCMinutes(sorted[i].end);
-          if (sMin <= curEnd) {
-            // Overlapping or adjacent → extend window
-            curEnd = Math.max(curEnd, eMin);
-          } else {
-            windows.push({ startMin: curStart, endMin: curEnd });
-            curStart = sMin;
-            curEnd = eMin;
-          }
-        }
-        windows.push({ startMin: curStart, endMin: curEnd });
-
-        // Convert the user-selected local time to UTC minutes for comparison
-        const chosenStartUTC = new Date(`${this.selectedDate()}T${this.selectedStartTime()}:00`);
-        const chosenStartMin = chosenStartUTC.getUTCHours() * 60 + chosenStartUTC.getUTCMinutes();
-        const chosenEndMin = chosenStartMin + this.selectedDuration();
-
-        const fits = windows.some((w) => chosenStartMin >= w.startMin && chosenEndMin <= w.endMin);
-
-        this.isSlotAvailable.set(fits);
-        this.checkingAvailability.set(false);
-      },
-      error: () => {
-        this.isSlotAvailable.set(false);
-        this.checkingAvailability.set(false);
-      },
+  formatSlotTime(iso: string): string {
+    return new Date(iso).toLocaleTimeString('it-IT', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: this.studioTimezone(),
     });
   }
 
@@ -659,14 +585,8 @@ export class AppointmentFormComponent implements OnInit {
   onSubmit(): void {
     const profId = this.selectedProfessionalId();
     const clientId = this.selectedClientId();
-    const date = this.selectedDate();
-    const time = this.selectedStartTime();
-    if (!profId || !clientId || !date || !time) return;
-
-    // Convert local time to UTC ISO string for java.time.Instant
-    const startIso = new Date(`${date}T${time}:00`).toISOString();
-    const endTime = this.computedEndTime();
-    const endIso = new Date(`${date}T${endTime}:00`).toISOString();
+    const slot = this.selectedSlot();
+    if (!profId || !clientId || !slot) return;
 
     this.isSaving.set(true);
     this.error.set('');
@@ -674,8 +594,8 @@ export class AppointmentFormComponent implements OnInit {
       professionalId: profId,
       clientId: clientId,
       serviceTypeId: this.selectedServiceId() ?? undefined,
-      startDatetime: startIso,
-      endDatetime: endIso,
+      startDatetime: slot.start,
+      endDatetime: slot.end,
       notes: this.notes.trim() || undefined,
       confirmImmediately: true,
     }).subscribe({

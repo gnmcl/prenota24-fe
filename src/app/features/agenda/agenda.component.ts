@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, HostListener, inject, OnInit, signal, computed } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { CardComponent } from '../../shared/components/card/card.component';
@@ -7,6 +7,8 @@ import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { AppointmentService } from '../../core/services/appointment.service';
 import { ProfessionalService } from '../../core/services/professional.service';
 import { ServiceTypeService } from '../../core/services/service-type.service';
+import { StudioService } from '../../core/services/studio.service';
+import { AuthService } from '../../core/services/auth.service';
 import type {
   AppointmentResponse,
   AppointmentStatus,
@@ -20,6 +22,9 @@ const HOUR_START = 7;
 const HOUR_END = 21;
 const SLOT_HEIGHT = 60; // px per hour
 const SNAP_MINUTES = 5; // snap to 5 min grid
+const MONTHS_IT = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+const PICKER_DAYS = ['L', 'M', 'M', 'G', 'V', 'S', 'D'];
+const ACTIVE_STATUSES: string[] = ['REQUESTED', 'CONFIRMED', 'PROPOSED_NEW_TIME'];
 
 interface ProfAvailability {
   profId: string;
@@ -74,10 +79,58 @@ interface ProfAvailability {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
             </svg>
           </button>
-          <div class="text-center flex-1">
-            <h3 class="text-base sm:text-lg font-semibold text-gray-900">{{ dateLabel() }}</h3>
+          <div class="relative flex-1 text-center">
+            <h3 class="text-base sm:text-lg font-semibold text-gray-900 inline-flex items-center gap-2">
+              {{ dateLabel() }}
+              <button (click)="$event.stopPropagation(); openDatePicker()"
+                class="inline-flex items-center justify-center rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-indigo-600 transition-colors"
+                title="Scegli data">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </button>
+            </h3>
             @if (isToday()) {
-              <span class="text-xs text-indigo-600 font-medium">Oggi</span>
+              <span class="block text-xs text-indigo-600 font-medium">Oggi</span>
+            }
+            <!-- Date picker popover -->
+            @if (showDatePicker()) {
+              <div (click)="$event.stopPropagation()"
+                class="absolute left-1/2 top-full mt-2 z-50 w-72 -translate-x-1/2 rounded-2xl border border-gray-200 bg-white shadow-xl">
+                <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+                  <button (click)="calPickerPrevMonth()" type="button"
+                    class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                  </button>
+                  <span class="text-sm font-semibold text-gray-900">{{ calPickerMonthLabel() }}</span>
+                  <button (click)="calPickerNextMonth()" type="button"
+                    class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                  </button>
+                </div>
+                <div class="grid grid-cols-7 px-2 pt-2">
+                  @for (day of pickerDays; track $index) {
+                    <div class="py-1 text-center text-[10px] font-medium text-gray-400 uppercase">{{ day }}</div>
+                  }
+                </div>
+                <div class="grid grid-cols-7 px-2 pb-3">
+                  @for (day of calPickerDays(); track $index) {
+                    @if (day) {
+                      <button (click)="selectPickerDate(day.dateStr)" type="button"
+                        [class]="getPickerDayClass(day)"
+                        class="py-1.5 text-center text-sm transition-all duration-100 rounded-lg">
+                        {{ day.num }}
+                      </button>
+                    } @else {
+                      <div class="py-1.5"></div>
+                    }
+                  }
+                </div>
+              </div>
             }
           </div>
           <button (click)="nextDay()"
@@ -91,14 +144,27 @@ interface ProfAvailability {
         <!-- Week day quick nav -->
         <div class="mb-6 grid grid-cols-7 gap-1">
           @for (d of weekDays(); track d.date) {
-            <button (click)="goToDate(d.date)"
+            <button (click)="goToDate(d.date)" class="relative"
               [class]="d.date === currentDate()
                 ? 'rounded-xl bg-indigo-600 px-1 sm:px-2 py-2 text-center text-white shadow-sm'
                 : d.isToday
                   ? 'rounded-xl border-2 border-indigo-300 px-1 sm:px-2 py-2 text-center text-indigo-700 hover:bg-indigo-50 transition-colors'
                   : 'rounded-xl border border-gray-200 px-1 sm:px-2 py-2 text-center text-gray-700 hover:bg-gray-50 transition-colors'">
+              @if (d.capacityStatus) {
+                <span class="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white"
+                  [class]="d.capacityStatus === 'red' ? 'bg-red-500' : d.capacityStatus === 'yellow' ? 'bg-amber-400' : 'bg-emerald-500'">
+                </span>
+              }
               <div class="text-[10px] sm:text-xs">{{ d.dayLabel }}</div>
               <div class="text-sm font-semibold">{{ d.dayNum }}</div>
+              @if (d.appointmentCount > 0) {
+                <div class="mt-0.5 flex justify-center">
+                  <span class="inline-flex items-center justify-center rounded-full px-1.5 py-0 text-[9px] font-semibold leading-4 min-w-[16px]"
+                    [class]="d.date === currentDate() ? 'bg-white/20 text-white' : 'bg-indigo-100 text-indigo-700'">
+                    {{ d.appointmentCount }}
+                  </span>
+                </div>
+              }
             </button>
           }
         </div>
@@ -261,6 +327,8 @@ export class AgendaComponent implements OnInit {
   private readonly aptService = inject(AppointmentService);
   private readonly profService = inject(ProfessionalService);
   private readonly svcService = inject(ServiceTypeService);
+  private readonly studioService = inject(StudioService);
+  private readonly authService = inject(AuthService);
 
   readonly viewMode = signal<'list' | 'calendar'>('calendar');
   readonly currentDate = signal(this.toDateStr(new Date()));
@@ -269,6 +337,12 @@ export class AgendaComponent implements OnInit {
   readonly serviceTypes = signal<ServiceTypeResponse[]>([]);
   readonly profAvailabilities = signal<ProfAvailability[]>([]);
   readonly isLoading = signal(true);
+
+  // Date picker
+  readonly showDatePicker = signal(false);
+  readonly calPickerMonth = signal(new Date().getMonth());
+  readonly calPickerYear = signal(new Date().getFullYear());
+  readonly pickerDays = PICKER_DAYS;
 
   readonly hourStart = HOUR_START;
   readonly slotHeight = SLOT_HEIGHT;
@@ -297,6 +371,25 @@ export class AgendaComponent implements OnInit {
 
   readonly isToday = computed(() => this.currentDate() === this.toDateStr(new Date()));
 
+  readonly calPickerMonthLabel = computed(() => `${MONTHS_IT[this.calPickerMonth()]} ${this.calPickerYear()}`);
+
+  readonly calPickerDays = computed(() => {
+    const year = this.calPickerYear();
+    const month = this.calPickerMonth();
+    const firstDay = new Date(year, month, 1);
+    let dow = firstDay.getDay();
+    if (dow === 0) dow = 7;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const todayStr = this.toDateStr(new Date());
+    const cells: (null | { num: number; dateStr: string; isToday: boolean; isSelected: boolean })[] = [];
+    for (let i = 1; i < dow; i++) cells.push(null);
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      cells.push({ num: d, dateStr, isToday: dateStr === todayStr, isSelected: dateStr === this.currentDate() });
+    }
+    return cells;
+  });
+
   readonly weekDays = computed(() => {
     const todayStr = this.toDateStr(new Date());
     const parts = this.currentDate().split('-');
@@ -304,21 +397,45 @@ export class AgendaComponent implements OnInit {
     const dow = cur.getDay() || 7;
     const monday = new Date(cur);
     monday.setDate(cur.getDate() - dow + 1);
+    const apts = this.allAppointments();
+    const studio = this.studioService.studio();
+    const warnThreshold = studio?.warningThreshold ?? null;
+    const critThreshold = studio?.criticalThreshold ?? null;
+    const hasThresholds = warnThreshold !== null || critThreshold !== null;
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(monday);
       d.setDate(monday.getDate() + i);
       const dateStr = this.toDateStr(d);
+      const appointmentCount = apts.filter(
+        (a) => a.startDatetime.startsWith(dateStr) && ACTIVE_STATUSES.includes(a.status)
+      ).length;
+      let capacityStatus: 'green' | 'yellow' | 'red' | null = null;
+      if (hasThresholds) {
+        if (critThreshold !== null && appointmentCount >= critThreshold) {
+          capacityStatus = 'red';
+        } else if (warnThreshold !== null && appointmentCount >= warnThreshold) {
+          capacityStatus = 'yellow';
+        } else {
+          capacityStatus = 'green';
+        }
+      }
       return {
         date: dateStr,
         dayLabel: d.toLocaleDateString('it-IT', { weekday: 'short' }),
         dayNum: d.getDate(),
         isToday: dateStr === todayStr,
+        appointmentCount,
+        capacityStatus,
       };
     });
   });
 
   ngOnInit(): void {
     this.isMobile = window.innerWidth < 640;
+    const user = this.authService.user();
+    if (user) {
+      this.studioService.getMyStudio(user.studioId).subscribe();
+    }
     this.profService.list().subscribe({
       next: (list) => {
         const active = list.filter((p) => p.active);
@@ -342,6 +459,49 @@ export class AgendaComponent implements OnInit {
     });
     this.svcService.list().subscribe({ next: (list) => this.serviceTypes.set(list.filter((s) => s.active)) });
     this.loadAppointments();
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    if (this.showDatePicker()) {
+      this.showDatePicker.set(false);
+    }
+  }
+
+  openDatePicker(): void {
+    const parts = this.currentDate().split('-');
+    this.calPickerMonth.set(+parts[1] - 1);
+    this.calPickerYear.set(+parts[0]);
+    this.showDatePicker.update((v) => !v);
+  }
+
+  calPickerPrevMonth(): void {
+    if (this.calPickerMonth() === 0) {
+      this.calPickerMonth.set(11);
+      this.calPickerYear.update((y) => y - 1);
+    } else {
+      this.calPickerMonth.update((m) => m - 1);
+    }
+  }
+
+  calPickerNextMonth(): void {
+    if (this.calPickerMonth() === 11) {
+      this.calPickerMonth.set(0);
+      this.calPickerYear.update((y) => y + 1);
+    } else {
+      this.calPickerMonth.update((m) => m + 1);
+    }
+  }
+
+  selectPickerDate(dateStr: string): void {
+    this.goToDate(dateStr);
+    this.showDatePicker.set(false);
+  }
+
+  getPickerDayClass(day: { isSelected: boolean; isToday: boolean }): string {
+    if (day.isSelected) return 'bg-indigo-600 text-white font-semibold';
+    if (day.isToday) return 'text-indigo-600 font-bold ring-2 ring-inset ring-indigo-300';
+    return 'text-gray-700 hover:bg-gray-100';
   }
 
   prevDay(): void { this.shiftDate(-1); }
@@ -527,13 +687,25 @@ export class AgendaComponent implements OnInit {
 
   private loadAppointments(): void {
     this.isLoading.set(true);
-    this.aptService.list(0, 200).subscribe({
+    const bounds = this.getWeekBounds(this.currentDate());
+    this.aptService.list(0, 1000, undefined, undefined, bounds.start, bounds.end).subscribe({
       next: (page) => {
         this.allAppointments.set(page.content);
         this.isLoading.set(false);
       },
       error: () => this.isLoading.set(false),
     });
+  }
+
+  private getWeekBounds(dateStr: string): { start: string; end: string } {
+    const parts = dateStr.split('-');
+    const cur = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+    const dow = cur.getDay() || 7;
+    const monday = new Date(cur);
+    monday.setDate(cur.getDate() - dow + 1);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    return { start: this.toDateStr(monday), end: this.toDateStr(sunday) };
   }
 
   private toDateStr(d: Date): string {
