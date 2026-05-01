@@ -60,7 +60,7 @@ import type { AppointmentResponse, AppointmentStatus, Page } from '../../core/mo
             <div class="divide-y divide-[var(--surface-card-border)]">
               @for (apt of appointments(); track apt.id) {
                 <a [routerLink]="['/appuntamenti', apt.id]"
-                  class="flex items-center gap-4 px-5 py-4 hover:bg-[var(--surface-hover)] transition-colors">
+                  class="flex items-center gap-4 px-5 py-4 hover:bg-[var(--surface-hover)] transition-colors overflow-hidden min-w-0">
                   <!-- Date badge -->
                   <div class="hidden sm:flex flex-col items-center justify-center rounded-lg bg-[var(--status-accent-bg)] px-3 py-2 text-center shrink-0">
                     <span class="text-xs font-medium text-[var(--status-accent-text)]">{{ monthShort(apt.startDatetime) }}</span>
@@ -68,9 +68,9 @@ import type { AppointmentResponse, AppointmentStatus, Page } from '../../core/mo
                   </div>
                   <!-- Info -->
                   <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-2">
-                      <span class="font-medium text-[var(--text-primary)] truncate">{{ apt.clientFullName }}</span>
-                      <app-badge [variant]="statusVariant(apt.status)">{{ statusLabel(apt.status) }}</app-badge>
+                    <div class="flex items-center gap-2 min-w-0">
+                      <span class="font-medium text-[var(--text-primary)] truncate min-w-0">{{ apt.clientFullName }}</span>
+                      <span class="shrink-0"><app-badge [variant]="statusVariant(apt.status)">{{ statusLabel(apt.status) }}</app-badge></span>
                     </div>
                     <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-sm text-[var(--text-secondary)]">
                       <span>{{ timeRange(apt.startDatetime, apt.endDatetime) }}</span>

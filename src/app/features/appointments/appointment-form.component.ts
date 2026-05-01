@@ -15,6 +15,7 @@ import type {
   ProfessionalResponse,
   ClientSummaryResponse,
   ServiceTypeResponse,
+  AppointmentResponse,
   TimeSlotResponse,
   UUID,
 } from '../../core/models/domain.model';
@@ -233,39 +234,75 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
               <div class="mb-4 text-sm text-gray-600">
                 <span class="font-medium">{{ selectedDateLabel() }}</span>
               </div>
+              @if (isDailyLimitReached()) {
+                <div class="mb-4 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+                  <svg class="mt-0.5 h-4 w-4 shrink-0 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                  </svg>
+                  <div>
+                    <p class="text-sm font-semibold text-red-700">Soglia massima raggiunta</p>
+                    <p class="text-xs text-red-600 mt-0.5">Il numero massimo di appuntamenti per questo giorno è stato raggiunto. Scegli un altro giorno.</p>
+                  </div>
+                </div>
+              }
             }
 
             <!-- Slot picker -->
             @if (selectedDate() && selectedProfessionalId()) {
               <div class="rounded-xl border border-gray-200 bg-gray-50/50 p-4">
-                <h4 class="text-sm font-semibold text-gray-700 mb-3">Orari disponibili</h4>
+                <div class="grid gap-4 sm:grid-cols-2 mb-4">
+                  <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Orario *</label>
+                    <input type="time" [ngModel]="selectedStartTime()" (ngModelChange)="selectedStartTime.set($event)" step="300"
+                      class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm bg-white shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+                  </div>
+                  <div>
+                    @if (!selectedServiceId()) {
+                      <label class="block text-xs font-medium text-gray-600 mb-1">Durata (min)</label>
+                      <input type="number" [ngModel]="selectedDuration()" (ngModelChange)="setDuration($event)" min="5" step="5"
+                        class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm bg-white shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+                    } @else {
+                      <label class="block text-xs font-medium text-gray-600 mb-1">Fine</label>
+                      <div class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm bg-gray-100 text-gray-600">
+                        {{ computedEndTime() || '—' }}
+                      </div>
+                    }
+                  </div>
+                </div>
 
-                @if (!selectedServiceId()) {
-                  <div class="mb-4">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Durata (min)</label>
-                    <input type="number" [ngModel]="selectedDuration()" (ngModelChange)="setDuration($event)" min="5" step="5"
-                      class="w-36 rounded-lg border border-gray-200 px-3 py-2.5 text-sm bg-white shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+                <!-- Availability indicator -->
+                @if (selectedStartTime()) {
+                  <div class="mb-3 flex items-center gap-2">
+                    @if (resolvedSlot()) {
+                      <div class="h-2.5 w-2.5 rounded-full bg-emerald-500"></div>
+                      <span class="text-xs font-medium text-emerald-700">Orario disponibile</span>
+                    } @else {
+                      <div class="h-2.5 w-2.5 rounded-full bg-red-400"></div>
+                      <span class="text-xs font-medium text-red-600">Orario non disponibile</span>
+                    }
                   </div>
                 }
 
+                <!-- Available slot suggestions -->
                 @if (loadingSlots()) {
-                  <div class="flex items-center gap-2 py-3">
-                    <div class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-600"></div>
+                  <div class="flex items-center gap-2">
+                    <div class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-600"></div>
                     <span class="text-xs text-gray-400">Carico orari disponibili...</span>
                   </div>
-                } @else if (availableSlots().length === 0) {
-                  <p class="text-sm text-gray-400 py-2">Nessun orario disponibile per questo giorno.</p>
-                } @else {
-                  <div class="flex flex-wrap gap-2">
+                } @else if (availableSlots().length > 0) {
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-xs text-gray-400">Disponibili:</span>
                     @for (slot of availableSlots(); track slot.start) {
                       <button (click)="selectSlot(slot)" type="button"
-                        [class]="selectedSlot()?.start === slot.start
-                          ? 'rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-sm'
-                          : 'rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-700 hover:border-indigo-300 hover:bg-indigo-50 transition-colors'">
+                        [class]="selectedStartTime() === formatSlotTime(slot.start)
+                          ? 'rounded-full bg-indigo-600 px-3 py-1 text-xs font-medium text-white'
+                          : 'rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-600 hover:bg-indigo-50 hover:border-indigo-200 transition-colors'">
                         {{ formatSlotTime(slot.start) }}
                       </button>
                     }
                   </div>
+                } @else if (selectedDate() && selectedProfessionalId()) {
+                  <p class="text-xs text-gray-400">Nessun orario disponibile per questo giorno.</p>
                 }
               </div>
             }
@@ -310,7 +347,7 @@ export class AppointmentFormComponent implements OnInit {
   readonly error = signal('');
   readonly availableSlots = signal<TimeSlotResponse[]>([]);
   readonly loadingSlots = signal(false);
-  readonly selectedSlot = signal<TimeSlotResponse | null>(null);
+  readonly monthAppointments = signal<AppointmentResponse[]>([]);
 
   readonly selectedProfessionalId = signal<UUID | null>(null);
   readonly selectedProfessionalName = signal('');
@@ -324,6 +361,7 @@ export class AppointmentFormComponent implements OnInit {
   readonly professionalSearchText = signal('');
   clientSearch = '';
   readonly selectedDate = signal('');
+  readonly selectedStartTime = signal('');
   notes = '';
 
   // New client inline form
@@ -351,13 +389,36 @@ export class AppointmentFormComponent implements OnInit {
     const today = new Date();
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-    const cells: (null | { num: number; dateStr: string; isToday: boolean; isPast: boolean; isSelected: boolean })[] = [];
+    // Capacity data
+    const studio = this.studioService.studio();
+    const warn = studio?.warningThreshold ?? null;
+    const crit = studio?.criticalThreshold ?? null;
+    const hasThresholds = warn !== null || crit !== null;
+    const tz = this.studioTimezone();
+    const ACTIVE = ['REQUESTED', 'CONFIRMED', 'PROPOSED_NEW_TIME'];
+    const countByDate = new Map<string, number>();
+    if (hasThresholds) {
+      for (const apt of this.monthAppointments()) {
+        if (!ACTIVE.includes(apt.status)) continue;
+        const localDate = new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(new Date(apt.startDatetime));
+        countByDate.set(localDate, (countByDate.get(localDate) ?? 0) + 1);
+      }
+    }
+
+    const cells: (null | { num: number; dateStr: string; isToday: boolean; isPast: boolean; isSelected: boolean; capacityStatus: 'green' | 'yellow' | 'red' | null })[] = [];
     for (let i = 1; i < dow; i++) cells.push(null);
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const dayDate = new Date(year, month, d);
       const isPast = dayDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      cells.push({ num: d, dateStr, isToday: dateStr === todayStr, isPast, isSelected: dateStr === this.selectedDate() });
+      let capacityStatus: 'green' | 'yellow' | 'red' | null = null;
+      if (hasThresholds) {
+        const count = countByDate.get(dateStr) ?? 0;
+        if (crit !== null && count >= crit) capacityStatus = 'red';
+        else if (warn !== null && count >= warn) capacityStatus = 'yellow';
+        else if (count > 0) capacityStatus = 'green';
+      }
+      cells.push({ num: d, dateStr, isToday: dateStr === todayStr, isPast, isSelected: dateStr === this.selectedDate(), capacityStatus });
     }
     return cells;
   });
@@ -370,7 +431,37 @@ export class AppointmentFormComponent implements OnInit {
     return d.toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
   });
 
+  readonly computedEndTime = computed(() => {
+    const st = this.selectedStartTime();
+    if (!st) return '';
+    const [h, m] = st.split(':').map(Number);
+    const totalMin = h * 60 + m + this.selectedDuration();
+    return `${String(Math.floor(totalMin / 60)).padStart(2, '0')}:${String(totalMin % 60).padStart(2, '0')}`;
+  });
+
   readonly studioTimezone = computed(() => this.studioService.studio()?.timezone ?? 'Europe/Rome');
+
+  /** True when the selected date has already reached maxAppointmentsPerDay */
+  readonly isDailyLimitReached = computed(() => {
+    const date = this.selectedDate();
+    const max = this.studioService.studio()?.maxAppointmentsPerDay ?? null;
+    if (!date || max === null) return false;
+    const tz = this.studioTimezone();
+    const ACTIVE = ['REQUESTED', 'CONFIRMED', 'PROPOSED_NEW_TIME'];
+    const count = this.monthAppointments().filter((a) => {
+      if (!ACTIVE.includes(a.status)) return false;
+      return new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(new Date(a.startDatetime)) === date;
+    }).length;
+    return count >= max;
+  });
+
+  /** The slot that matches the manually-entered or chip-selected start time — used for submit */
+  readonly resolvedSlot = computed(() => {
+    const time = this.selectedStartTime();
+    const slots = this.availableSlots();
+    if (!time || !slots.length) return null;
+    return slots.find((s) => this.formatSlotTime(s.start) === time) ?? null;
+  });
 
   readonly filteredServices = computed(() => {
     const q = this.serviceSearchText().toLowerCase().trim();
@@ -399,7 +490,8 @@ export class AppointmentFormComponent implements OnInit {
   });
 
   readonly canSubmit = computed(() =>
-    !!this.selectedProfessionalId() && !!this.selectedClientId() && !!this.selectedDate() && !!this.selectedSlot()
+    !this.isDailyLimitReached() &&
+    !!this.selectedProfessionalId() && !!this.selectedClientId() && !!this.selectedDate() && !!this.resolvedSlot()
   );
 
   private searchTimeout?: ReturnType<typeof setTimeout>;
@@ -417,6 +509,7 @@ export class AppointmentFormComponent implements OnInit {
       },
     });
     this.svcService.list().subscribe({ next: (list) => this.services.set(list.filter((s) => s.active)) });
+    this.loadMonthAppointments();
   }
 
   private applyQueryParams(): void {
@@ -460,14 +553,14 @@ export class AppointmentFormComponent implements OnInit {
   selectProfessional(pro: ProfessionalResponse): void {
     this.selectedProfessionalId.set(pro.id);
     this.selectedProfessionalName.set(pro.firstName + ' ' + pro.lastName);
-    this.selectedSlot.set(null);
+    this.selectedStartTime.set('');
     if (this.selectedDate()) this.loadAvailableSlots();
   }
 
   clearProfessional(): void {
     this.selectedProfessionalId.set(null);
     this.selectedProfessionalName.set('');
-    this.selectedSlot.set(null);
+    this.selectedStartTime.set('');
     this.availableSlots.set([]);
   }
 
@@ -477,7 +570,7 @@ export class AppointmentFormComponent implements OnInit {
     this.selectedServiceColor.set(svc.color ?? null);
     this.selectedDuration.set(svc.durationMinutes);
     this.resetProfessionalIfNeeded();
-    this.selectedSlot.set(null);
+    this.selectedStartTime.set('');
     if (this.selectedDate() && this.selectedProfessionalId()) this.loadAvailableSlots();
   }
 
@@ -487,7 +580,7 @@ export class AppointmentFormComponent implements OnInit {
     this.selectedServiceColor.set(null);
     this.selectedDuration.set(30);
     this.resetProfessionalIfNeeded();
-    this.selectedSlot.set(null);
+    this.selectedStartTime.set('');
     if (this.selectedDate() && this.selectedProfessionalId()) this.loadAvailableSlots();
   }
 
@@ -502,29 +595,36 @@ export class AppointmentFormComponent implements OnInit {
   calPrevMonth(): void {
     if (this.calMonth() === 0) { this.calMonth.set(11); this.calYear.update((y) => y - 1); }
     else { this.calMonth.update((m) => m - 1); }
+    this.loadMonthAppointments();
   }
   calNextMonth(): void {
     if (this.calMonth() === 11) { this.calMonth.set(0); this.calYear.update((y) => y + 1); }
     else { this.calMonth.update((m) => m + 1); }
+    this.loadMonthAppointments();
   }
 
   selectDate(dateStr: string): void {
     this.selectedDate.set(dateStr);
-    this.selectedSlot.set(null);
+    this.selectedStartTime.set('');
+    this.availableSlots.set([]);
     if (this.selectedProfessionalId()) this.loadAvailableSlots();
   }
 
   setDuration(val: number): void {
     this.selectedDuration.set(val);
-    this.selectedSlot.set(null);
+    this.selectedStartTime.set('');
     if (this.selectedDate() && this.selectedProfessionalId()) this.loadAvailableSlots();
   }
 
-  getCalDayClass(day: { isSelected: boolean; isPast: boolean; isToday: boolean }): string {
+  getCalDayClass(day: { isSelected: boolean; isPast: boolean; isToday: boolean; capacityStatus: 'green' | 'yellow' | 'red' | null }): string {
     if (day.isSelected) return 'bg-indigo-600 text-white font-semibold rounded-lg shadow-sm';
     if (day.isPast) return 'text-gray-300 cursor-not-allowed';
-    if (day.isToday) return 'text-indigo-700 font-bold hover:bg-indigo-50 rounded-lg';
-    return 'text-gray-700 hover:bg-gray-100 rounded-lg';
+    let base = day.isToday ? 'text-indigo-700 font-bold rounded-lg' : 'text-gray-700 rounded-lg';
+    if (day.capacityStatus === 'red') base += ' bg-red-100 hover:bg-red-200';
+    else if (day.capacityStatus === 'yellow') base += ' bg-amber-50 hover:bg-amber-100';
+    else if (day.capacityStatus === 'green') base += ' bg-emerald-50 hover:bg-emerald-100';
+    else base += day.isToday ? ' hover:bg-indigo-50' : ' hover:bg-gray-100';
+    return base;
   }
 
   private loadAvailableSlots(): void {
@@ -543,8 +643,21 @@ export class AppointmentFormComponent implements OnInit {
     }, 300);
   }
 
+  private loadMonthAppointments(): void {
+    const year = this.calYear();
+    const month = this.calMonth();
+    const start = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    const end = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+    this.aptService.list(0, 5000, undefined, undefined, start, end).subscribe({
+      next: (page) => this.monthAppointments.set(page.content),
+      error: () => {},
+    });
+  }
+
+  /** Clicking a suggestion fills the time input */
   selectSlot(slot: TimeSlotResponse): void {
-    this.selectedSlot.set(slot);
+    this.selectedStartTime.set(this.formatSlotTime(slot.start));
   }
 
   formatSlotTime(iso: string): string {
@@ -585,7 +698,7 @@ export class AppointmentFormComponent implements OnInit {
   onSubmit(): void {
     const profId = this.selectedProfessionalId();
     const clientId = this.selectedClientId();
-    const slot = this.selectedSlot();
+    const slot = this.resolvedSlot();
     if (!profId || !clientId || !slot) return;
 
     this.isSaving.set(true);

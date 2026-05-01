@@ -88,23 +88,23 @@ import type { EventSummaryResponse, AppointmentResponse, AppointmentStatus } fro
                 <div class="space-y-2 overflow-y-auto pr-1 max-h-[32rem]">
                   @for (apt of selectedDayAppointments(); track apt.id) {
                     <a [routerLink]="['/appuntamenti', apt.id]"
-                       class="group flex items-center gap-4 rounded-xl border border-[var(--surface-card-border)] p-3.5 hover:bg-[var(--surface-hover)] transition-all duration-150">
-                      <div class="shrink-0 w-[72px] text-center">
+                       class="group flex items-center gap-3 rounded-xl border border-[var(--surface-card-border)] p-3.5 hover:bg-[var(--surface-hover)] transition-all duration-150 overflow-hidden min-w-0">
+                      <div class="shrink-0 w-[62px] text-center">
                         <div class="text-sm font-semibold text-[var(--text-primary)]">{{ formatTime(apt.startDatetime) }}</div>
                         <div class="text-[11px] text-[var(--text-tertiary)]">{{ formatTime(apt.endDatetime) }}</div>
                       </div>
-                      <div class="w-0.5 self-stretch rounded-full" [style.background-color]="apt.serviceTypeColor || '#6366f1'"></div>
+                      <div class="w-0.5 self-stretch shrink-0 rounded-full" [style.background-color]="apt.serviceTypeColor || '#6366f1'"></div>
                       <div class="min-w-0 flex-1">
-                        <div class="flex items-center gap-2">
-                          <span class="font-medium text-[var(--text-primary)] truncate">{{ apt.clientFullName }}</span>
-                          <app-badge [variant]="statusVariant(apt.status)">{{ statusLabel(apt.status) }}</app-badge>
+                        <div class="flex items-center gap-2 min-w-0">
+                          <span class="font-medium text-[var(--text-primary)] truncate min-w-0">{{ apt.clientFullName }}</span>
+                          <span class="shrink-0"><app-badge [variant]="statusVariant(apt.status)">{{ statusLabel(apt.status) }}</app-badge></span>
                         </div>
-                        <div class="mt-0.5 flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
+                        <div class="mt-0.5 flex items-center gap-1 text-xs text-[var(--text-secondary)] min-w-0 overflow-hidden">
                           @if (apt.serviceTypeName) {
-                            <span class="truncate">{{ apt.serviceTypeName }}</span>
-                            <span class="text-[var(--text-tertiary)]">·</span>
+                            <span class="truncate min-w-0 shrink">{{ apt.serviceTypeName }}</span>
+                            <span class="text-[var(--text-tertiary)] shrink-0">·</span>
                           }
-                          <span class="truncate">{{ apt.professionalFullName }}</span>
+                          <span class="truncate min-w-0 shrink">{{ apt.professionalFullName }}</span>
                         </div>
                       </div>
                       <svg class="h-4 w-4 text-[var(--text-tertiary)] group-hover:text-[var(--color-primary)] shrink-0 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
