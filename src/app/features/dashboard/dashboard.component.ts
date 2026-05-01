@@ -243,8 +243,10 @@ export class DashboardComponent {
       switchMap((month) => {
         const startDate = this.toDateKey(new Date(month.getFullYear(), month.getMonth(), 1));
         const endDate = this.toDateKey(new Date(month.getFullYear(), month.getMonth() + 1, 0));
+        console.log('Loading appointments for month', month, 'with range', startDate, endDate);
         return this.aptService.list(0, 500, undefined, undefined, startDate, endDate).pipe(
           map((page) => page.content),
+          
           catchError(() => of([] as AppointmentResponse[]))
         );
       })
