@@ -88,26 +88,40 @@ import type { EventSummaryResponse, AppointmentResponse, AppointmentStatus } fro
                 <div class="space-y-2 overflow-y-auto overflow-x-hidden pr-1 max-h-[32rem]">
                   @for (apt of selectedDayAppointments(); track apt.id) {
                     <a [routerLink]="['/appuntamenti', apt.id]"
-                       class="group flex items-center gap-3 rounded-xl border border-[var(--surface-card-border)] p-3.5 hover:bg-[var(--surface-hover)] transition-all duration-150 overflow-hidden min-w-0">
-                      <div class="shrink-0 w-[62px] text-center">
-                        <div class="text-sm font-semibold text-[var(--text-primary)]">{{ formatTime(apt.startDatetime) }}</div>
-                        <div class="text-[11px] text-[var(--text-tertiary)]">{{ formatTime(apt.endDatetime) }}</div>
-                      </div>
-                      <div class="w-0.5 self-stretch shrink-0 rounded-full" [style.background-color]="apt.serviceTypeColor || '#6366f1'"></div>
-                      <div class="min-w-0 flex-1">
-                        <div class="flex items-center gap-2 min-w-0">
-                          <span class="font-medium text-[var(--text-primary)] truncate min-w-0">{{ apt.clientFullName }}</span>
-                          <span class="shrink-0"><app-badge [variant]="statusVariant(apt.status)">{{ statusLabel(apt.status) }}</app-badge></span>
+                       class="group flex flex-col rounded-xl border border-[var(--surface-card-border)] border-l-[3px] p-3 hover:bg-[var(--surface-hover)] transition-all duration-150 sm:flex-row sm:items-center sm:gap-3 sm:p-3.5"
+                       [style.borderLeftColor]="apt.serviceTypeColor || '#6366f1'">
+                      <!-- Mobile: time + badge in same row; Desktop: time block -->
+                      <div class="flex items-center justify-between gap-2 sm:block sm:shrink-0">
+                        <div class="flex items-center gap-1 sm:w-[62px] sm:flex-col sm:items-center sm:gap-0 sm:text-center">
+                          <span class="text-sm font-semibold text-[var(--text-primary)]">{{ formatTime(apt.startDatetime) }}</span>
+                          <span class="text-[11px] text-[var(--text-tertiary)] sm:hidden">→</span>
+                          <span class="text-[11px] text-[var(--text-tertiary)]">{{ formatTime(apt.endDatetime) }}</span>
                         </div>
-                        <div class="mt-0.5 flex items-center gap-1 text-xs text-[var(--text-secondary)] min-w-0 overflow-hidden">
+                        <span class="shrink-0 sm:hidden">
+                          <app-badge [variant]="statusVariant(apt.status)">{{ statusLabel(apt.status) }}</app-badge>
+                        </span>
+                      </div>
+                      <!-- Color separator (desktop only) -->
+                      <div class="hidden sm:block w-0.5 self-stretch shrink-0 rounded-full"
+                           [style.backgroundColor]="apt.serviceTypeColor || '#6366f1'"></div>
+                      <!-- Name + service/professional -->
+                      <div class="mt-1.5 min-w-0 flex-1 sm:mt-0">
+                        <div class="flex items-start gap-2">
+                          <span class="font-medium leading-snug text-[var(--text-primary)]">{{ apt.clientFullName }}</span>
+                          <span class="hidden shrink-0 sm:inline">
+                            <app-badge [variant]="statusVariant(apt.status)">{{ statusLabel(apt.status) }}</app-badge>
+                          </span>
+                        </div>
+                        <div class="mt-0.5 text-xs leading-snug text-[var(--text-secondary)]">
                           @if (apt.serviceTypeName) {
-                            <span class="truncate min-w-0 shrink">{{ apt.serviceTypeName }}</span>
-                            <span class="text-[var(--text-tertiary)] shrink-0">·</span>
+                            {{ apt.serviceTypeName }} ·
                           }
-                          <span class="truncate min-w-0 shrink">{{ apt.professionalFullName }}</span>
+                          {{ apt.professionalFullName }}
                         </div>
                       </div>
-                      <svg class="h-4 w-4 text-[var(--text-tertiary)] group-hover:text-[var(--color-primary)] shrink-0 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <!-- Arrow (desktop only) -->
+                      <svg class="hidden sm:block h-4 w-4 shrink-0 text-[var(--text-tertiary)] transition-colors group-hover:text-[var(--color-primary)]"
+                           fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                       </svg>
                     </a>
