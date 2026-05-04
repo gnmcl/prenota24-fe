@@ -47,7 +47,12 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
                 [error]="getFieldError('password')"
               />
 
-              <app-button type="submit" [isLoading]="isLoading()">Accedi</app-button>
+              <div class="-mt-2 flex items-center justify-between gap-3">
+                <a routerLink="/recupera-password" class="text-sm font-semibold text-indigo-600 hover:text-indigo-500">
+                  Ho dimenticato la password
+                </a>
+                <app-button type="submit" [isLoading]="isLoading()">Accedi</app-button>
+              </div>
             </form>
 
             <p class="mt-6 text-center text-sm text-gray-500">

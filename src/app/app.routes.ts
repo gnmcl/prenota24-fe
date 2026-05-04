@@ -26,6 +26,14 @@ export const routes: Routes = [
     loadComponent: () => import('./features/verify-email/verify-email.component').then(m => m.VerifyEmailComponent),
   },
   {
+    path: 'recupera-password',
+    loadComponent: () => import('./features/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent),
+  },
+  {
+    path: 'recupera-password/verifica',
+    loadComponent: () => import('./features/forgot-password/forgot-password-reset.component').then(m => m.ForgotPasswordResetComponent),
+  },
+  {
     path: 'invito/:token',
     loadComponent: () => import('./features/accept-invitation/accept-invitation.component').then(m => m.AcceptInvitationComponent),
   },

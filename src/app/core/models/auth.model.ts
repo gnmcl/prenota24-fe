@@ -49,6 +49,18 @@ export interface ResendVerificationRequest {
   email: string;
 }
 
+/* ── Password recovery ─────────────────── */
+
+export interface RecoverPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  email: string;
+  code: string;
+  newPassword: string;
+}
+
 /* ── Invitation ──────────────────────────── */
 
 export interface AcceptInvitationRequest {

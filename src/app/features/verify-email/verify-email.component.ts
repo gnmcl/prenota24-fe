@@ -7,11 +7,12 @@ import { PageShellComponent } from '../../shared/components/page-shell/page-shel
 import { CardComponent } from '../../shared/components/card/card.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
+import { VerificationCodeInputComponent } from '../../shared/components/verification-code-input/verification-code-input.component';
 
 @Component({
   selector: 'app-verify-email',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, PageShellComponent, CardComponent, ButtonComponent, AlertComponent],
+  imports: [ReactiveFormsModule, RouterLink, PageShellComponent, CardComponent, ButtonComponent, AlertComponent, VerificationCodeInputComponent],
   template: `
     <app-page-shell>
       <div class="mx-auto max-w-sm pt-12">
@@ -41,20 +42,10 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
           }
 
           <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
-            <div>
-              <label class="mb-1.5 block text-sm font-medium text-gray-700">Codice di verifica</label>
-              <input
-                type="text"
-                formControlName="code"
-                maxlength="6"
-                inputmode="numeric"
-                placeholder="000000"
-                class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-center text-2xl font-semibold tracking-[0.5em] placeholder:tracking-[0.5em] placeholder:text-gray-300 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              />
-              @if (form.get('code')?.touched && form.get('code')?.errors) {
-                <p class="mt-1 text-sm text-red-600">Inserisci il codice di 6 cifre</p>
-              }
-            </div>
+            <app-verification-code-input
+              formControlName="code"
+              [error]="codeError()"
+            />
 
             <app-button type="submit" [isLoading]="isLoading()">Verifica</app-button>
           </form>
@@ -100,6 +91,12 @@ export class VerifyEmailComponent implements OnInit {
   form = this.fb.group({
     code: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6), Validators.pattern(/^\d{6}$/)]],
   });
+
+  codeError(): string {
+    const control = this.form.get('code');
+    if (!control?.touched || !control.errors) return '';
+    return 'Inserisci il codice di 6 cifre';
+  }
 
   ngOnInit(): void {
     this.email = history.state?.email || '';

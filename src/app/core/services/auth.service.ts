@@ -3,12 +3,31 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import type { AuthUser } from '../models/auth.model';
-import type { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, AcceptInvitationRequest, VerifyEmailRequest, ResendVerificationRequest } from '../models/auth.model';
+import type {
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
+  RegisterResponse,
+  AcceptInvitationRequest,
+  VerifyEmailRequest,
+  ResendVerificationRequest,
+  RecoverPasswordRequest,
+  ResetPasswordRequest,
+} from '../models/auth.model';
 import { environment } from '../../environments/environment';
 import { StudioService } from './studio.service';
 import { ThemeService } from './theme.service';
 
 const STORAGE_KEY = 'prenota24-auth';
+const PASSWORD_RECOVERY_RATE_LIMIT_KEY = 'prenota24-password-recovery-rate-limit';
+const PASSWORD_RECOVERY_COOLDOWN_SECONDS = 60;
+
+interface PasswordRecoveryRateLimitEntry {
+  lastSentAt: number;
+  immediateResendUsed: boolean;
+}
+
+type PasswordRecoveryRateLimitMap = Record<string, PasswordRecoveryRateLimitEntry>;
 
 interface PersistedAuth {
   state: {
@@ -146,6 +165,43 @@ export class AuthService {
     );
   }
 
+  getRecoverPasswordCooldownSeconds(email: string): number {
+    const normalizedEmail = this.normalizeEmail(email);
+    if (!normalizedEmail) return 0;
+
+    const rateLimitMap = this.getPasswordRecoveryRateLimitMap();
+    const entry = rateLimitMap[normalizedEmail];
+    if (!entry) return 0;
+
+    if (!entry.immediateResendUsed) {
+      return 0;
+    }
+
+    const elapsedSeconds = Math.floor((Date.now() - entry.lastSentAt) / 1000);
+    return Math.max(0, PASSWORD_RECOVERY_COOLDOWN_SECONDS - elapsedSeconds);
+  }
+
+  /** Send a password recovery code. Always returns success response shape. */
+  async recoverPasswordApi(payload: RecoverPasswordRequest): Promise<void> {
+    const cooldownSeconds = this.getRecoverPasswordCooldownSeconds(payload.email);
+    if (cooldownSeconds > 0) {
+      throw new Error(`Attendi ${cooldownSeconds}s prima di richiedere un nuovo codice.`);
+    }
+
+    await firstValueFrom(
+      this.http.post<void>(`${environment.apiBaseUrl}/auth/password-recover`, payload),
+    );
+
+    this.registerPasswordRecoverySend(payload.email);
+  }
+
+  /** Reset password using email + 6-digit recovery code. */
+  resetPasswordApi(payload: ResetPasswordRequest): Promise<void> {
+    return firstValueFrom(
+      this.http.post<void>(`${environment.apiBaseUrl}/auth/password-reset`, payload),
+    );
+  }
+
   /** Accept an invitation and register as professional */
   acceptInvitationApi(payload: AcceptInvitationRequest): Promise<LoginResponse> {
     return firstValueFrom(
@@ -179,5 +235,43 @@ export class AuthService {
       }
       return updated;
     });
+  }
+
+  private normalizeEmail(email: string): string {
+    return email.trim().toLowerCase();
+  }
+
+  private getPasswordRecoveryRateLimitMap(): PasswordRecoveryRateLimitMap {
+    try {
+      const raw = localStorage.getItem(PASSWORD_RECOVERY_RATE_LIMIT_KEY);
+      if (!raw) return {};
+
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return {};
+
+      return parsed as PasswordRecoveryRateLimitMap;
+    } catch {
+      localStorage.removeItem(PASSWORD_RECOVERY_RATE_LIMIT_KEY);
+      return {};
+    }
+  }
+
+  private persistPasswordRecoveryRateLimitMap(map: PasswordRecoveryRateLimitMap): void {
+    localStorage.setItem(PASSWORD_RECOVERY_RATE_LIMIT_KEY, JSON.stringify(map));
+  }
+
+  private registerPasswordRecoverySend(email: string): void {
+    const normalizedEmail = this.normalizeEmail(email);
+    if (!normalizedEmail) return;
+
+    const rateLimitMap = this.getPasswordRecoveryRateLimitMap();
+    const previous = rateLimitMap[normalizedEmail];
+
+    rateLimitMap[normalizedEmail] = {
+      lastSentAt: Date.now(),
+      immediateResendUsed: previous ? true : false,
+    };
+
+    this.persistPasswordRecoveryRateLimitMap(rateLimitMap);
   }
 }
