@@ -55,60 +55,26 @@ import { RouterLink } from '@angular/router';
             <a routerLink="/accedi" class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-7 sm:px-8 py-3.5 text-base font-semibold text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:shadow-md hover:-translate-y-0.5">Accedi</a>
           </div>
 
-          <!-- Hero visual: dashboard mockup -->
-          <div class="relative mx-auto mt-12 sm:mt-16 max-w-4xl">
-            <div class="rounded-2xl border border-gray-200/60 bg-gradient-to-b from-gray-50 to-white p-1.5 sm:p-2 shadow-2xl shadow-gray-200/50">
-              <div class="rounded-xl bg-white overflow-hidden">
-                <div class="flex items-center gap-2 border-b border-gray-100 px-3 sm:px-4 py-2.5 sm:py-3">
-                  <span class="h-3 w-3 rounded-full bg-red-400"></span>
-                  <span class="h-3 w-3 rounded-full bg-amber-400"></span>
-                  <span class="h-3 w-3 rounded-full bg-green-400"></span>
-                  <div class="ml-3 flex-1 rounded-md bg-gray-100 px-3 py-1 text-xs text-gray-400">prenota24.com/dashboard</div>
-                </div>
-                <!-- Simulated Dashboard -->
-                <div class="p-4 sm:p-6">
-                  <!-- Stats row -->
-                  <div class="grid grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
-                    @for (stat of dashStats; track stat.label) {
-                      <div class="rounded-xl border border-gray-100 bg-gray-50 p-2.5 sm:p-4 text-center">
-                        <div class="text-lg sm:text-2xl font-bold" [style.color]="stat.color">{{ stat.value }}</div>
-                        <div class="text-[9px] sm:text-xs text-gray-400 mt-0.5">{{ stat.label }}</div>
-                      </div>
-                    }
-                  </div>
-                  <!-- Simulated agenda -->
-                  <div class="flex gap-3 sm:gap-4">
-                    <div class="flex-1 rounded-xl border border-gray-100 p-3 sm:p-4">
-                      <div class="text-[10px] sm:text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 sm:mb-3">Appuntamenti oggi</div>
-                      @for (apt of mockApts; track apt.name) {
-                        <div class="flex items-center gap-2 sm:gap-3 py-1.5 sm:py-2 border-b border-gray-50 last:border-0">
-                          <div class="rounded-lg bg-indigo-50 px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-bold text-indigo-700">{{ apt.time }}</div>
-                          <div>
-                            <div class="text-xs sm:text-sm font-medium text-gray-900">{{ apt.name }}</div>
-                            <div class="text-[9px] sm:text-xs text-gray-400">{{ apt.service }}</div>
-                          </div>
-                          <span class="ml-auto inline-block rounded-full px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] font-medium"
-                            [style.background-color]="apt.badgeBg"
-                            [style.color]="apt.badgeColor">{{ apt.badge }}</span>
-                        </div>
-                      }
-                    </div>
-                    <div class="w-[120px] sm:w-[180px] rounded-xl border border-gray-100 p-3 sm:p-4 hidden sm:block">
-                      <div class="text-[10px] sm:text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Calendario</div>
-                      <div class="grid grid-cols-7 gap-0.5 text-center text-[8px] sm:text-[10px] font-medium text-gray-400 mb-1">
-                        @for (d of weekdays; track d) { <span>{{ d }}</span> }
-                      </div>
-                      <div class="grid grid-cols-7 gap-0.5 text-center text-[9px] sm:text-xs">
-                        @for (d of calendarDays; track d) {
-                          <span [class]="getCalendarDayClass(d)" class="flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-md transition-colors">{{ d }}</span>
-                        }
-                      </div>
-                    </div>
-                  </div>
-                </div>
+          <!-- Hero visual: dashboard screenshot -->
+          <div class="relative mx-auto mt-12 sm:mt-16 max-w-6xl">
+            <div class="overflow-hidden rounded-[28px] border border-gray-200 bg-white p-2 shadow-[0_24px_60px_rgba(15,23,42,0.16)]">
+              <img
+                [src]="dashboardImageSrc"
+                (error)="dashboardImageMissing = true"
+                [class.hidden]="dashboardImageMissing"
+                alt="Anteprima dashboard Prenota24"
+                class="block h-auto w-full rounded-2xl"
+              />
+              <div
+                [class.hidden]="!dashboardImageMissing"
+                class="flex min-h-[280px] sm:min-h-[420px] items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center"
+              >
+                <p class="max-w-xl text-sm sm:text-base text-gray-500">
+                  Immagine non trovata. Salva lo screenshot in public/dashboard-mock.png per avere un mock identico all'originale.
+                </p>
               </div>
             </div>
-            <div class="pointer-events-none absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-r from-indigo-200/30 via-violet-200/30 to-purple-200/30 blur-2xl"></div>
+            <div class="pointer-events-none absolute -inset-3 -z-10 rounded-3xl bg-gradient-to-r from-indigo-200/35 via-violet-200/30 to-purple-200/25 blur-2xl"></div>
           </div>
         </div>
       </section>
@@ -240,22 +206,8 @@ import { RouterLink } from '@angular/router';
 })
 export class HomeComponent {
   currentYear = new Date().getFullYear();
-  weekdays = ['L', 'M', 'M', 'G', 'V', 'S', 'D'];
-  calendarDays = Array.from({ length: 30 }, (_, i) => i + 1);
-
-  dashStats = [
-    { value: '8', label: 'Oggi', color: '#4F46E5' },
-    { value: '3', label: 'Da confermare', color: '#D97706' },
-    { value: '127', label: 'Clienti', color: '#059669' },
-    { value: '4', label: 'Team', color: '#7C3AED' },
-  ];
-
-  mockApts = [
-    { time: '09:00', name: 'Marco Bianchi', service: 'Consulenza 30min', badge: 'Confermato', badgeBg: '#D1FAE5', badgeColor: '#065F46' },
-    { time: '10:30', name: 'Laura Verdi', service: 'Visita controllo', badge: 'Da confermare', badgeBg: '#FEF3C7', badgeColor: '#92400E' },
-    { time: '14:00', name: 'Andrea Rossi', service: 'Trattamento completo', badge: 'Confermato', badgeBg: '#D1FAE5', badgeColor: '#065F46' },
-    { time: '16:00', name: 'Sofia Neri', service: 'Prima visita', badge: 'Confermato', badgeBg: '#D1FAE5', badgeColor: '#065F46' },
-  ];
+  dashboardImageSrc = '/dashboard-mock.png';
+  dashboardImageMissing = false;
 
   steps = [
     { number: '01', title: 'Registrati', description: 'Crea il tuo account in pochi secondi. Nessuna carta di credito richiesta.', iconPath: 'M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75' },
@@ -273,9 +225,4 @@ export class HomeComponent {
     { title: 'Eventi e landing', description: 'Crea eventi con pagine di prenotazione pubbliche. Condividi il link e raccogli registrazioni automaticamente.', iconPath: 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z' },
   ];
 
-  getCalendarDayClass(d: number): string {
-    if (d === 7) return 'bg-indigo-600 font-bold text-white shadow-sm';
-    if (d > 5 && d < 15) return 'text-gray-700 hover:bg-indigo-50 cursor-pointer';
-    return 'text-gray-300';
-  }
 }
