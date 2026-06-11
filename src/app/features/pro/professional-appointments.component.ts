@@ -5,7 +5,7 @@ import { PageShellComponent } from '../../shared/components/page-shell/page-shel
 import { CardComponent } from '../../shared/components/card/card.component';
 import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
-import type { AppointmentResponse, AppointmentStatus, ClientSummaryResponse, CreateAppointmentRequest, CreateClientRequest, ServiceTypeResponse, UUID } from '../../core/models/domain.model';
+import type { AppointmentResponse, AppointmentStatus, ClientSummaryResponse, CreateAppointmentRequest, CreateClientRequest, ServiceTypeResponse, TimeSlotResponse, UUID } from '../../core/models/domain.model';
 import { AuthService } from '../../core/services/auth.service';
 import { FormsModule } from '@angular/forms';
 
@@ -140,6 +140,10 @@ const SLOT_HEIGHT = 60;
                                 class="rounded bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-700 hover:bg-green-200 transition-colors">
                                 Conferma
                               </button>
+                              <button (click)="openProposePanel(apt); $event.stopPropagation()"
+                                class="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 hover:bg-blue-200 transition-colors">
+                                Proponi orario
+                              </button>
                               <button (click)="doAction(apt.id, 'cancel'); $event.stopPropagation()"
                                 class="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700 hover:bg-red-200 transition-colors">
                                 Cancella
@@ -205,6 +209,7 @@ const SLOT_HEIGHT = 60;
                             @if (apt.status === 'REQUESTED') {
                               <div class="flex items-center justify-end gap-2">
                                 <button (click)="doAction(apt.id, 'confirm')" class="text-green-600 hover:text-green-800 font-medium transition-colors">Conferma</button>
+                                <button (click)="openProposePanel(apt)" class="text-blue-600 hover:text-blue-800 font-medium transition-colors">Proponi orario</button>
                                 <button (click)="doAction(apt.id, 'cancel')" class="text-red-600 hover:text-red-800 font-medium transition-colors">Cancella</button>
                               </div>
                             } @else if (apt.status === 'CONFIRMED') {
@@ -337,6 +342,94 @@ const SLOT_HEIGHT = 60;
           </div>
         </div>
       }
+
+      <!-- ── PROPOSE NEW TIME PANEL ── -->
+      @if (showProposePanel()) {
+        <div class="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-6">
+          <div class="relative w-full max-w-3xl rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl">
+            <div class="flex items-start justify-between border-b border-gray-200 px-4 py-4 sm:px-6">
+              <div>
+                <h3 class="text-base font-semibold text-gray-900 sm:text-lg">Proponi nuovo orario</h3>
+                <p class="mt-1 text-xs text-gray-500 sm:text-sm">
+                  Cliente: <span class="font-medium text-gray-700">{{ selectedAppointmentForProposal()?.clientFullName }}</span>
+                </p>
+                <p class="text-xs text-gray-500 sm:text-sm">
+                  Orario richiesto: <span class="font-medium text-gray-700">{{ formatProposalOriginalSlot() }}</span>
+                </p>
+              </div>
+              <button (click)="closeProposePanel()" class="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors" aria-label="Chiudi pannello proposta">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+
+            <div class="max-h-[75vh] overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
+              <div class="grid gap-4 lg:grid-cols-[280px_1fr]">
+                <div class="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                  <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">Data proposta</label>
+                  <input
+                    type="date"
+                    [value]="proposalDay()"
+                    [min]="todayStr"
+                    (change)="onProposalDateChange($event)"
+                    class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                  <p class="mt-2 text-xs text-gray-500">Il sistema mostra solo slot realmente disponibili nella tua agenda.</p>
+                </div>
+
+                <div class="rounded-xl border border-blue-100 bg-blue-50/60 p-4">
+                  @if (slotsLoading()) {
+                    <div class="flex items-center gap-2 text-sm text-blue-700">
+                      <div class="h-4 w-4 animate-spin rounded-full border-2 border-blue-200 border-t-blue-600"></div>
+                      Caricamento disponibilità...
+                    </div>
+                  } @else if (availableProposalSlots().length === 0) {
+                    <div class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                      Nessuno slot disponibile per questa data.
+                    </div>
+                  } @else {
+                    <div>
+                      <p class="mb-2 text-sm font-semibold text-blue-900">Suggeriti vicini all'orario richiesto</p>
+                      <div class="grid gap-2 sm:grid-cols-2">
+                        @for (slot of nearbySuggestedSlots(); track slot.start) {
+                          <button
+                            (click)="selectProposalSlot(slot)"
+                            [class]="proposalSlotButtonClass(slot, true)">
+                            {{ formatProposalSlot(slot) }}
+                          </button>
+                        }
+                      </div>
+                    </div>
+
+                    @if (otherProposalSlots().length > 0) {
+                      <div class="mt-4 border-t border-blue-100 pt-3">
+                        <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-blue-700">Altri slot disponibili</p>
+                        <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                          @for (slot of otherProposalSlots(); track slot.start) {
+                            <button
+                              (click)="selectProposalSlot(slot)"
+                              [class]="proposalSlotButtonClass(slot, false)">
+                              {{ formatProposalSlot(slot) }}
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    }
+                  }
+
+                  @if (proposeError()) {
+                    <div class="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{{ proposeError() }}</div>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col-reverse gap-2 border-t border-gray-200 px-4 py-3 sm:flex-row sm:justify-end sm:px-6">
+              <app-button variant="secondary" (click)="closeProposePanel()">Annulla</app-button>
+              <app-button [disabled]="!selectedProposalSlot()" [isLoading]="proposing()" (click)="submitProposedTime()">Invia proposta</app-button>
+            </div>
+          </div>
+        </div>
+      }
     </app-page-shell>
   `,
 })
@@ -355,6 +448,7 @@ export class ProfessionalAppointmentsComponent implements OnInit {
   readonly slotHeight = SLOT_HEIGHT;
   readonly hours = Array.from({ length: HOUR_END - HOUR_START }, (_, i) => HOUR_START + i);
   readonly calendarHeight = (HOUR_END - HOUR_START) * SLOT_HEIGHT;
+  readonly todayStr = this.toDateStr(new Date());
 
   // ── New appointment panel state ──
   readonly showNewPanel = signal(false);
@@ -364,6 +458,16 @@ export class ProfessionalAppointmentsComponent implements OnInit {
   readonly createError = signal('');
   readonly clients = signal<ClientSummaryResponse[]>([]);
   readonly serviceTypes = signal<ServiceTypeResponse[]>([]);
+
+  // ── Propose new time panel state ──
+  readonly showProposePanel = signal(false);
+  readonly slotsLoading = signal(false);
+  readonly proposing = signal(false);
+  readonly proposeError = signal('');
+  readonly selectedAppointmentForProposal = signal<AppointmentResponse | null>(null);
+  readonly availableProposalSlots = signal<TimeSlotResponse[]>([]);
+  readonly selectedProposalSlot = signal<TimeSlotResponse | null>(null);
+  readonly proposalDay = signal('');
 
   newApt = this.freshAppointment();
   quickClient = { firstName: '', lastName: '', email: '', phone: '' };
@@ -409,6 +513,21 @@ export class ProfessionalAppointmentsComponent implements OnInit {
       d.setDate(monday.getDate() + i);
       return { date: this.toDateStr(d), dayLabel: d.toLocaleDateString('it-IT', { weekday: 'short' }), dayNum: d.getDate() };
     });
+  });
+
+  readonly nearbySuggestedSlots = computed(() => {
+    const apt = this.selectedAppointmentForProposal();
+    const slots = this.availableProposalSlots();
+    if (!apt || slots.length === 0) return [];
+    const target = new Date(apt.startDatetime).getTime();
+    return [...slots]
+      .sort((a, b) => Math.abs(new Date(a.start).getTime() - target) - Math.abs(new Date(b.start).getTime() - target))
+      .slice(0, 6);
+  });
+
+  readonly otherProposalSlots = computed(() => {
+    const suggested = new Set(this.nearbySuggestedSlots().map((s) => s.start));
+    return this.availableProposalSlots().filter((s) => !suggested.has(s.start)).slice(0, 18);
   });
 
   ngOnInit(): void {
@@ -565,8 +684,103 @@ export class ProfessionalAppointmentsComponent implements OnInit {
     });
   }
 
+  openProposePanel(apt: AppointmentResponse): void {
+    this.selectedAppointmentForProposal.set(apt);
+    this.proposalDay.set(this.toDateStr(new Date(apt.startDatetime)));
+    this.selectedProposalSlot.set(null);
+    this.availableProposalSlots.set([]);
+    this.proposeError.set('');
+    this.showProposePanel.set(true);
+    this.loadProposalSlots();
+  }
+
+  closeProposePanel(): void {
+    this.showProposePanel.set(false);
+    this.proposing.set(false);
+    this.slotsLoading.set(false);
+    this.selectedAppointmentForProposal.set(null);
+    this.selectedProposalSlot.set(null);
+    this.availableProposalSlots.set([]);
+    this.proposeError.set('');
+  }
+
+  onProposalDateChange(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    if (!input?.value) return;
+    this.proposalDay.set(input.value);
+    this.selectedProposalSlot.set(null);
+    this.loadProposalSlots();
+  }
+
+  selectProposalSlot(slot: TimeSlotResponse): void {
+    this.selectedProposalSlot.set(slot);
+  }
+
+  submitProposedTime(): void {
+    const apt = this.selectedAppointmentForProposal();
+    const slot = this.selectedProposalSlot();
+    if (!apt || !slot) return;
+
+    this.proposing.set(true);
+    this.proposeError.set('');
+    this.portalService.proposeNewTime(apt.id, { proposedStart: slot.start, proposedEnd: slot.end }).subscribe({
+      next: (updated) => {
+        this._all.update((list) => list.map((a) => a.id === updated.id ? updated : a));
+        this.proposing.set(false);
+        this.closeProposePanel();
+      },
+      error: (err) => {
+        this.proposing.set(false);
+        this.proposeError.set(err?.error?.message || 'Impossibile inviare la proposta orario');
+      },
+    });
+  }
+
+  proposalSlotButtonClass(slot: TimeSlotResponse, suggested: boolean): string {
+    const selected = this.selectedProposalSlot()?.start === slot.start;
+    const base = 'w-full rounded-lg border px-3 py-2 text-left text-sm font-medium transition-colors';
+    if (selected) {
+      return `${base} border-indigo-600 bg-indigo-600 text-white`;
+    }
+    if (suggested) {
+      return `${base} border-blue-200 bg-white text-blue-800 hover:border-blue-400 hover:bg-blue-100`;
+    }
+    return `${base} border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50`;
+  }
+
+  formatProposalSlot(slot: TimeSlotResponse): string {
+    return `${this.formatTime(slot.start)} - ${this.formatTime(slot.end)}`;
+  }
+
+  formatProposalOriginalSlot(): string {
+    const apt = this.selectedAppointmentForProposal();
+    if (!apt) return '';
+    return `${this.formatDate(apt.startDatetime)} ${this.formatTime(apt.startDatetime)} - ${this.formatTime(apt.endDatetime)}`;
+  }
+
   private freshAppointment() {
     return { clientId: '', serviceTypeId: '', date: this.toDateStr(new Date()), startTime: '', endTime: '', notes: '', confirmImmediately: true };
+  }
+
+  private loadProposalSlots(): void {
+    const apt = this.selectedAppointmentForProposal();
+    if (!apt || !this.proposalDay()) return;
+
+    const durationMinutes = Math.max(5, Math.round((new Date(apt.endDatetime).getTime() - new Date(apt.startDatetime).getTime()) / 60000));
+
+    this.slotsLoading.set(true);
+    this.proposeError.set('');
+    this.portalService.getAvailableSlots(this.proposalDay(), durationMinutes).subscribe({
+      next: (slots) => {
+        this.availableProposalSlots.set(slots);
+        this.slotsLoading.set(false);
+      },
+      error: (err) => {
+        this.slotsLoading.set(false);
+        this.availableProposalSlots.set([]);
+        this.proposeError.set(err?.error?.message || 'Errore nel caricamento degli slot disponibili');
+      },
+    });
   }
 
   private shiftDate(days: number): void {

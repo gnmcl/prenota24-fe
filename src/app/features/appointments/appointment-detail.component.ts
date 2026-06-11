@@ -9,7 +9,7 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
 import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { AppointmentService } from '../../core/services/appointment.service';
 import { ProfessionalService } from '../../core/services/professional.service';
-import type { AppointmentResponse, AppointmentStatus, ProfessionalResponse } from '../../core/models/domain.model';
+import type { AppointmentResponse, AppointmentStatus, ProfessionalResponse, TimeSlotResponse } from '../../core/models/domain.model';
 import { getErrorMessage } from '../../shared/utils/errors';
 
 const MONTHS_IT = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
@@ -204,7 +204,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
               <div class="flex flex-wrap gap-3">
                 @if (apt()!.status === 'REQUESTED') {
                   <app-button (click)="confirm()" [isLoading]="actionLoading()">Conferma</app-button>
-                  <app-button variant="secondary" (click)="showProposeForm.set(true)">Proponi nuovo orario</app-button>
+                  <app-button variant="secondary" (click)="openProposeForm()">Proponi nuovo orario</app-button>
                   <app-button variant="danger" (click)="cancelDialogOpen.set(true)">Rifiuta</app-button>
                 }
                 @if (apt()!.status === 'CONFIRMED') {
@@ -225,17 +225,68 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
               @if (showProposeForm()) {
                 <div class="mt-5 rounded-lg border border-blue-100 bg-blue-50 p-4">
                   <h4 class="mb-3 text-sm font-medium text-blue-700">Proponi nuovo orario</h4>
-                  <div class="flex flex-wrap items-end gap-3">
+                  <p class="mb-3 text-xs text-blue-700">
+                    Orario richiesto: <span class="font-semibold">{{ formatFull(apt()!.startDatetime) }} - {{ formatTime(apt()!.endDatetime) }}</span>
+                  </p>
+
+                  <div class="grid gap-4 lg:grid-cols-[240px_1fr]">
                     <div>
-                      <label class="block text-xs text-blue-600 mb-1">Data e ora inizio</label>
-                      <input type="datetime-local" [(ngModel)]="propStart" class="rounded border border-blue-200 px-2 py-1.5 text-sm" />
+                      <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-blue-700">Data proposta</label>
+                      <input
+                        type="date"
+                        [value]="proposalDate()"
+                        [min]="todayStr"
+                        (change)="onProposalDateChange($event)"
+                        class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      />
+                      <p class="mt-2 text-xs text-blue-700/80">Mostrati solo slot liberi reali nell'agenda del professionista.</p>
                     </div>
+
                     <div>
-                      <label class="block text-xs text-blue-600 mb-1">Data e ora fine</label>
-                      <input type="datetime-local" [(ngModel)]="propEnd" class="rounded border border-blue-200 px-2 py-1.5 text-sm" />
+                      @if (proposalSlotsLoading()) {
+                        <div class="flex items-center gap-2 text-sm text-blue-700">
+                          <div class="h-4 w-4 animate-spin rounded-full border-2 border-blue-200 border-t-blue-600"></div>
+                          Caricamento disponibilita...
+                        </div>
+                      } @else if (proposalSlots().length === 0) {
+                        <div class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                          Nessuno slot disponibile per questa data.
+                        </div>
+                      } @else {
+                        <div>
+                          <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-blue-700">Suggeriti vicini</p>
+                          <div class="grid gap-2 sm:grid-cols-2">
+                            @for (slot of nearbyProposalSlots(); track slot.start) {
+                              <button type="button" (click)="selectProposalSlot(slot)" [class]="proposalSlotClass(slot, true)">
+                                {{ formatProposalSlot(slot) }}
+                              </button>
+                            }
+                          </div>
+                        </div>
+
+                        @if (otherProposalSlots().length > 0) {
+                          <div class="mt-3 border-t border-blue-100 pt-3">
+                            <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-blue-700">Altri slot disponibili</p>
+                            <div class="grid gap-2 sm:grid-cols-2">
+                              @for (slot of otherProposalSlots(); track slot.start) {
+                                <button type="button" (click)="selectProposalSlot(slot)" [class]="proposalSlotClass(slot, false)">
+                                  {{ formatProposalSlot(slot) }}
+                                </button>
+                              }
+                            </div>
+                          </div>
+                        }
+                      }
                     </div>
-                    <app-button [disabled]="!propStart || !propEnd" [isLoading]="actionLoading()" (click)="proposeNewTime()">Proponi</app-button>
-                    <app-button variant="secondary" (click)="showProposeForm.set(false)">Annulla</app-button>
+                  </div>
+
+                  @if (proposalError()) {
+                    <div class="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{{ proposalError() }}</div>
+                  }
+
+                  <div class="mt-4 flex flex-wrap gap-3">
+                    <app-button [disabled]="!selectedProposalSlot()" [isLoading]="actionLoading()" (click)="proposeNewTime()">Proponi</app-button>
+                    <app-button variant="secondary" (click)="closeProposeForm()">Annulla</app-button>
                   </div>
                 </div>
               }
@@ -271,8 +322,12 @@ export class AppointmentDetailComponent implements OnInit {
   readonly cancelDialogOpen = signal(false);
   readonly showProposeForm = signal(false);
   readonly editMode = signal(false);
-  propStart = '';
-  propEnd = '';
+  readonly proposalDate = signal('');
+  readonly proposalSlots = signal<TimeSlotResponse[]>([]);
+  readonly proposalSlotsLoading = signal(false);
+  readonly proposalError = signal('');
+  readonly selectedProposalSlot = signal<TimeSlotResponse | null>(null);
+  readonly todayStr = this.toDateStr(new Date());
 
   // Edit form fields
   editDate = '';
@@ -317,6 +372,20 @@ export class AppointmentDetailComponent implements OnInit {
   readonly isEditable = computed(() => {
     const status = this.apt()?.status;
     return status === 'REQUESTED' || status === 'CONFIRMED';
+  });
+
+  readonly nearbyProposalSlots = computed(() => {
+    const apt = this.apt();
+    if (!apt) return [];
+    const target = new Date(apt.startDatetime).getTime();
+    return [...this.proposalSlots()]
+      .sort((a, b) => Math.abs(new Date(a.start).getTime() - target) - Math.abs(new Date(b.start).getTime() - target))
+      .slice(0, 6);
+  });
+
+  readonly otherProposalSlots = computed(() => {
+    const suggested = new Set(this.nearbyProposalSlots().map((slot) => slot.start));
+    return this.proposalSlots().filter((slot) => !suggested.has(slot.start));
   });
 
   ngOnInit(): void {
@@ -392,15 +461,53 @@ export class AppointmentDetailComponent implements OnInit {
     this.doAction(() => this.aptService.cancel(this.apt()!.id), () => this.cancelDialogOpen.set(false));
   }
 
+  openProposeForm(): void {
+    const apt = this.apt();
+    if (!apt) return;
+    this.proposalDate.set(this.toDateStr(new Date(apt.startDatetime)));
+    this.proposalError.set('');
+    this.selectedProposalSlot.set(null);
+    this.showProposeForm.set(true);
+    this.loadProposalSlots();
+  }
+
+  closeProposeForm(): void {
+    this.showProposeForm.set(false);
+    this.proposalError.set('');
+    this.selectedProposalSlot.set(null);
+  }
+
+  onProposalDateChange(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    if (!input?.value) return;
+    this.proposalDate.set(input.value);
+    this.selectedProposalSlot.set(null);
+    this.loadProposalSlots();
+  }
+
+  selectProposalSlot(slot: TimeSlotResponse): void {
+    this.selectedProposalSlot.set(slot);
+  }
+
   proposeNewTime(): void {
-    if (!this.propStart || !this.propEnd) return;
-    // datetime-local value has no timezone (e.g. "2026-04-26T12:00"); convert to UTC ISO
-    const proposedStart = new Date(this.propStart).toISOString();
-    const proposedEnd = new Date(this.propEnd).toISOString();
+    const slot = this.selectedProposalSlot();
+    if (!slot) return;
     this.doAction(
-      () => this.aptService.proposeNewTime(this.apt()!.id, { proposedStart, proposedEnd }),
-      () => this.showProposeForm.set(false),
+      () => this.aptService.proposeNewTime(this.apt()!.id, { proposedStart: slot.start, proposedEnd: slot.end }),
+      () => this.closeProposeForm(),
     );
+  }
+
+  proposalSlotClass(slot: TimeSlotResponse, suggested: boolean): string {
+    const selected = this.selectedProposalSlot()?.start === slot.start;
+    const base = 'w-full rounded-lg border px-3 py-2 text-left text-sm font-medium transition-colors';
+    if (selected) return `${base} border-indigo-600 bg-indigo-600 text-white`;
+    if (suggested) return `${base} border-blue-200 bg-white text-blue-800 hover:border-blue-400 hover:bg-blue-100`;
+    return `${base} border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50`;
+  }
+
+  formatProposalSlot(slot: TimeSlotResponse): string {
+    return `${this.formatTime(slot.start)} - ${this.formatTime(slot.end)}`;
   }
 
   private doAction(action: () => import('rxjs').Observable<AppointmentResponse>, onSuccess?: () => void): void {
@@ -441,5 +548,36 @@ export class AppointmentDetailComponent implements OnInit {
 
   formatTime(iso: string): string {
     return new Date(iso).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  private loadProposalSlots(): void {
+    const apt = this.apt();
+    if (!apt || !this.proposalDate()) return;
+
+    const durationMinutes = Math.max(
+      5,
+      Math.round((new Date(apt.endDatetime).getTime() - new Date(apt.startDatetime).getTime()) / 60000),
+    );
+
+    this.proposalSlotsLoading.set(true);
+    this.proposalError.set('');
+    this.profService.getAvailableSlots(apt.professionalId, this.proposalDate(), durationMinutes).subscribe({
+      next: (slots) => {
+        this.proposalSlots.set(slots);
+        this.proposalSlotsLoading.set(false);
+      },
+      error: (err) => {
+        this.proposalSlotsLoading.set(false);
+        this.proposalSlots.set([]);
+        this.proposalError.set(getErrorMessage(err));
+      },
+    });
+  }
+
+  private toDateStr(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 }

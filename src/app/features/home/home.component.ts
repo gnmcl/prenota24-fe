@@ -81,6 +81,7 @@ import { RouterLink } from '@angular/router';
 
       <!-- Value proposition strip -->
       <section class="pb-16 sm:pb-20">
+        
         <div class="mx-auto max-w-6xl px-4 sm:px-6">
           <div class="rounded-2xl border border-gray-100 bg-white p-6 sm:p-8 shadow-sm">
             <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">

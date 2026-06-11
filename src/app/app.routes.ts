@@ -41,6 +41,14 @@ export const routes: Routes = [
     path: 'e/:slug',
     loadComponent: () => import('./features/public-event/public-event.component').then(m => m.PublicEventComponent),
   },
+  {
+    path: 'prenota/:studioSlug',
+    loadComponent: () => import('./features/public-booking/public-booking.component').then(m => m.PublicBookingComponent),
+  },
+  {
+    path: 'booking/confirm/:token',
+    loadComponent: () => import('./features/public-booking/public-booking-confirm.component').then(m => m.PublicBookingConfirmComponent),
+  },
 
   /* ── Protected routes (Admin) ──────────── */
   {

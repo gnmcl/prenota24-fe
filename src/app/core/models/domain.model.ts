@@ -14,6 +14,7 @@ export type AppUserRole = (typeof APP_USER_ROLES)[number];
 export interface Studio {
   id: UUID;
   name: string;
+  slug: string | null;
   email: string | null;
   phone: string | null;
   timezone: string;
@@ -301,6 +302,7 @@ export type CancelledBy = (typeof CANCELLED_BY)[number];
 export interface AppointmentResponse {
   id: UUID;
   studioId: UUID;
+  studioSlug: string;
   professionalId: UUID;
   professionalFullName: string;
   clientId: UUID;
@@ -393,4 +395,25 @@ export interface ProfessionalDashboardResponse {
   todayAppointments: number;
   totalClients: number;
   pendingAppointments: number;
+}
+
+/* ── Public Booking ─────────────────────── */
+
+export interface StudioPublicResponse {
+  name: string;
+  slug: string;
+  timezone: string;
+  professionals: ProfessionalResponse[];
+}
+
+export interface PublicBookingRequest {
+  professionalId: UUID;
+  serviceTypeId?: UUID;
+  startDatetime: string; // ISO-8601 UTC
+  endDatetime: string;   // ISO-8601 UTC
+  clientFirstName: string;
+  clientLastName: string;
+  clientEmail: string;
+  clientPhone?: string;
+  notes?: string;
 }

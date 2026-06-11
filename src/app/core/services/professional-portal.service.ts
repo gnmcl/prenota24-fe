@@ -12,8 +12,10 @@ import type {
   CreateClientRequest,
   CreateAppointmentRequest,
   CancelAppointmentRequest,
+  ProposeNewTimeRequest,
   ProfessionalDashboardResponse,
   ServiceTypeResponse,
+  TimeSlotResponse,
   Page,
   Studio,
 } from '../models/domain.model';
@@ -67,6 +69,17 @@ export class ProfessionalPortalService {
 
   noShowAppointment(id: string): Observable<AppointmentResponse> {
     return this.http.post<AppointmentResponse>(`${this.baseUrl}/appointments/${id}/no-show`, {});
+  }
+
+  proposeNewTime(id: string, request: ProposeNewTimeRequest): Observable<AppointmentResponse> {
+    return this.http.post<AppointmentResponse>(`${this.baseUrl}/appointments/${id}/propose-new-time`, request);
+  }
+
+  getAvailableSlots(date: string, durationMinutes: number): Observable<TimeSlotResponse[]> {
+    const params = new HttpParams()
+      .set('date', date)
+      .set('durationMinutes', durationMinutes);
+    return this.http.get<TimeSlotResponse[]>(`${this.baseUrl}/appointments/slots`, { params });
   }
 
   // ── Clients ──────────────────────────

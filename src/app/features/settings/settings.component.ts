@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from "@angular/core";
+import { Component, inject, OnInit, signal, computed } from "@angular/core";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
 import { PageShellComponent } from "../../shared/components/page-shell/page-shell.component";
 import { CardComponent } from "../../shared/components/card/card.component";
@@ -193,6 +193,21 @@ type Section = 'account' | 'studio';
                   </form>
                 }
               </app-card>
+
+              <!-- Booking link card -->
+              @if (bookingUrl()) {
+                <app-card extraClass="mt-6">
+                  <h2 class="mb-1 text-base font-semibold text-[var(--text-primary)]">Pagina prenotazione clienti</h2>
+                  <p class="mb-4 text-sm text-[var(--text-secondary)]">Condividi questo link con i tuoi clienti per consentire loro di prenotare un appuntamento online.</p>
+                  <div class="flex items-center gap-3 rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-page)] px-4 py-3">
+                    <span class="flex-1 truncate text-sm font-mono text-[var(--text-primary)]">{{ bookingUrl() }}</span>
+                    <app-button variant="secondary" type="button" (click)="copyBookingLink()">
+                      {{ linkCopied() ? '✓ Copiato' : 'Copia' }}
+                    </app-button>
+                  </div>
+                  <p class="mt-3 text-xs text-[var(--text-tertiary)]">La pagina è pubblica — nessun accesso richiesto al cliente.</p>
+                </app-card>
+              }
             }
           </div>
 
@@ -257,6 +272,13 @@ export class SettingsComponent implements OnInit {
   readonly studioLoadError = signal<string | null>(null);
   readonly studioSaveError = signal<string | null>(null);
   readonly studioSuccess = signal<string | null>(null);
+  readonly linkCopied = signal(false);
+
+  readonly bookingUrl = computed(() => {
+    const slug = this.studioService.studio()?.slug;
+    if (!slug) return null;
+    return `${window.location.origin}/prenota/${slug}`;
+  });
 
   readonly studioForm = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(255)]],
@@ -410,5 +432,14 @@ export class SettingsComponent implements OnInit {
       return { thresholdOrder: true };
     }
     return null;
+  }
+
+  copyBookingLink(): void {
+    const url = this.bookingUrl();
+    if (!url) return;
+    navigator.clipboard.writeText(url).then(() => {
+      this.linkCopied.set(true);
+      setTimeout(() => this.linkCopied.set(false), 2000);
+    });
   }
 }
