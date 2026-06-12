@@ -3,103 +3,103 @@ import { ProfessionalPortalService } from '../../core/services/professional-port
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { FormsModule } from '@angular/forms';
 import type { ClientSummaryResponse, CreateClientRequest } from '../../core/models/domain.model';
 
 @Component({
   selector: 'app-professional-clients',
   standalone: true,
-  imports: [PageShellComponent, CardComponent, ButtonComponent, FormsModule],
+  imports: [PageShellComponent, CardComponent, ButtonComponent, EmptyStateComponent, FormsModule],
   template: `
     <app-page-shell>
       <div class="mx-auto max-w-5xl">
-        <div class="mb-8 flex items-center justify-between">
+        <div class="mb-6 flex items-center justify-between">
           <div>
-            <h2 class="text-2xl font-bold text-gray-900">Clienti</h2>
-            <p class="text-sm text-gray-500">I clienti che hai seguito o con cui hai appuntamenti</p>
+            <h2 class="text-2xl font-bold text-[var(--text-primary)]">Clienti</h2>
+            <p class="text-sm text-[var(--text-secondary)]">I clienti che hai seguito o con cui hai appuntamenti</p>
           </div>
           <app-button (click)="showForm.set(true)" [disabled]="showForm()">+ Nuovo cliente</app-button>
+        </div>
+
+        <!-- Search -->
+        <div class="mb-6">
+          <div class="relative">
+            <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)"
+              placeholder="Cerca per nome, email o telefono..."
+              class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] py-2.5 pl-10 pr-4 text-sm text-[var(--text-primary)] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-colors" />
+          </div>
         </div>
 
         <!-- Inline creation form -->
         @if (showForm()) {
           <app-card class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Nuovo cliente</h3>
+            <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-4">Nuovo cliente</h3>
             @if (formError()) {
-              <div class="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{{ formError() }}</div>
+              <div class="mb-4 rounded-lg bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-700 dark:text-red-300">{{ formError() }}</div>
             }
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
-                <input type="text" [(ngModel)]="form.firstName" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Nome *</label>
+                <input type="text" [(ngModel)]="form.firstName" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:focus:border-indigo-400" />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Cognome *</label>
-                <input type="text" [(ngModel)]="form.lastName" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Cognome *</label>
+                <input type="text" [(ngModel)]="form.lastName" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:focus:border-indigo-400" />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input type="email" [(ngModel)]="form.email" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Email</label>
+                <input type="email" [(ngModel)]="form.email" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:focus:border-indigo-400" />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Telefono</label>
-                <input type="tel" [(ngModel)]="form.phone" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Telefono</label>
+                <input type="tel" [(ngModel)]="form.phone" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:focus:border-indigo-400" />
               </div>
             </div>
             <div class="mt-4 flex items-center gap-3">
               <app-button [isLoading]="saving()" [disabled]="!form.firstName.trim() || !form.lastName.trim()" (click)="saveClient()">Crea cliente</app-button>
-              <button (click)="cancelForm()" class="text-sm text-gray-500 hover:text-gray-700 font-medium">Annulla</button>
+              <button (click)="cancelForm()" class="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium">Annulla</button>
             </div>
           </app-card>
         }
 
-        <app-card>
-          @if (isLoading()) {
-            <div class="flex justify-center py-12">
-              <div class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+        @if (isLoading()) {
+          <div class="flex justify-center py-12">
+            <div class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+          </div>
+        } @else if (clients().length === 0) {
+          <app-empty-state
+            icon="👥"
+            title="Nessun cliente trovato"
+            [description]="searchQuery() ? 'Prova a modificare la ricerca.' : 'I clienti appariranno qui quando verranno associati a un appuntamento.'"
+            [actionLabel]="searchQuery() ? '' : '+ Nuovo cliente'"
+            (action)="showForm.set(true)"
+          />
+        } @else {
+          <app-card extraClass="!p-0 overflow-hidden">
+            <div class="divide-y divide-[var(--surface-card-border)]">
+              @for (client of clients(); track client.id) {
+                <div class="flex items-center gap-4 px-5 py-4 hover:bg-[var(--surface-hover)] transition-colors">
+                  <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-sm font-semibold text-indigo-700 dark:text-indigo-300">
+                    {{ client.firstName.charAt(0) }}{{ client.lastName.charAt(0) }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="font-medium text-[var(--text-primary)]">{{ client.firstName }} {{ client.lastName }}</div>
+                    <div class="text-sm text-[var(--text-secondary)]">
+                      @if (client.email) { {{ client.email }} }
+                      @if (client.email && client.phone) { <span class="mx-1">·</span> }
+                      @if (client.phone) { {{ client.phone }} }
+                    </div>
+                  </div>
+                  <div class="text-xs text-[var(--text-tertiary)] shrink-0 hidden sm:block">{{ formatDate(client.createdAt) }}</div>
+                </div>
+              }
             </div>
-          } @else if (clients().length === 0) {
-            <div class="text-center py-12">
-              <span class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 mb-4">
-                <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-              </span>
-              <h3 class="text-sm font-medium text-gray-900">Nessun cliente</h3>
-              <p class="mt-1 text-sm text-gray-500">I clienti compariranno qui quando ti verranno assegnati appuntamenti.</p>
-            </div>
-          } @else {
-            <div class="-mx-4 -my-4 sm:-mx-6 sm:-my-6">
-              <div class="inline-block min-w-full align-middle">
-                <table class="min-w-full divide-y divide-gray-200">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th scope="col" class="py-3 pl-4 pr-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 sm:pl-6">Nome / Email</th>
-                      <th scope="col" class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Telefono</th>
-                      <th scope="col" class="px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500 sm:pr-6">Primo contatto</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-200 bg-white">
-                    @for (client of clients(); track client.id) {
-                      <tr>
-                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                          <div class="font-medium text-gray-900">{{ client.firstName }} {{ client.lastName }}</div>
-                          <div class="text-gray-500">{{ client.email }}</div>
-                        </td>
-                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {{ client.phone || '—' }}
-                        </td>
-                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 text-right sm:pr-6">
-                           {{ formatDate(client.createdAt) }}
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          }
-        </app-card>
+          </app-card>
+        }
       </div>
     </app-page-shell>
   `,
@@ -109,7 +109,17 @@ export class ProfessionalClientsComponent implements OnInit {
 
   readonly isLoading = signal(true);
   private readonly _clients = signal<ClientSummaryResponse[]>([]);
-  readonly clients = computed(() => this._clients());
+  readonly searchQuery = signal('');
+  readonly clients = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    const all = this._clients();
+    if (!q) return all;
+    return all.filter(c =>
+      `${c.firstName} ${c.lastName}`.toLowerCase().includes(q) ||
+      (c.email?.toLowerCase().includes(q) ?? false) ||
+      (c.phone?.toLowerCase().includes(q) ?? false)
+    );
+  });
 
   readonly showForm = signal(false);
   readonly saving = signal(false);

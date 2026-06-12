@@ -346,6 +346,15 @@ export interface ProposeNewTimeRequest {
   proposedEnd: string;
 }
 
+export const APPOINTMENT_CAPACITY_LEVELS = ['AVAILABLE', 'WARNING', 'CRITICAL'] as const;
+export type AppointmentCapacityLevel = (typeof APPOINTMENT_CAPACITY_LEVELS)[number];
+
+export interface DayAppointmentCountResponse {
+  date: string; // YYYY-MM-DD
+  count: number;
+  capacityLevel: AppointmentCapacityLevel;
+}
+
 export interface CancelAppointmentRequest {
   reason?: string;
 }

@@ -12,8 +12,8 @@ import type { ProfessionalDashboardResponse } from '../../core/models/domain.mod
     <app-page-shell>
       <div class="mx-auto max-w-3xl">
         <div class="mb-8">
-          <h2 class="text-2xl font-bold text-gray-900">Il Tuo Profilo</h2>
-          <p class="text-sm text-gray-500">I tuoi dati personali e di contatto</p>
+          <h2 class="text-2xl font-bold text-[var(--text-primary)]">Il Tuo Profilo</h2>
+          <p class="text-sm text-[var(--text-secondary)]">I tuoi dati personali e di contatto</p>
         </div>
 
         <app-card>
@@ -23,27 +23,27 @@ import type { ProfessionalDashboardResponse } from '../../core/models/domain.mod
             </div>
           } @else if (profile()) {
             <div class="space-y-6">
-              <div class="flex items-center gap-4 border-b border-gray-100 pb-6">
-                <div class="flex h-16 w-16 items-center justify-center rounded-full bg-violet-100 text-xl font-bold text-violet-700">
+              <div class="flex items-center gap-4 border-b border-[var(--surface-card-border)] pb-6">
+                <div class="flex h-16 w-16 items-center justify-center rounded-full bg-violet-100 dark:bg-violet-900/30 text-xl font-bold text-violet-700 dark:text-violet-300">
                   {{ profile()!.professional.firstName[0] }}{{ profile()!.professional.lastName[0] }}
                 </div>
                 <div>
-                  <h3 class="text-lg font-medium text-gray-900">{{ profile()!.professional.firstName }} {{ profile()!.professional.lastName }}</h3>
-                  <p class="text-sm text-gray-500">Membro del team: {{ profile()!.studio.name }}</p>
+                  <h3 class="text-lg font-medium text-[var(--text-primary)]">{{ profile()!.professional.firstName }} {{ profile()!.professional.lastName }}</h3>
+                  <p class="text-sm text-[var(--text-secondary)]">Membro del team: {{ profile()!.studio.name }}</p>
                 </div>
               </div>
 
               <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                  <dt class="text-sm font-medium text-gray-500">Email di contatto</dt>
-                  <dd class="mt-1 text-sm text-gray-900">{{ profile()!.professional.email }}</dd>
+                  <dt class="text-sm font-medium text-[var(--text-secondary)]">Email di contatto</dt>
+                  <dd class="mt-1 text-sm text-[var(--text-primary)]">{{ profile()!.professional.email }}</dd>
                 </div>
                 <div>
-                  <dt class="text-sm font-medium text-gray-500">Telefono</dt>
-                  <dd class="mt-1 text-sm text-gray-900">{{ profile()!.professional.phone || 'Non specificato' }}</dd>
+                  <dt class="text-sm font-medium text-[var(--text-secondary)]">Telefono</dt>
+                  <dd class="mt-1 text-sm text-[var(--text-primary)]">{{ profile()!.professional.phone || 'Non specificato' }}</dd>
                 </div>
                 <div>
-                  <dt class="text-sm font-medium text-gray-500">Stato Account</dt>
+                  <dt class="text-sm font-medium text-[var(--text-secondary)]">Stato Account</dt>
                   <dd class="mt-1 text-sm">
                     @if (profile()!.professional.active) {
                       <span class="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">Attivo</span>
@@ -53,8 +53,8 @@ import type { ProfessionalDashboardResponse } from '../../core/models/domain.mod
                   </dd>
                 </div>
                 <div>
-                  <dt class="text-sm font-medium text-gray-500">Data iscrizione</dt>
-                  <dd class="mt-1 text-sm text-gray-900">{{ formatDate(profile()!.professional.createdAt) }}</dd>
+                  <dt class="text-sm font-medium text-[var(--text-secondary)]">Data iscrizione</dt>
+                  <dd class="mt-1 text-sm text-[var(--text-primary)]">{{ formatDate(profile()!.professional.createdAt) }}</dd>
                 </div>
               </div>
             </div>

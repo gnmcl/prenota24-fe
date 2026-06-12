@@ -191,9 +191,9 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                 </app-card>
               }
               @if (apt()!.proposedStart) {
-                <app-card extraClass="sm:col-span-2 !border-blue-200 !bg-blue-50">
-                  <h3 class="mb-2 text-sm font-semibold uppercase tracking-wider text-blue-400">Nuovo orario proposto</h3>
-                  <p class="text-sm text-blue-700">{{ formatFull(apt()!.proposedStart!) }} — {{ formatTime(apt()!.proposedEnd!) }}</p>
+                <app-card extraClass="sm:col-span-2 !border-blue-200 !bg-blue-50 dark:!border-blue-900/50 dark:!bg-blue-950/30">
+                  <h3 class="mb-2 text-sm font-semibold uppercase tracking-wider text-blue-500 dark:text-blue-300">Nuovo orario proposto</h3>
+                  <p class="text-sm text-blue-800 dark:text-blue-200">{{ formatFull(apt()!.proposedStart!) }} — {{ formatTime(apt()!.proposedEnd!) }}</p>
                 </app-card>
               }
             </div>
@@ -223,28 +223,28 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
 
               <!-- Propose new time form -->
               @if (showProposeForm()) {
-                <div class="mt-5 rounded-lg border border-blue-100 bg-blue-50 p-4">
-                  <h4 class="mb-3 text-sm font-medium text-blue-700">Proponi nuovo orario</h4>
-                  <p class="mb-3 text-xs text-blue-700">
+                <div class="mt-5 rounded-lg border border-blue-100 bg-blue-50 p-4 dark:border-blue-900/50 dark:bg-blue-950/30">
+                  <h4 class="mb-3 text-sm font-medium text-blue-900 dark:text-blue-100">Proponi nuovo orario</h4>
+                  <p class="mb-3 text-xs text-blue-800 dark:text-blue-200">
                     Orario richiesto: <span class="font-semibold">{{ formatFull(apt()!.startDatetime) }} - {{ formatTime(apt()!.endDatetime) }}</span>
                   </p>
 
                   <div class="grid gap-4 lg:grid-cols-[240px_1fr]">
                     <div>
-                      <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-blue-700">Data proposta</label>
+                      <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-blue-800 dark:text-blue-200">Data proposta</label>
                       <input
                         type="date"
                         [value]="proposalDate()"
                         [min]="todayStr"
                         (change)="onProposalDateChange($event)"
-                        class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-blue-800 dark:bg-slate-900 dark:text-gray-100"
                       />
-                      <p class="mt-2 text-xs text-blue-700/80">Mostrati solo slot liberi reali nell'agenda del professionista.</p>
+                      <p class="mt-2 text-xs text-blue-800/80 dark:text-blue-200/90">Mostrati solo slot liberi reali nell'agenda del professionista.</p>
                     </div>
 
                     <div>
                       @if (proposalSlotsLoading()) {
-                        <div class="flex items-center gap-2 text-sm text-blue-700">
+                        <div class="flex items-center gap-2 text-sm text-blue-700 dark:text-blue-300">
                           <div class="h-4 w-4 animate-spin rounded-full border-2 border-blue-200 border-t-blue-600"></div>
                           Caricamento disponibilita...
                         </div>
@@ -254,7 +254,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                         </div>
                       } @else {
                         <div>
-                          <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-blue-700">Suggeriti vicini</p>
+                          <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-blue-700 dark:text-blue-300">Suggeriti vicini</p>
                           <div class="grid gap-2 sm:grid-cols-2">
                             @for (slot of nearbyProposalSlots(); track slot.start) {
                               <button type="button" (click)="selectProposalSlot(slot)" [class]="proposalSlotClass(slot, true)">
@@ -266,7 +266,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
 
                         @if (otherProposalSlots().length > 0) {
                           <div class="mt-3 border-t border-blue-100 pt-3">
-                            <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-blue-700">Altri slot disponibili</p>
+                            <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-blue-700 dark:text-blue-300">Altri slot disponibili</p>
                             <div class="grid gap-2 sm:grid-cols-2">
                               @for (slot of otherProposalSlots(); track slot.start) {
                                 <button type="button" (click)="selectProposalSlot(slot)" [class]="proposalSlotClass(slot, false)">
@@ -501,9 +501,9 @@ export class AppointmentDetailComponent implements OnInit {
   proposalSlotClass(slot: TimeSlotResponse, suggested: boolean): string {
     const selected = this.selectedProposalSlot()?.start === slot.start;
     const base = 'w-full rounded-lg border px-3 py-2 text-left text-sm font-medium transition-colors';
-    if (selected) return `${base} border-indigo-600 bg-indigo-600 text-white`;
-    if (suggested) return `${base} border-blue-200 bg-white text-blue-800 hover:border-blue-400 hover:bg-blue-100`;
-    return `${base} border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50`;
+    if (selected) return `${base} border-indigo-600 bg-indigo-600 text-white dark:border-indigo-300 dark:bg-indigo-700 dark:text-white`;
+    if (suggested) return `${base} border-blue-200 bg-white text-blue-900 hover:border-blue-400 hover:bg-blue-100 dark:border-blue-700 dark:bg-slate-900 dark:text-blue-100 dark:hover:border-blue-500 dark:hover:bg-blue-900/40`;
+    return `${base} border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:border-slate-500 dark:hover:bg-slate-800`;
   }
 
   formatProposalSlot(slot: TimeSlotResponse): string {

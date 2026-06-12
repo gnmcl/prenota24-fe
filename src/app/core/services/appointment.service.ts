@@ -8,6 +8,7 @@ import type {
   UpdateAppointmentRequest,
   ProposeNewTimeRequest,
   CancelAppointmentRequest,
+  DayAppointmentCountResponse,
   Page,
 } from '../models/domain.model';
 
@@ -56,5 +57,10 @@ export class AppointmentService {
 
   proposeNewTime(id: string, payload: ProposeNewTimeRequest): Observable<AppointmentResponse> {
     return this.http.post<AppointmentResponse>(`${BASE}/${id}/propose-new-time`, payload);
+  }
+
+  getCalendarCounts(startDate: string, endDate: string): Observable<DayAppointmentCountResponse[]> {
+    const params = new HttpParams().set('startDate', startDate).set('endDate', endDate);
+    return this.http.get<DayAppointmentCountResponse[]>(`${BASE}/calendar/counts`, { params });
   }
 }

@@ -20,15 +20,21 @@ const SLOT_HEIGHT = 56;
     <app-page-shell>
       <div class="mx-auto max-w-5xl">
         <!-- Header -->
-        <div class="mb-8">
-          <h2 class="text-2xl font-bold text-gray-900">
-            Benvenuto{{ authService.user()?.name ? ', ' + authService.user()!.name : '' }}!
-          </h2>
-          <p class="text-gray-500 mt-1">
-            @if (dashboardData()) {
-              Studio: <strong class="text-gray-700">{{ dashboardData()!.studio.name }}</strong>
-            }
-          </p>
+        <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 class="text-2xl font-bold text-[var(--text-primary)]">
+              Benvenuto{{ authService.user()?.name ? ', ' + authService.user()!.name : '' }}! 👋
+            </h2>
+            <p class="mt-1 text-sm text-[var(--text-secondary)]">
+              {{ todayFormatted }}
+              @if (dashboardData()) {
+                · <strong class="font-medium text-[var(--text-primary)]">{{ dashboardData()!.studio.name }}</strong>
+              }
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <a routerLink="/pro/appuntamenti"><app-button>+ Appuntamento</app-button></a>
+          </div>
         </div>
 
         @if (isLoading()) {
@@ -40,87 +46,90 @@ const SLOT_HEIGHT = 56;
             <svg class="mx-auto h-10 w-10 text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
             </svg>
-            <p class="text-gray-600 font-medium">Impossibile caricare la dashboard</p>
-            <p class="text-sm text-gray-400 mt-1 mb-4">Controlla la connessione o riprova.</p>
+            <p class="text-[var(--text-secondary)] font-medium">Impossibile caricare la dashboard</p>
+            <p class="text-sm text-[var(--text-tertiary)] mt-1 mb-4">Controlla la connessione o riprova.</p>
             <app-button (click)="loadDashboard()">Riprova</app-button>
           </app-card>
         } @else if (dashboardData()) {
-          <!-- Stats -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <app-card extraClass="text-center !py-6">
-              <div class="text-4xl font-bold text-indigo-600">{{ dashboardData()!.todayAppointments }}</div>
-              <div class="text-sm text-gray-500 mt-1">Appuntamenti oggi</div>
-            </app-card>
-            <app-card extraClass="text-center !py-6">
-              <div class="text-4xl font-bold text-amber-600">{{ dashboardData()!.pendingAppointments }}</div>
-              <div class="text-sm text-gray-500 mt-1">Da confermare</div>
-            </app-card>
-            <app-card extraClass="text-center !py-6">
-              <div class="text-4xl font-bold text-green-600">{{ dashboardData()!.totalClients }}</div>
-              <div class="text-sm text-gray-500 mt-1">Tuoi clienti</div>
-            </app-card>
+          <!-- Stats pills -->
+          <div class="mb-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+            <div class="flex items-center gap-2">
+              <span class="flex h-2 w-2 rounded-full bg-[var(--color-primary)]"></span>
+              <span class="text-sm text-[var(--text-secondary)]">Oggi</span>
+              <span class="text-sm font-semibold text-[var(--text-primary)]">{{ dashboardData()!.todayAppointments }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="flex h-2 w-2 rounded-full bg-amber-500"></span>
+              <span class="text-sm text-[var(--text-secondary)]">Da confermare</span>
+              <span class="text-sm font-semibold text-[var(--text-primary)]">{{ dashboardData()!.pendingAppointments }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="flex h-2 w-2 rounded-full bg-emerald-500"></span>
+              <span class="text-sm text-[var(--text-secondary)]">Clienti</span>
+              <span class="text-sm font-semibold text-[var(--text-primary)]">{{ dashboardData()!.totalClients }}</span>
+            </div>
           </div>
 
           <!-- Quick links -->
           <div class="grid grid-cols-2 gap-4 mb-8 sm:grid-cols-4">
             <a routerLink="/pro/appuntamenti"
-               class="flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-white p-4 hover:border-indigo-300 hover:bg-indigo-50 transition-colors text-center">
-              <svg class="h-6 w-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="flex flex-col items-center gap-2 rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-card)] p-4 hover:border-indigo-400/60 hover:bg-[var(--surface-hover)] transition-colors text-center">
+              <svg class="h-6 w-6 text-indigo-500 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
               </svg>
-              <span class="text-sm font-medium text-gray-700">Appuntamenti</span>
+              <span class="text-sm font-medium text-[var(--text-primary)]">Appuntamenti</span>
             </a>
             <a routerLink="/pro/clienti"
-               class="flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-white p-4 hover:border-indigo-300 hover:bg-indigo-50 transition-colors text-center">
-              <svg class="h-6 w-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="flex flex-col items-center gap-2 rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-card)] p-4 hover:border-indigo-400/60 hover:bg-[var(--surface-hover)] transition-colors text-center">
+              <svg class="h-6 w-6 text-indigo-500 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
               </svg>
-              <span class="text-sm font-medium text-gray-700">Clienti</span>
+              <span class="text-sm font-medium text-[var(--text-primary)]">Clienti</span>
             </a>
             <a routerLink="/pro/disponibilita"
-               class="flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-white p-4 hover:border-indigo-300 hover:bg-indigo-50 transition-colors text-center">
-              <svg class="h-6 w-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="flex flex-col items-center gap-2 rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-card)] p-4 hover:border-indigo-400/60 hover:bg-[var(--surface-hover)] transition-colors text-center">
+              <svg class="h-6 w-6 text-indigo-500 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
-              <span class="text-sm font-medium text-gray-700">Disponibilità</span>
+              <span class="text-sm font-medium text-[var(--text-primary)]">Disponibilità</span>
             </a>
             <a routerLink="/pro/profilo"
-               class="flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-white p-4 hover:border-indigo-300 hover:bg-indigo-50 transition-colors text-center">
-              <svg class="h-6 w-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="flex flex-col items-center gap-2 rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-card)] p-4 hover:border-indigo-400/60 hover:bg-[var(--surface-hover)] transition-colors text-center">
+              <svg class="h-6 w-6 text-indigo-500 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A8.966 8.966 0 0112 15c2.137 0 4.104.745 5.657 1.977M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
               </svg>
-              <span class="text-sm font-medium text-gray-700">Profilo</span>
+              <span class="text-sm font-medium text-[var(--text-primary)]">Profilo</span>
             </a>
           </div>
 
           <!-- Today calendar preview -->
           <app-card>
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-400">Agenda oggi — {{ todayLabel() }}</h3>
-              <a routerLink="/pro/appuntamenti" class="text-sm text-indigo-600 hover:text-indigo-500 font-medium">Vedi tutti →</a>
+              <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Agenda oggi — {{ todayLabel() }}</h3>
+              <a routerLink="/pro/appuntamenti" class="text-xs font-medium text-[var(--color-primary)] hover:opacity-80 transition-opacity">Vedi tutti →</a>
             </div>
 
             @if (todayAppointments().length === 0) {
               <div class="text-center py-8">
-                <p class="text-sm text-gray-400">Nessun appuntamento per oggi 🎉</p>
+                <p class="text-sm text-[var(--text-tertiary)]">Nessun appuntamento per oggi 🎉</p>
               </div>
             } @else {
               <div class="space-y-2">
                 @for (apt of todayAppointments(); track apt.id) {
-                  <div class="flex items-center gap-4 rounded-lg border border-gray-100 p-3 hover:bg-gray-50 transition-colors">
+                  <div class="flex items-center gap-4 rounded-lg border border-[var(--surface-card-border)] p-3 hover:bg-[var(--surface-hover)] transition-colors">
                     <div class="flex flex-col items-center rounded-lg shrink-0 min-w-[52px] text-center"
                          [style.background]="aptBg(apt)" [style.border-left]="'3px solid ' + aptBorder(apt)"
                          style="padding: 6px 10px; border-radius: 8px;">
-                      <span class="text-sm font-bold text-gray-900">{{ formatTime(apt.startDatetime) }}</span>
-                      <span class="text-[10px] text-gray-500">{{ formatTime(apt.endDatetime) }}</span>
+                      <span class="text-sm font-bold text-[var(--text-primary)]">{{ formatTime(apt.startDatetime) }}</span>
+                      <span class="text-[10px] text-[var(--text-tertiary)]">{{ formatTime(apt.endDatetime) }}</span>
                     </div>
                     <div class="flex-1 min-w-0">
                       <div class="flex items-center gap-2">
-                        <span class="font-medium text-gray-900 truncate">{{ apt.clientFullName }}</span>
+                        <span class="font-medium text-[var(--text-primary)] truncate">{{ apt.clientFullName }}</span>
                         <app-badge [variant]="statusVariant(apt.status)">{{ statusLabel(apt.status) }}</app-badge>
                       </div>
                       @if (apt.serviceTypeName) {
-                        <span class="text-xs text-gray-500">{{ apt.serviceTypeName }}</span>
+                        <span class="text-xs text-[var(--text-secondary)]">{{ apt.serviceTypeName }}</span>
                       }
                     </div>
                     @if (apt.status === 'REQUESTED') {
@@ -137,18 +146,18 @@ const SLOT_HEIGHT = 56;
           <!-- Upcoming (not today) -->
           @if (upcomingAppointments().length > 0) {
             <app-card extraClass="mt-4">
-              <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">Prossimi appuntamenti</h3>
+              <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Prossimi appuntamenti</h3>
               <div class="space-y-2">
                 @for (apt of upcomingAppointments().slice(0, 5); track apt.id) {
-                  <div class="flex items-center gap-3 rounded-lg border border-gray-100 p-3 hover:bg-gray-50 transition-colors">
+                  <div class="flex items-center gap-3 rounded-lg border border-[var(--surface-card-border)] p-3 hover:bg-[var(--surface-hover)] transition-colors">
                     <div class="shrink-0 text-center min-w-[52px]">
-                      <div class="text-xs font-medium text-gray-500">{{ formatDay(apt.startDatetime) }}</div>
-                      <div class="text-sm font-bold text-gray-900">{{ formatTime(apt.startDatetime) }}</div>
+                      <div class="text-xs font-medium text-[var(--text-secondary)]">{{ formatDay(apt.startDatetime) }}</div>
+                      <div class="text-sm font-bold text-[var(--text-primary)]">{{ formatTime(apt.startDatetime) }}</div>
                     </div>
                     <div class="flex-1 min-w-0">
-                      <span class="font-medium text-gray-900 truncate block">{{ apt.clientFullName }}</span>
+                      <span class="font-medium text-[var(--text-primary)] truncate block">{{ apt.clientFullName }}</span>
                       @if (apt.serviceTypeName) {
-                        <span class="text-xs text-gray-500">{{ apt.serviceTypeName }}</span>
+                        <span class="text-xs text-[var(--text-secondary)]">{{ apt.serviceTypeName }}</span>
                       }
                     </div>
                     <app-badge [variant]="statusVariant(apt.status)">{{ statusLabel(apt.status) }}</app-badge>
@@ -171,6 +180,7 @@ export class ProfessionalDashboardComponent implements OnInit {
   readonly dashboardData = signal<ProfessionalDashboardResponse | null>(null);
   private readonly _allAppointments = signal<AppointmentResponse[]>([]);
 
+  readonly todayFormatted = new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   readonly todayLabel = () => new Date().toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: 'long' });
 
   readonly todayAppointments = computed(() => {

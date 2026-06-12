@@ -5,6 +5,7 @@ import { PageShellComponent } from '../../shared/components/page-shell/page-shel
 import { CardComponent } from '../../shared/components/card/card.component';
 import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import type { AppointmentResponse, AppointmentStatus, ClientSummaryResponse, CreateAppointmentRequest, CreateClientRequest, ServiceTypeResponse, TimeSlotResponse, UUID } from '../../core/models/domain.model';
 import { AuthService } from '../../core/services/auth.service';
 import { FormsModule } from '@angular/forms';
@@ -16,30 +17,30 @@ const SLOT_HEIGHT = 60;
 @Component({
   selector: 'app-professional-appointments',
   standalone: true,
-  imports: [PageShellComponent, CardComponent, BadgeComponent, ButtonComponent, FormsModule],
+  imports: [PageShellComponent, CardComponent, BadgeComponent, ButtonComponent, EmptyStateComponent, FormsModule],
   template: `
     <app-page-shell>
       <div class="mx-auto max-w-5xl">
         <!-- Header -->
         <div class="mb-6 flex items-center justify-between">
           <div>
-            <h2 class="text-2xl font-bold text-gray-900">Appuntamenti</h2>
-            <p class="text-sm text-gray-500">Gestisci i tuoi appuntamenti</p>
+            <h2 class="text-2xl font-bold text-[var(--text-primary)]">Appuntamenti</h2>
+            <p class="text-sm text-[var(--text-secondary)]">Gestisci i tuoi appuntamenti</p>
           </div>
           <div class="flex items-center gap-3">
             <app-button (click)="openNewAppointment()">+ Nuovo</app-button>
             <!-- View toggle -->
-            <div class="flex gap-1 rounded-lg border border-gray-200 p-0.5">
+            <div class="flex gap-1 rounded-lg border border-[var(--surface-card-border)] p-0.5">
               <button (click)="viewMode.set('list')"
                 [class]="viewMode() === 'list'
-                  ? 'rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white'
-                  : 'rounded-md px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors'">
+                  ? 'rounded-md bg-[var(--color-primary)] px-3 py-1.5 text-xs font-medium text-white'
+                  : 'rounded-md px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors'">
                 Lista
               </button>
               <button (click)="viewMode.set('calendar')"
                 [class]="viewMode() === 'calendar'
-                  ? 'rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white'
-                  : 'rounded-md px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors'">
+                  ? 'rounded-md bg-[var(--color-primary)] px-3 py-1.5 text-xs font-medium text-white'
+                  : 'rounded-md px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors'">
                 Calendario
               </button>
             </div>
@@ -51,7 +52,7 @@ const SLOT_HEIGHT = 60;
           <div class="mb-4 flex items-center gap-4">
             <app-button variant="secondary" (click)="prevDay()">←</app-button>
             <div class="text-center flex-1">
-              <h3 class="text-lg font-semibold text-gray-900">{{ dateLabel() }}</h3>
+              <h3 class="text-lg font-semibold text-[var(--text-primary)]">{{ dateLabel() }}</h3>
               @if (isToday()) {
                 <span class="text-xs text-indigo-600 font-medium">Oggi</span>
               }
@@ -63,8 +64,8 @@ const SLOT_HEIGHT = 60;
             @for (d of weekDays(); track d.date) {
               <button (click)="goToDate(d.date)"
                 [class]="d.date === currentDate()
-                  ? 'rounded-lg bg-indigo-600 px-2 py-2 text-center text-white'
-                  : 'rounded-lg border border-gray-200 px-2 py-2 text-center text-gray-700 hover:bg-gray-50 transition-colors'">
+                  ? 'rounded-lg bg-[var(--color-primary)] px-2 py-2 text-center text-white'
+                  : 'rounded-lg border border-[var(--surface-card-border)] px-2 py-2 text-center text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors'">
                 <div class="text-xs">{{ d.dayLabel }}</div>
                 <div class="text-sm font-semibold">{{ d.dayNum }}</div>
               </button>
@@ -78,8 +79,8 @@ const SLOT_HEIGHT = 60;
             @for (f of statusFilters; track f.value) {
               <button (click)="onFilterChange(f.value)"
                 [class]="statusFilter() === f.value
-                  ? 'rounded-full bg-indigo-600 px-3 py-1 text-xs font-medium text-white'
-                  : 'rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors'">
+                  ? 'rounded-full bg-[var(--color-primary)] px-3 py-1 text-xs font-medium text-white'
+                  : 'rounded-full border border-[var(--surface-card-border)] px-3 py-1 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors'">
                 {{ f.label }}
               </button>
             }
@@ -95,20 +96,19 @@ const SLOT_HEIGHT = 60;
           <!-- ── CALENDAR VIEW ── -->
           @if (viewMode() === 'calendar') {
             @if (dayAppointments().length === 0) {
-              <app-card extraClass="text-center py-12">
-                <svg class="mx-auto h-10 w-10 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-                <p class="text-sm text-gray-400">Nessun appuntamento per questa giornata</p>
-              </app-card>
+              <app-empty-state
+                icon="📅"
+                title="Nessun appuntamento"
+                description="Nessun appuntamento per questa giornata."
+              />
             } @else {
-              <div class="rounded-xl border border-gray-200 bg-white overflow-hidden">
+              <div class="rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-card)] overflow-hidden">
                 <!-- calendar body: time labels + single column -->
                 <div class="relative grid" style="grid-template-columns: 56px 1fr;" [style.height.px]="calendarHeight">
                   <!-- Hour labels -->
-                  <div class="border-r border-gray-100">
+                  <div class="border-r border-[var(--surface-card-border)]">
                     @for (h of hours; track h) {
-                      <div class="absolute pr-2 text-right text-[10px] text-gray-400 w-[56px]"
+                      <div class="absolute pr-2 text-right text-[10px] text-[var(--text-tertiary)] w-[56px]"
                            [style.top.px]="(h - hourStart) * slotHeight"
                            style="line-height: 0; transform: translateY(-6px);">
                         {{ h }}:00
@@ -118,7 +118,7 @@ const SLOT_HEIGHT = 60;
                   <!-- Appointments column -->
                   <div class="relative">
                     @for (h of hours; track h) {
-                      <div class="absolute inset-x-0 border-t border-gray-100" [style.top.px]="(h - hourStart) * slotHeight"></div>
+                      <div class="absolute inset-x-0 border-t border-[var(--surface-card-border)]" [style.top.px]="(h - hourStart) * slotHeight"></div>
                     }
                     @for (apt of dayAppointments(); track apt.id) {
                       <div class="absolute inset-x-1 rounded-lg px-2 py-1 text-xs overflow-hidden border-l-4 cursor-pointer hover:opacity-90 transition-opacity"
@@ -127,11 +127,11 @@ const SLOT_HEIGHT = 60;
                            [style.min-height.px]="28"
                            [style.background-color]="aptBg(apt)"
                            [style.border-left-color]="aptBorder(apt)">
-                        <div class="font-semibold truncate text-gray-900">
+                        <div class="font-semibold truncate text-gray-900 dark:text-gray-100">
                           {{ formatTime(apt.startDatetime) }} — {{ apt.clientFullName }}
                         </div>
                         @if (calendarBlockHeight(apt) > 32 && apt.serviceTypeName) {
-                          <div class="truncate text-gray-600 text-[10px]">{{ apt.serviceTypeName }}</div>
+                          <div class="truncate text-gray-600 dark:text-gray-300 text-[10px]">{{ apt.serviceTypeName }}</div>
                         }
                         @if (calendarBlockHeight(apt) > 52) {
                           <div class="mt-1 flex items-center gap-2">
@@ -171,60 +171,50 @@ const SLOT_HEIGHT = 60;
           <!-- ── LIST VIEW ── -->
           @if (viewMode() === 'list') {
             @if (appointments().length === 0) {
-              <app-card extraClass="text-center py-12">
-                <svg class="mx-auto h-10 w-10 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-                <p class="text-sm text-gray-400">Nessun appuntamento trovato</p>
-              </app-card>
+              <app-empty-state
+                icon="📅"
+                title="Nessun appuntamento"
+                [description]="statusFilter() ? 'Nessun appuntamento con questo stato.' : 'Crea il primo appuntamento cliccando + Nuovo.'"
+              />
             } @else {
-              <app-card>
-                <div class="-mx-4 -my-4 sm:-mx-6 sm:-my-6">
-                  <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                      <tr>
-                        <th class="py-3 pl-4 pr-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 sm:pl-6">Data e Ora</th>
-                        <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Cliente</th>
-                        <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Stato</th>
-                        <th class="px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500 sm:pr-6">Azioni</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200 bg-white">
-                      @for (apt of appointments(); track apt.id) {
-                        <tr class="hover:bg-gray-50 transition-colors">
-                          <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                            <div class="font-medium text-gray-900">{{ formatDate(apt.startDatetime) }}</div>
-                            <div class="text-gray-500">{{ formatTime(apt.startDatetime) }} – {{ formatTime(apt.endDatetime) }}</div>
-                          </td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                            <div>{{ apt.clientFullName }}</div>
-                            @if (apt.serviceTypeName) {
-                              <div class="text-xs mt-0.5 text-gray-400">{{ apt.serviceTypeName }}</div>
-                            }
-                          </td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm">
-                            <app-badge [variant]="statusVariant(apt.status)">{{ statusLabel(apt.status) }}</app-badge>
-                          </td>
-                          <td class="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm sm:pr-6">
-                            @if (apt.status === 'REQUESTED') {
-                              <div class="flex items-center justify-end gap-2">
-                                <button (click)="doAction(apt.id, 'confirm')" class="text-green-600 hover:text-green-800 font-medium transition-colors">Conferma</button>
-                                <button (click)="openProposePanel(apt)" class="text-blue-600 hover:text-blue-800 font-medium transition-colors">Proponi orario</button>
-                                <button (click)="doAction(apt.id, 'cancel')" class="text-red-600 hover:text-red-800 font-medium transition-colors">Cancella</button>
-                              </div>
-                            } @else if (apt.status === 'CONFIRMED') {
-                              <div class="flex items-center justify-end gap-2">
-                                <button (click)="doAction(apt.id, 'complete')" class="text-gray-600 hover:text-gray-800 font-medium transition-colors">Completa</button>
-                                <button (click)="doAction(apt.id, 'no-show')" class="text-purple-600 hover:text-purple-800 font-medium transition-colors">No-show</button>
-                              </div>
-                            } @else {
-                              <span class="text-gray-300">—</span>
-                            }
-                          </td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
+              <app-card extraClass="!p-0 overflow-hidden">
+                <div class="divide-y divide-[var(--surface-card-border)]">
+                  @for (apt of appointments(); track apt.id) {
+                    <div class="flex items-center gap-4 px-5 py-4 hover:bg-[var(--surface-hover)] transition-colors overflow-hidden min-w-0">
+                      <!-- Date badge -->
+                      <div class="hidden sm:flex flex-col items-center justify-center rounded-lg bg-[var(--status-accent-bg)] px-3 py-2 text-center shrink-0">
+                        <span class="text-xs font-medium text-[var(--status-accent-text)]">{{ monthShort(apt.startDatetime) }}</span>
+                        <span class="text-lg font-bold text-[var(--status-accent-text)]">{{ dayNum(apt.startDatetime) }}</span>
+                      </div>
+                      <!-- Info -->
+                      <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2 min-w-0">
+                          <span class="font-medium text-[var(--text-primary)] truncate min-w-0">{{ apt.clientFullName }}</span>
+                          <span class="shrink-0"><app-badge [variant]="statusVariant(apt.status)">{{ statusLabel(apt.status) }}</app-badge></span>
+                        </div>
+                        <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-sm text-[var(--text-secondary)]">
+                          <span>{{ formatTime(apt.startDatetime) }} – {{ formatTime(apt.endDatetime) }}</span>
+                          @if (apt.serviceTypeName) {
+                            <span class="text-[var(--text-tertiary)]">·</span>
+                            <span>{{ apt.serviceTypeName }}</span>
+                          }
+                        </div>
+                      </div>
+                      <!-- Actions -->
+                      <div class="shrink-0 flex items-center gap-2">
+                        @if (apt.status === 'REQUESTED') {
+                          <button (click)="doAction(apt.id, 'confirm')" class="text-green-600 hover:text-green-800 font-medium text-sm transition-colors">Conferma</button>
+                          <button (click)="openProposePanel(apt)" class="text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors">Proponi</button>
+                          <button (click)="doAction(apt.id, 'cancel')" class="text-red-600 hover:text-red-800 font-medium text-sm transition-colors">Cancella</button>
+                        } @else if (apt.status === 'CONFIRMED') {
+                          <button (click)="doAction(apt.id, 'complete')" class="text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium text-sm transition-colors">Completa</button>
+                          <button (click)="doAction(apt.id, 'no-show')" class="text-purple-600 hover:text-purple-800 font-medium text-sm transition-colors">No-show</button>
+                        } @else {
+                          <span class="text-[var(--text-tertiary)] text-sm">—</span>
+                        }
+                      </div>
+                    </div>
+                  }
                 </div>
               </app-card>
             }
@@ -236,10 +226,10 @@ const SLOT_HEIGHT = 60;
       @if (showNewPanel()) {
         <div class="fixed inset-0 z-50 flex justify-end">
           <div class="absolute inset-0 bg-black/30" (click)="closeNewAppointment()"></div>
-          <div class="relative w-full max-w-md bg-white shadow-xl overflow-y-auto">
-            <div class="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
-              <h3 class="text-lg font-semibold text-gray-900">Nuovo appuntamento</h3>
-              <button (click)="closeNewAppointment()" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <div class="relative w-full max-w-md bg-[var(--surface-card)] shadow-xl overflow-y-auto">
+            <div class="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--surface-card-border)] bg-[var(--surface-card)] px-6 py-4">
+              <h3 class="text-lg font-semibold text-[var(--text-primary)]">Nuovo appuntamento</h3>
+              <button (click)="closeNewAppointment()" class="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
@@ -247,42 +237,42 @@ const SLOT_HEIGHT = 60;
             <div class="p-6 space-y-5">
               <!-- Client selector -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+                <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Cliente</label>
                 @if (!showQuickClient()) {
-                  <select [(ngModel)]="newApt.clientId" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none">
+                  <select [(ngModel)]="newApt.clientId" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none">
                     <option value="">Seleziona cliente...</option>
                     @for (c of clients(); track c.id) {
                       <option [value]="c.id">{{ c.firstName }} {{ c.lastName }}{{ c.email ? ' — ' + c.email : '' }}</option>
                     }
                   </select>
-                  <button (click)="showQuickClient.set(true)" class="mt-2 text-sm text-indigo-600 hover:text-indigo-500 font-medium transition-colors">
+                  <button (click)="showQuickClient.set(true)" class="mt-2 text-sm text-[var(--color-primary)] hover:opacity-80 font-medium transition-opacity">
                     + Crea nuovo cliente
                   </button>
                 } @else {
                   <!-- Quick create client inline -->
-                  <div class="rounded-lg border border-indigo-200 bg-indigo-50/50 p-4 space-y-3">
+                  <div class="rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50/50 dark:bg-indigo-900/20 p-4 space-y-3">
                     <p class="text-xs font-semibold uppercase tracking-wider text-indigo-500">Nuovo cliente</p>
                     <div class="grid grid-cols-2 gap-3">
                       <div>
-                        <label class="block text-xs text-gray-500 mb-1">Nome *</label>
-                        <input type="text" [(ngModel)]="quickClient.firstName" class="w-full rounded-md border border-gray-300 px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                        <label class="block text-xs text-[var(--text-secondary)] mb-1">Nome *</label>
+                        <input type="text" [(ngModel)]="quickClient.firstName" class="w-full rounded-md border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
                       </div>
                       <div>
-                        <label class="block text-xs text-gray-500 mb-1">Cognome *</label>
-                        <input type="text" [(ngModel)]="quickClient.lastName" class="w-full rounded-md border border-gray-300 px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                        <label class="block text-xs text-[var(--text-secondary)] mb-1">Cognome *</label>
+                        <input type="text" [(ngModel)]="quickClient.lastName" class="w-full rounded-md border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
                       </div>
                     </div>
                     <div>
-                      <label class="block text-xs text-gray-500 mb-1">Email</label>
-                      <input type="email" [(ngModel)]="quickClient.email" class="w-full rounded-md border border-gray-300 px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                      <label class="block text-xs text-[var(--text-secondary)] mb-1">Email</label>
+                      <input type="email" [(ngModel)]="quickClient.email" class="w-full rounded-md border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
                     </div>
                     <div>
-                      <label class="block text-xs text-gray-500 mb-1">Telefono</label>
-                      <input type="tel" [(ngModel)]="quickClient.phone" class="w-full rounded-md border border-gray-300 px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                      <label class="block text-xs text-[var(--text-secondary)] mb-1">Telefono</label>
+                      <input type="tel" [(ngModel)]="quickClient.phone" class="w-full rounded-md border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
                     </div>
                     <div class="flex items-center gap-2">
                       <app-button size="sm" [isLoading]="creatingClient()" [disabled]="!quickClient.firstName || !quickClient.lastName" (click)="createQuickClient()">Crea e seleziona</app-button>
-                      <button (click)="cancelQuickClient()" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">Annulla</button>
+                      <button (click)="cancelQuickClient()" class="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Annulla</button>
                     </div>
                   </div>
                 }
@@ -290,8 +280,8 @@ const SLOT_HEIGHT = 60;
 
               <!-- Service type -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Tipo di servizio</label>
-                <select [(ngModel)]="newApt.serviceTypeId" (ngModelChange)="onServiceTypeChange()" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none">
+                <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Tipo di servizio</label>
+                <select [(ngModel)]="newApt.serviceTypeId" (ngModelChange)="onServiceTypeChange()" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none">
                   <option value="">Nessuno (generico)</option>
                   @for (st of serviceTypes(); track st.id) {
                     <option [value]="st.id">{{ st.name }} ({{ st.durationMinutes }} min)</option>
@@ -301,42 +291,42 @@ const SLOT_HEIGHT = 60;
 
               <!-- Date -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
-                <input type="date" [(ngModel)]="newApt.date" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Data</label>
+                <input type="date" [(ngModel)]="newApt.date" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
               </div>
 
               <!-- Time -->
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Ora inizio</label>
-                  <input type="time" [(ngModel)]="newApt.startTime" (ngModelChange)="autoCalcEnd()" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                  <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Ora inizio</label>
+                  <input type="time" [(ngModel)]="newApt.startTime" (ngModelChange)="autoCalcEnd()" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Ora fine</label>
-                  <input type="time" [(ngModel)]="newApt.endTime" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                  <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Ora fine</label>
+                  <input type="time" [(ngModel)]="newApt.endTime" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
                 </div>
               </div>
 
               <!-- Notes -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
-                <textarea [(ngModel)]="newApt.notes" rows="2" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" placeholder="Note opzionali..."></textarea>
+                <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Note</label>
+                <textarea [(ngModel)]="newApt.notes" rows="2" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" placeholder="Note opzionali..."></textarea>
               </div>
 
               <!-- Confirm immediately -->
-              <label class="flex items-center gap-2 text-sm text-gray-700">
+              <label class="flex items-center gap-2 text-sm text-[var(--text-primary)]">
                 <input type="checkbox" [(ngModel)]="newApt.confirmImmediately" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
                 Conferma immediatamente
               </label>
 
               @if (createError()) {
-                <div class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{{ createError() }}</div>
+                <div class="rounded-lg bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-300">{{ createError() }}</div>
               }
 
               <!-- Actions -->
               <div class="flex items-center gap-3 pt-2">
                 <app-button [isLoading]="creatingApt()" [disabled]="!canCreateAppointment()" (click)="createAppointment()">Crea appuntamento</app-button>
-                <button (click)="closeNewAppointment()" class="text-sm text-gray-500 hover:text-gray-700 font-medium transition-colors">Annulla</button>
+                <button (click)="closeNewAppointment()" class="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium transition-colors">Annulla</button>
               </div>
             </div>
           </div>
@@ -346,37 +336,37 @@ const SLOT_HEIGHT = 60;
       <!-- ── PROPOSE NEW TIME PANEL ── -->
       @if (showProposePanel()) {
         <div class="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-6">
-          <div class="relative w-full max-w-3xl rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl">
-            <div class="flex items-start justify-between border-b border-gray-200 px-4 py-4 sm:px-6">
+          <div class="relative w-full max-w-3xl rounded-t-2xl bg-[var(--surface-card)] shadow-2xl sm:rounded-2xl">
+            <div class="flex items-start justify-between border-b border-[var(--surface-card-border)] px-4 py-4 sm:px-6">
               <div>
-                <h3 class="text-base font-semibold text-gray-900 sm:text-lg">Proponi nuovo orario</h3>
-                <p class="mt-1 text-xs text-gray-500 sm:text-sm">
-                  Cliente: <span class="font-medium text-gray-700">{{ selectedAppointmentForProposal()?.clientFullName }}</span>
+                <h3 class="text-base font-semibold text-[var(--text-primary)] sm:text-lg">Proponi nuovo orario</h3>
+                <p class="mt-1 text-xs text-[var(--text-secondary)] sm:text-sm">
+                  Cliente: <span class="font-medium text-[var(--text-primary)]">{{ selectedAppointmentForProposal()?.clientFullName }}</span>
                 </p>
-                <p class="text-xs text-gray-500 sm:text-sm">
-                  Orario richiesto: <span class="font-medium text-gray-700">{{ formatProposalOriginalSlot() }}</span>
+                <p class="text-xs text-[var(--text-secondary)] sm:text-sm">
+                  Orario richiesto: <span class="font-medium text-[var(--text-primary)]">{{ formatProposalOriginalSlot() }}</span>
                 </p>
               </div>
-              <button (click)="closeProposePanel()" class="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors" aria-label="Chiudi pannello proposta">
+              <button (click)="closeProposePanel()" class="rounded-lg p-1 text-[var(--text-tertiary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-colors" aria-label="Chiudi pannello proposta">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
 
             <div class="max-h-[75vh] overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
               <div class="grid gap-4 lg:grid-cols-[280px_1fr]">
-                <div class="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                  <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">Data proposta</label>
+                <div class="rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-hover)] p-4">
+                  <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Data proposta</label>
                   <input
                     type="date"
                     [value]="proposalDay()"
                     [min]="todayStr"
                     (change)="onProposalDateChange($event)"
-                    class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
-                  <p class="mt-2 text-xs text-gray-500">Il sistema mostra solo slot realmente disponibili nella tua agenda.</p>
+                  <p class="mt-2 text-xs text-[var(--text-tertiary)]">Il sistema mostra solo slot realmente disponibili nella tua agenda.</p>
                 </div>
 
-                <div class="rounded-xl border border-blue-100 bg-blue-50/60 p-4">
+                <div class="rounded-xl border border-blue-100 dark:border-blue-900/40 bg-blue-50/60 dark:bg-blue-950/20 p-4">
                   @if (slotsLoading()) {
                     <div class="flex items-center gap-2 text-sm text-blue-700">
                       <div class="h-4 w-4 animate-spin rounded-full border-2 border-blue-200 border-t-blue-600"></div>
@@ -388,7 +378,7 @@ const SLOT_HEIGHT = 60;
                     </div>
                   } @else {
                     <div>
-                      <p class="mb-2 text-sm font-semibold text-blue-900">Suggeriti vicini all'orario richiesto</p>
+                      <p class="mb-2 text-sm font-semibold text-blue-900 dark:text-blue-100">Suggeriti vicini all'orario richiesto</p>
                       <div class="grid gap-2 sm:grid-cols-2">
                         @for (slot of nearbySuggestedSlots(); track slot.start) {
                           <button
@@ -402,7 +392,7 @@ const SLOT_HEIGHT = 60;
 
                     @if (otherProposalSlots().length > 0) {
                       <div class="mt-4 border-t border-blue-100 pt-3">
-                        <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-blue-700">Altri slot disponibili</p>
+                      <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-blue-700 dark:text-blue-300">Altri slot disponibili</p>
                         <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                           @for (slot of otherProposalSlots(); track slot.start) {
                             <button
@@ -423,7 +413,7 @@ const SLOT_HEIGHT = 60;
               </div>
             </div>
 
-            <div class="flex flex-col-reverse gap-2 border-t border-gray-200 px-4 py-3 sm:flex-row sm:justify-end sm:px-6">
+            <div class="flex flex-col-reverse gap-2 border-t border-[var(--surface-card-border)] px-4 py-3 sm:flex-row sm:justify-end sm:px-6">
               <app-button variant="secondary" (click)="closeProposePanel()">Annulla</app-button>
               <app-button [disabled]="!selectedProposalSlot()" [isLoading]="proposing()" (click)="submitProposedTime()">Invia proposta</app-button>
             </div>
@@ -588,6 +578,14 @@ export class ProfessionalAppointmentsComponent implements OnInit {
   statusVariant(status: AppointmentStatus): 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple' {
     const map: Record<string, 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple'> = { REQUESTED: 'amber', CONFIRMED: 'green', PROPOSED_NEW_TIME: 'blue', CANCELLED: 'red', COMPLETED: 'gray', NO_SHOW: 'purple' };
     return map[status] ?? 'gray';
+  }
+
+  monthShort(iso: string): string {
+    return new Date(iso).toLocaleDateString('it-IT', { month: 'short' }).toUpperCase();
+  }
+
+  dayNum(iso: string): string {
+    return new Date(iso).getDate().toString();
   }
 
   formatDate(iso: string): string {

@@ -17,13 +17,13 @@ const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Saba
     <app-page-shell>
       <div class="mx-auto max-w-3xl">
         <div class="mb-8">
-          <h2 class="text-2xl font-bold text-gray-900">Disponibilità</h2>
-          <p class="text-sm text-gray-500">Configura i tuoi orari settimanali e le eccezioni</p>
+          <h2 class="text-2xl font-bold text-[var(--text-primary)]">Disponibilità</h2>
+          <p class="text-sm text-[var(--text-secondary)]">Configura i tuoi orari settimanali e le eccezioni</p>
         </div>
 
         <!-- Weekly hours -->
         <app-card>
-          <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">Orari settimanali</h3>
+          <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Orari settimanali</h3>
 
           @if (isLoading()) {
             <div class="flex justify-center py-8">
@@ -32,20 +32,20 @@ const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Saba
           } @else {
             <div class="space-y-3">
               @for (day of daySlots; track day.dayOfWeek) {
-                <div class="flex items-center gap-3 rounded-lg border border-gray-100 p-3">
-                  <span class="w-24 text-sm font-medium text-gray-700">{{ dayName(day.dayOfWeek) }}</span>
+                <div class="flex items-center gap-3 rounded-lg border border-[var(--surface-card-border)] p-3">
+                  <span class="w-24 text-sm font-medium text-[var(--text-primary)]">{{ dayName(day.dayOfWeek) }}</span>
                   <label class="relative inline-flex cursor-pointer items-center">
                     <input type="checkbox" [checked]="day.enabled" (change)="toggleDay(day.dayOfWeek)" class="peer sr-only" />
                     <div class="h-5 w-9 rounded-full bg-gray-200 after:absolute after:start-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-indigo-600 peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
                   </label>
                   @if (day.enabled) {
                     <input type="time" [value]="day.startTime" (change)="updateTime(day.dayOfWeek, 'start', $event)"
-                      class="rounded border border-gray-200 px-2 py-1 text-sm" />
-                    <span class="text-gray-400">—</span>
+                      class="rounded border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-2 py-1 text-sm" />
+                    <span class="text-[var(--text-tertiary)]">—</span>
                     <input type="time" [value]="day.endTime" (change)="updateTime(day.dayOfWeek, 'end', $event)"
-                      class="rounded border border-gray-200 px-2 py-1 text-sm" />
+                      class="rounded border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-2 py-1 text-sm" />
                   } @else {
-                    <span class="text-sm text-gray-400 italic">Non disponibile</span>
+                    <span class="text-sm text-[var(--text-tertiary)] italic">Non disponibile</span>
                   }
                 </div>
               }
@@ -58,17 +58,17 @@ const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Saba
 
         <!-- Exceptions -->
         <app-card extraClass="mt-6">
-          <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">Eccezioni e chiusure</h3>
+          <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Eccezioni e chiusure</h3>
 
           @if (exceptions().length === 0) {
-            <p class="text-sm text-gray-400 mb-4">Nessuna eccezione configurata</p>
+            <p class="text-sm text-[var(--text-tertiary)] mb-4">Nessuna eccezione configurata</p>
           } @else {
             <div class="space-y-2 mb-6">
               @for (exc of exceptions(); track exc.id) {
-                <div class="flex items-start justify-between rounded-lg border border-gray-100 px-4 py-3">
+                <div class="flex items-start justify-between rounded-lg border border-[var(--surface-card-border)] px-4 py-3">
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-3 flex-wrap">
-                      <span class="text-sm font-medium text-gray-900">{{ formatDate(exc.date) }}</span>
+                      <span class="text-sm font-medium text-[var(--text-primary)]">{{ formatDate(exc.date) }}</span>
                       @if (exc.isUnavailableAllDay) {
                         <app-badge variant="red">Giornata chiusa</app-badge>
                       }
@@ -79,7 +79,7 @@ const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Saba
                     @if (!exc.isUnavailableAllDay && exc.slots.length > 0) {
                       <div class="mt-1.5 space-y-0.5">
                         @for (slot of exc.slots; track slot.id) {
-                          <div class="text-sm text-gray-500">
+                          <div class="text-sm text-[var(--text-secondary)]">
                             Non disponibile: {{ slot.startTime }} – {{ slot.endTime }}
                           </div>
                         }
@@ -96,18 +96,18 @@ const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Saba
           }
 
           <!-- Add exception form -->
-          <div class="border-t border-gray-100 pt-4">
-            <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Aggiungi eccezione</p>
+          <div class="border-t border-[var(--surface-card-border)] pt-4">
+            <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Aggiungi eccezione</p>
             <div class="space-y-4">
               <!-- Date -->
               <div>
-                <label class="block text-xs text-gray-500 mb-1">Data</label>
+                <label class="block text-xs text-[var(--text-secondary)] mb-1">Data</label>
                 <input type="date" [(ngModel)]="newExcDate"
-                  class="rounded border border-gray-200 px-2 py-1.5 text-sm focus:border-indigo-500 focus:outline-none" />
+                  class="rounded border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-2 py-1.5 text-sm focus:border-indigo-500 focus:outline-none" />
               </div>
 
               <!-- All day toggle -->
-              <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+              <label class="flex items-center gap-2 text-sm text-[var(--text-primary)] cursor-pointer">
                 <input type="checkbox" [(ngModel)]="newExcUnavailableAllDay"
                   class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
                 Giornata intera non disponibile
@@ -115,16 +115,16 @@ const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Saba
 
               <!-- Time slots (conditional) -->
               @if (!newExcUnavailableAllDay) {
-                <div class="rounded-lg border border-gray-100 p-3 bg-gray-50/50">
-                  <p class="text-xs font-medium text-gray-500 mb-2">Fasce di indisponibilità</p>
+                <div class="rounded-lg border border-[var(--surface-card-border)] p-3 bg-[var(--surface-hover)]">
+                  <p class="text-xs font-medium text-[var(--text-secondary)] mb-2">Fasce di indisponibilità</p>
                   <div class="space-y-2">
                     @for (slot of newExcSlots; track $index) {
                       <div class="flex items-center gap-2">
                         <input type="time" [(ngModel)]="slot.startTime"
-                          class="rounded border border-gray-200 px-2 py-1.5 text-sm focus:border-indigo-500 focus:outline-none bg-white" />
-                        <span class="text-gray-400 text-xs">–</span>
+                          class="rounded border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-2 py-1.5 text-sm focus:border-indigo-500 focus:outline-none" />
+                        <span class="text-[var(--text-tertiary)] text-xs">–</span>
                         <input type="time" [(ngModel)]="slot.endTime"
-                          class="rounded border border-gray-200 px-2 py-1.5 text-sm focus:border-indigo-500 focus:outline-none bg-white" />
+                          class="rounded border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-2 py-1.5 text-sm focus:border-indigo-500 focus:outline-none" />
                         <button (click)="removeSlot($index)"
                           class="text-red-400 hover:text-red-600 transition-colors text-sm font-medium ml-1">
                           ✕
@@ -136,7 +136,7 @@ const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Saba
                     }
                   </div>
                   <button (click)="addSlot()" type="button"
-                    class="mt-2 inline-flex items-center gap-1 rounded-md border border-dashed border-gray-300 px-3 py-1.5 text-xs text-gray-500 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
+                    class="mt-2 inline-flex items-center gap-1 rounded-md border border-dashed border-[var(--surface-card-border)] px-3 py-1.5 text-xs text-[var(--text-secondary)] hover:border-indigo-400 hover:text-indigo-500 transition-colors">
                     <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
@@ -150,9 +150,9 @@ const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Saba
 
               <!-- Reason -->
               <div>
-                <label class="block text-xs text-gray-500 mb-1">Motivo (opzionale)</label>
+                <label class="block text-xs text-[var(--text-secondary)] mb-1">Motivo (opzionale)</label>
                 <input type="text" [(ngModel)]="newExcReason" placeholder="es. Ferie"
-                  class="w-full rounded border border-gray-200 px-2 py-1.5 text-sm focus:border-indigo-500 focus:outline-none" />
+                  class="w-full rounded border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-2 py-1.5 text-sm focus:border-indigo-500 focus:outline-none" />
               </div>
 
               <div class="flex justify-end">

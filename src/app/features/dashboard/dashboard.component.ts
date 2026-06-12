@@ -6,11 +6,12 @@ import { AuthService } from '../../core/services/auth.service';
 import { EventService } from '../../core/services/event.service';
 import { AppointmentService } from '../../core/services/appointment.service';
 import { ClientService } from '../../core/services/client.service';
+import { StudioService } from '../../core/services/studio.service';
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { BadgeComponent } from '../../shared/components/badge/badge.component';
-import type { EventSummaryResponse, AppointmentResponse, AppointmentStatus } from '../../core/models/domain.model';
+import type { EventSummaryResponse, AppointmentResponse, AppointmentStatus, AppointmentCapacityLevel, DayAppointmentCountResponse } from '../../core/models/domain.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -182,10 +183,10 @@ import type { EventSummaryResponse, AppointmentResponse, AppointmentStatus } fro
                     @if (day.appointmentCount > 0 || day.eventCount > 0) {
                       <span class="absolute bottom-1 flex items-center gap-1">
                         @if (day.appointmentCount > 0) {
-                          <span class="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]"></span>
+                          <span [class]="appointmentDotClass(day)"></span>
                         }
                         @if (day.eventCount > 0) {
-                          <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                          <span [class]="eventDotClass(day)"></span>
                         }
                       </span>
                     }
@@ -244,6 +245,7 @@ export class DashboardComponent {
   private readonly eventService = inject(EventService);
   private readonly aptService = inject(AppointmentService);
   private readonly clientService = inject(ClientService);
+  private readonly studioService = inject(StudioService);
 
   readonly selectedDate = signal(this.toDateKey(new Date()));
   readonly displayedMonth = signal(this.startOfMonth(new Date()));
@@ -265,6 +267,25 @@ export class DashboardComponent {
         );
       })
     )
+  );
+
+  private readonly _calendarCounts = toSignal(
+    toObservable(this.displayedMonth).pipe(
+      switchMap((month) => {
+        const startDate = this.toDateKey(new Date(month.getFullYear(), month.getMonth(), 1));
+        const endDate = this.toDateKey(new Date(month.getFullYear(), month.getMonth() + 1, 0));
+        return this.aptService.getCalendarCounts(startDate, endDate).pipe(
+          catchError(() => of([] as DayAppointmentCountResponse[]))
+        );
+      })
+    )
+  );
+
+  private readonly _studio = toSignal(
+    this.studioService.getMyStudio(this.authService.user()!.studioId).pipe(
+      catchError(() => of(null))
+    ),
+    { initialValue: null }
   );
 
   readonly pendingCount = toSignal(
@@ -310,6 +331,23 @@ export class DashboardComponent {
     return map;
   });
 
+  readonly capacityByDate = computed(() => {
+    const map = new Map<string, AppointmentCapacityLevel>();
+    for (const entry of this._calendarCounts() ?? []) {
+      const fallback = this.computeCapacityLevelFromThresholds(entry.count);
+      map.set(entry.date, entry.capacityLevel === 'AVAILABLE' ? fallback : entry.capacityLevel);
+    }
+
+    // Ensure days without backend capacity metadata still get preview from local month counts.
+    for (const [dateKey, count] of this.appointmentCountByDate()) {
+      if (!map.has(dateKey)) {
+        map.set(dateKey, this.computeCapacityLevelFromThresholds(count));
+      }
+    }
+
+    return map;
+  });
+
   readonly calendarDays = computed(() => {
     const currentMonth = this.displayedMonth();
     const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
@@ -331,6 +369,7 @@ export class DashboardComponent {
         isSelected: dateKey === this.selectedDate(),
         appointmentCount: this.appointmentCountByDate().get(dateKey) ?? 0,
         eventCount: this.eventCountByDate().get(dateKey) ?? 0,
+        capacityLevel: this.capacityByDate().get(dateKey) ?? 'AVAILABLE',
       };
     });
   });
@@ -428,9 +467,15 @@ export class DashboardComponent {
     isCurrentMonth: boolean;
     isSelected: boolean;
     isToday: boolean;
+    capacityLevel: AppointmentCapacityLevel;
   }): string {
     if (day.isSelected) {
-      return 'relative flex h-11 w-full items-center justify-center rounded-lg text-sm font-semibold bg-[var(--color-primary)] text-[var(--text-inverted)] shadow-sm';
+      const capacityRing = day.capacityLevel === 'CRITICAL'
+        ? ' ring-2 ring-red-400/70 dark:ring-red-500/70'
+        : day.capacityLevel === 'WARNING'
+          ? ' ring-2 ring-amber-400/70 dark:ring-amber-500/70'
+          : '';
+      return `relative flex h-11 w-full items-center justify-center rounded-lg text-sm font-semibold bg-[var(--color-primary)] text-[var(--text-inverted)] shadow-sm ${capacityRing}`;
     }
 
     const base = 'relative flex h-11 w-full items-center justify-center rounded-lg text-sm font-medium transition-colors hover:bg-[var(--surface-hover)]';
@@ -438,8 +483,25 @@ export class DashboardComponent {
       ? 'text-[var(--text-primary)]'
       : 'text-[var(--text-tertiary)]';
     const todayStyle = day.isToday ? ' ring-1 ring-[var(--surface-card-border)]' : '';
+    const capacityStyle = day.capacityLevel === 'CRITICAL'
+      ? ' bg-red-100/60 hover:bg-red-200/70 dark:bg-red-900/25 dark:hover:bg-red-900/35'
+      : day.capacityLevel === 'WARNING'
+        ? ' bg-amber-100/60 hover:bg-amber-200/70 dark:bg-amber-900/25 dark:hover:bg-amber-900/35'
+        : '';
 
-    return `${base} ${monthStyle}${todayStyle}`;
+    return `${base} ${monthStyle}${todayStyle}${capacityStyle}`;
+  }
+
+  appointmentDotClass(day: { isSelected: boolean }): string {
+    const base = 'h-1.5 w-1.5 rounded-full';
+    if (day.isSelected) return `${base} bg-white/95 shadow`; 
+    return `${base} bg-[var(--color-primary)]`;
+  }
+
+  eventDotClass(day: { isSelected: boolean }): string {
+    const base = 'h-1.5 w-1.5 rounded-full';
+    if (day.isSelected) return `${base} bg-emerald-200`;
+    return `${base} bg-emerald-500`;
   }
 
   private startOfMonth(date: Date): Date {
@@ -451,5 +513,14 @@ export class DashboardComponent {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  private computeCapacityLevelFromThresholds(count: number): AppointmentCapacityLevel {
+    const studio = this._studio();
+    if (!studio || studio.maxAppointmentsPerDay == null) return 'AVAILABLE';
+
+    if (studio.criticalThreshold != null && count >= studio.criticalThreshold) return 'CRITICAL';
+    if (studio.warningThreshold != null && count >= studio.warningThreshold) return 'WARNING';
+    return 'AVAILABLE';
   }
 }
