@@ -20,7 +20,22 @@ type Section = 'account' | 'studio';
       <div class="mx-auto max-w-5xl">
         <h1 class="mb-8 text-2xl font-bold text-[var(--text-primary)]">Impostazioni</h1>
 
-        <div class="flex gap-8">
+        <div class="flex flex-col gap-6 lg:flex-row lg:gap-8">
+          <!-- Mobile section switcher -->
+          <div class="lg:hidden">
+            <div class="grid grid-cols-2 gap-2 rounded-2xl border border-[var(--surface-card-border)] bg-[var(--surface-card)] p-2 shadow-sm">
+              @for (section of sections; track section.key) {
+                <button
+                  type="button"
+                  (click)="activeSection.set(section.key)"
+                  [class]="navButtonClass(section.key)"
+                >
+                  {{ section.label }}
+                </button>
+              }
+            </div>
+          </div>
+
           <!-- Main content -->
           <div class="min-w-0 flex-1">
 

@@ -37,7 +37,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
           }
 
           <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
-            <app-input label="Titolo" type="text" placeholder="es. Cena in Montagna" formControlName="title" [error]="getFieldError('title')" />
+            <app-input label="Titolo" type="text" placeholder="es. Giornata Yoga" formControlName="title" [error]="getFieldError('title')" />
 
             <div class="flex flex-col gap-1.5">
               <label class="text-sm font-medium text-gray-700" for="description">Descrizione (opzionale)</label>
@@ -60,7 +60,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
               </div>
             }
 
-            <app-input label="Luogo (opzionale)" type="text" placeholder="es. Rifugio Monte Bianco o Online" formControlName="location" [error]="getFieldError('location')" />
+            <app-input label="Luogo (opzionale)" type="text" placeholder="es. Studio Rossi o Online" formControlName="location" [error]="getFieldError('location')" />
             <app-input label="Posti massimi (opzionale)" type="number" placeholder="Lascia vuoto per posti illimitati" min="1" formControlName="maxParticipants" [error]="getFieldError('maxParticipants')" />
 
             <div class="flex gap-3 pt-2">
