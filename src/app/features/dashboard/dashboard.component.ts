@@ -28,10 +28,10 @@ import type { EventSummaryResponse, AppointmentResponse, AppointmentStatus, Appo
             </h2>
             <p class="mt-1 text-sm text-[var(--text-secondary)]">{{ todayFormatted }}</p>
           </div>
-          <div class="flex flex-wrap gap-2">
-            <a routerLink="/appuntamenti/nuovo"><app-button>+ Appuntamento</app-button></a>
-            <a routerLink="/clienti/nuovo"><app-button variant="secondary">+ Cliente</app-button></a>
-            <a routerLink="/eventi/nuovo"><app-button variant="secondary">+ Evento</app-button></a>
+          <div class="flex flex-nowrap gap-2 overflow-x-auto pb-1 sm:overflow-visible sm:pb-0">
+            <a routerLink="/appuntamenti/nuovo" class="shrink-0 whitespace-nowrap"><app-button>+ Appuntamento</app-button></a>
+            <a routerLink="/clienti/nuovo" class="shrink-0 whitespace-nowrap"><app-button variant="secondary">+ Cliente</app-button></a>
+            <a routerLink="/eventi/nuovo" class="shrink-0 whitespace-nowrap"><app-button variant="secondary">+ Evento</app-button></a>
           </div>
         </div>
 
