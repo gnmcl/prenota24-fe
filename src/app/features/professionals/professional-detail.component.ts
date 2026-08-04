@@ -42,7 +42,7 @@ interface DaySlot {
 
         @if (professional()) {
           <!-- Header -->
-          <div class="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div class="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div class="flex items-center gap-4">
               <div class="flex h-14 w-14 items-center justify-center rounded-full bg-violet-100 text-lg font-bold text-violet-700">
                 {{ professional()!.firstName.charAt(0) }}{{ professional()!.lastName.charAt(0) }}
@@ -57,18 +57,18 @@ interface DaySlot {
                 </div>
               </div>
             </div>
-            <div class="flex gap-2">
-              <a [routerLink]="['/professionisti', professional()!.id, 'modifica']">
-                <app-button variant="secondary">Modifica</app-button>
-              </a>
+            <div class="flex items-center gap-2 shrink-0">
+              <app-button variant="secondary" [routerLink]="['/professionisti', professional()!.id, 'modifica']">Modifica</app-button>
               <app-button variant="danger" (click)="deleteDialogOpen.set(true)">Elimina</app-button>
             </div>
           </div>
 
-          <!-- Tabs -->
-          <div class="mb-6 flex gap-1 border-b border-gray-200 overflow-x-auto">
+          <!-- Tab navigation -->
+          <div class="mb-6 flex border-b border-gray-200">
             @for (tab of tabs; track tab.key) {
-              <button (click)="activeTab.set(tab.key)"
+              <button
+                type="button"
+                (click)="activeTab.set(tab.key)"
                 [class]="activeTab() === tab.key
                   ? 'border-b-2 border-indigo-600 pb-3 px-3 sm:px-4 text-sm font-semibold text-indigo-600 whitespace-nowrap'
                   : 'pb-3 px-3 sm:px-4 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors whitespace-nowrap'">
@@ -98,43 +98,32 @@ interface DaySlot {
                 </dl>
               </app-card>
 
-              <!-- Invitation card -->
               <app-card>
                 <h3 class="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">Accesso portale</h3>
-
-                @if (invitation()) {
-                  @if (invitation()!.status === 'ACCEPTED') {
-                    <div class="flex items-center gap-2">
-                      <app-badge variant="green">Registrato</app-badge>
-                      <span class="text-sm text-gray-500">Il professionista ha già accettato l'invito.</span>
-                    </div>
-                  } @else if (invitation()!.status === 'PENDING') {
-                    <div class="space-y-3">
-                      <div class="flex items-center gap-2">
-                        <app-badge variant="amber">In attesa</app-badge>
-                        <span class="text-xs text-gray-400">Scade il {{ formatDate(invitation()!.expiresAt) }}</span>
-                      </div>
-                      <div class="flex items-center gap-2">
-                        <input readonly [value]="invitation()!.inviteLink"
-                          class="flex-1 truncate rounded border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs text-gray-700 font-mono" />
-                        <app-button variant="secondary" (click)="copyLink()">
-                          {{ copied() ? 'Copiato!' : 'Copia' }}
-                        </app-button>
-                      </div>
-                      <app-button variant="danger" [isLoading]="revokingInvite()" (click)="revokeInvite()">
-                        Revoca invito
-                      </app-button>
-                    </div>
-                  } @else {
-                    <!-- EXPIRED or REVOKED — allow re-invite -->
-                    <p class="mb-3 text-sm text-gray-500">
-                      Invito <span class="font-medium">{{ invitation()!.status === 'EXPIRED' ? 'scaduto' : 'revocato' }}</span>.
-                      Puoi generarne uno nuovo.
-                    </p>
-                    <app-button [isLoading]="creatingInvite()" (click)="createInvite()">Genera nuovo invito</app-button>
-                  }
-                } @else if (inviteLoading()) {
+                @if (inviteLoading()) {
                   <div class="h-6 w-6 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+                } @else if (invitation() && (invitation()!.status === 'PENDING' || invitation()!.status === 'ACCEPTED')) {
+                  <div class="space-y-3">
+                    <div class="flex items-center gap-2">
+                      <app-badge [variant]="invitation()!.status === 'ACCEPTED' ? 'green' : 'blue'">
+                        {{ invitation()!.status === 'ACCEPTED' ? 'Accettato' : 'In attesa' }}
+                      </app-badge>
+                    </div>
+                    @if (invitation()!.status === 'PENDING') {
+                      <div class="flex items-center gap-2">
+                        <input type="text" [value]="invitation()!.inviteLink" readonly
+                          class="flex-1 truncate rounded border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs text-gray-700 font-mono" />
+                        <app-button variant="secondary" (click)="copyLink()">{{ copied() ? 'Copiato!' : 'Copia' }}</app-button>
+                      </div>
+                      <app-button variant="danger" [isLoading]="revokingInvite()" (click)="revokeInvite()">Revoca invito</app-button>
+                    }
+                  </div>
+                } @else if (invitation() && (invitation()!.status === 'EXPIRED' || invitation()!.status === 'REVOKED')) {
+                  <p class="mb-3 text-sm text-gray-500">
+                    Invito <span class="font-medium">{{ invitation()!.status === 'EXPIRED' ? 'scaduto' : 'revocato' }}</span>.
+                    Puoi generarne uno nuovo.
+                  </p>
+                  <app-button [isLoading]="creatingInvite()" (click)="createInvite()">Genera nuovo invito</app-button>
                 } @else {
                   <p class="mb-3 text-sm text-gray-500">Il professionista non ha ancora accesso al portale.</p>
                   @if (!professional()!.email) {
@@ -150,80 +139,72 @@ interface DaySlot {
           <!-- Tab: Availability -->
           @if (activeTab() === 'availability') {
             <app-card>
-              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
-                <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-400">Orari settimanali</h3>
-                <div class="flex items-center gap-2">
+              <div class="mb-5 flex flex-row items-center justify-between gap-3">
+                <div>
+                  <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Orari settimanali</h3>
+                  <p class="mt-1 text-xs text-[var(--text-secondary)]">Usa i preset per partire e rifinisci solo i giorni necessari</p>
+                </div>
+                <div class="flex shrink-0 items-center gap-1.5">
                   <button (click)="activateWeekdays()" type="button"
-                    class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors">
-                    Attiva Lun-Ven
+                    class="rounded-full border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors whitespace-nowrap">
+                    Lun-Ven
                   </button>
                   <button (click)="activateAll()" type="button"
-                    class="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-100 transition-colors">
-                    Attiva tutti
+                    class="rounded-full border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)] hover:bg-[rgba(79,70,229,0.10)] hover:text-[var(--color-primary)] transition-colors whitespace-nowrap">
+                    Tutti
                   </button>
                   <button (click)="deactivateAll()" type="button"
-                    class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-50 transition-colors">
-                    Disattiva tutti
+                    class="rounded-full border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors whitespace-nowrap">
+                    Nessuno
                   </button>
                 </div>
               </div>
 
-              <!-- Preset selector -->
-              <div class="mb-5 flex flex-wrap items-center gap-2">
-                <span class="text-xs text-gray-400 font-medium">Preset:</span>
+              <div class="mb-5 flex items-center gap-1.5 overflow-x-auto pb-1">
+                <span class="shrink-0 text-xs font-medium text-[var(--text-tertiary)]">Preset:</span>
                 <button (click)="applyPreset('09:00', '18:00')" type="button"
-                  class="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-colors">
-                  9:00 – 18:00
+                  class="shrink-0 rounded-full border border-[var(--surface-card-border)] px-2.5 py-1 text-xs text-[var(--text-secondary)] hover:bg-[rgba(79,70,229,0.10)] hover:text-[var(--color-primary)] transition-colors whitespace-nowrap">
+                  9:00–18:00
                 </button>
                 <button (click)="applyPreset('09:00', '13:00')" type="button"
-                  class="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-colors">
-                  9:00 – 13:00
+                  class="shrink-0 rounded-full border border-[var(--surface-card-border)] px-2.5 py-1 text-xs text-[var(--text-secondary)] hover:bg-[rgba(79,70,229,0.10)] hover:text-[var(--color-primary)] transition-colors whitespace-nowrap">
+                  9:00–13:00
                 </button>
                 <button (click)="applyPreset('14:00', '20:00')" type="button"
-                  class="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-colors">
-                  14:00 – 20:00
+                  class="shrink-0 rounded-full border border-[var(--surface-card-border)] px-2.5 py-1 text-xs text-[var(--text-secondary)] hover:bg-[rgba(79,70,229,0.10)] hover:text-[var(--color-primary)] transition-colors whitespace-nowrap">
+                  14:00–20:00
                 </button>
                 <button (click)="applyPreset('08:00', '12:00')" type="button"
-                  class="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-colors">
-                  8:00 – 12:00
+                  class="shrink-0 rounded-full border border-[var(--surface-card-border)] px-2.5 py-1 text-xs text-[var(--text-secondary)] hover:bg-[rgba(79,70,229,0.10)] hover:text-[var(--color-primary)] transition-colors whitespace-nowrap">
+                  8:00–12:00
                 </button>
               </div>
 
               <div class="space-y-2">
                 @for (day of daySlots; track day.dayOfWeek) {
-                  <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 rounded-xl border p-3 sm:p-4 transition-all duration-200"
-                    [class.border-indigo-200]="day.enabled"
-                    [class.bg-indigo-50/30]="day.enabled"
-                    [class.border-gray-100]="!day.enabled"
-                    [class.bg-gray-50/30]="!day.enabled">
-                    <div class="flex items-center gap-3 min-w-0 sm:w-36">
+                  <div class="flex flex-row items-center gap-2 rounded-2xl border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2.5 transition-colors hover:bg-[var(--surface-hover)]">
+                    <div class="flex shrink-0 items-center gap-2 w-28">
                       <label class="relative inline-flex cursor-pointer items-center shrink-0">
                         <input type="checkbox" [checked]="day.enabled" (change)="toggleDay(day.dayOfWeek)" class="peer sr-only" />
-                        <div class="h-6 w-11 rounded-full bg-gray-200 after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-indigo-600 peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+                        <div class="h-6 w-11 rounded-full bg-[var(--surface-card-border)] p-0.5 transition-colors peer-checked:bg-[var(--color-primary)]">
+                          <div class="h-5 w-5 rounded-full bg-[var(--surface-card)] shadow-sm transition-transform peer-checked:translate-x-5"></div>
+                        </div>
                       </label>
-                      <span class="text-sm font-medium" [class.text-gray-900]="day.enabled" [class.text-gray-400]="!day.enabled">
-                        <span class="hidden sm:inline">{{ dayName(day.dayOfWeek) }}</span>
-                        <span class="sm:hidden">{{ dayShortName(day.dayOfWeek) }}</span>
-                      </span>
+                      <div class="min-w-0">
+                        <span class="block text-xs font-semibold text-[var(--text-primary)]">{{ dayShortName(day.dayOfWeek) }}</span>
+                        <span class="block text-[10px] text-[var(--text-tertiary)]">{{ day.enabled ? 'Disp.' : 'Chiuso' }}</span>
+                      </div>
                     </div>
                     @if (day.enabled) {
-                      <div class="flex items-center gap-2 sm:gap-3 flex-1">
-                        <div class="flex items-center gap-2 flex-1 sm:flex-none">
-                          <span class="text-xs text-gray-400 hidden sm:inline">Dalle</span>
-                          <input type="time" [value]="day.startTime" (change)="updateSlotTime(day.dayOfWeek, 'start', $event)"
-                            class="flex-1 sm:flex-none rounded-lg border border-gray-200 px-2.5 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
-                        </div>
-                        <svg class="h-4 w-4 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                        </svg>
-                        <div class="flex items-center gap-2 flex-1 sm:flex-none">
-                          <span class="text-xs text-gray-400 hidden sm:inline">Alle</span>
-                          <input type="time" [value]="day.endTime" (change)="updateSlotTime(day.dayOfWeek, 'end', $event)"
-                            class="flex-1 sm:flex-none rounded-lg border border-gray-200 px-2.5 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
-                        </div>
+                      <div class="flex items-center gap-1 ml-auto">
+                        <input type="time" [value]="day.startTime" (change)="updateSlotTime(day.dayOfWeek, 'start', $event)"
+                          class="w-[5.5rem] rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-1.5 py-1 text-xs text-[var(--text-primary)] shadow-sm focus:border-[var(--color-primary)] focus:outline-none" />
+                        <span class="text-[var(--text-tertiary)] text-xs">–</span>
+                        <input type="time" [value]="day.endTime" (change)="updateSlotTime(day.dayOfWeek, 'end', $event)"
+                          class="w-[5.5rem] rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-1.5 py-1 text-xs text-[var(--text-primary)] shadow-sm focus:border-[var(--color-primary)] focus:outline-none" />
                       </div>
                     } @else {
-                      <span class="text-sm text-gray-400 italic">Non disponibile</span>
+                      <span class="ml-auto inline-flex items-center rounded-full bg-[var(--surface-hover)] px-2 py-0.5 text-[10px] font-medium text-[var(--text-tertiary)] whitespace-nowrap">Non disp.</span>
                     }
                   </div>
                 }
@@ -235,62 +216,62 @@ interface DaySlot {
 
             <!-- Exceptions -->
             <app-card extraClass="mt-6">
-              <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">Eccezioni</h3>
+              <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Eccezioni</h3>
               @if (exceptions().length === 0) {
-                <p class="text-sm text-gray-400">Nessuna eccezione configurata</p>
+                <p class="text-sm text-[var(--text-tertiary)]">Nessuna eccezione configurata</p>
               } @else {
                 <div class="space-y-2 mb-4">
                   @for (exc of exceptions(); track exc.id) {
-                    <div class="flex items-start justify-between rounded-lg border border-gray-100 px-3 sm:px-4 py-3">
+                    <div class="flex items-start justify-between rounded-2xl border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 sm:px-4 py-3">
                       <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2 flex-wrap">
-                          <span class="text-sm font-medium text-gray-900">{{ formatDate(exc.date) }}</span>
+                          <span class="text-sm font-medium text-[var(--text-primary)]">{{ formatDate(exc.date) }}</span>
                           @if (exc.isUnavailableAllDay) {
                             <app-badge variant="red">Giornata chiusa</app-badge>
                           }
                           @if (exc.reason) {
-                            <span class="text-xs text-gray-400 hidden sm:inline">{{ exc.reason }}</span>
+                            <span class="text-xs text-[var(--text-tertiary)] hidden sm:inline">{{ exc.reason }}</span>
                           }
                         </div>
                         @if (!exc.isUnavailableAllDay && exc.slots.length > 0) {
                           <div class="mt-1.5 space-y-0.5">
                             @for (slot of exc.slots; track slot.id) {
-                              <div class="text-sm text-gray-500">
+                              <div class="text-sm text-[var(--text-secondary)]">
                                 Non disponibile: {{ slot.startTime }} – {{ slot.endTime }}
                               </div>
                             }
                           </div>
                         }
                       </div>
-                      <button (click)="removeException(exc.id)" class="text-sm text-red-500 hover:text-red-700 transition-colors shrink-0 ml-3">Rimuovi</button>
+                      <button (click)="removeException(exc.id)" class="text-sm font-medium text-red-500 hover:text-red-600 transition-colors shrink-0 ml-3">Rimuovi</button>
                     </div>
                   }
                 </div>
               }
               <!-- Add exception form -->
-              <div class="mt-4 border-t border-gray-100 pt-4">
+              <div class="mt-4 border-t border-[var(--surface-card-border)] pt-4">
                 <div class="space-y-4">
                   <div>
-                    <label class="block text-xs text-gray-500 mb-1">Data</label>
-                    <input type="date" [(ngModel)]="newExcDate" class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm" />
+                    <label class="mb-1 block text-xs text-[var(--text-secondary)]">Data</label>
+                    <input type="date" [(ngModel)]="newExcDate" class="rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-2.5 py-1.5 text-sm text-[var(--text-primary)] focus:border-[var(--color-primary)] focus:outline-none" />
                   </div>
-                  <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                    <input type="checkbox" [(ngModel)]="newExcUnavailableAllDay" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                  <label class="flex items-center gap-2 text-sm text-[var(--text-primary)] cursor-pointer">
+                    <input type="checkbox" [(ngModel)]="newExcUnavailableAllDay" class="rounded border-[var(--surface-input-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]" />
                     Giornata intera non disponibile
                   </label>
                   @if (!newExcUnavailableAllDay) {
-                    <div class="rounded-lg border border-gray-100 p-3 bg-gray-50/50">
-                      <p class="text-xs font-medium text-gray-500 mb-2">Fasce di indisponibilità</p>
+                    <div class="rounded-2xl border border-[var(--surface-card-border)] bg-[var(--surface-hover)] p-3">
+                      <p class="mb-2 text-xs font-medium text-[var(--text-secondary)]">Fasce di indisponibilità</p>
                       <div class="space-y-2">
                         @for (slot of newExcSlots; track $index) {
                           <div class="flex items-center gap-2">
                             <input type="time" [(ngModel)]="slot.startTime"
-                              class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:outline-none bg-white" />
-                            <span class="text-gray-400 text-xs">–</span>
+                              class="rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-2.5 py-1.5 text-sm text-[var(--text-primary)] focus:border-[var(--color-primary)] focus:outline-none" />
+                            <span class="text-xs text-[var(--text-tertiary)]">–</span>
                             <input type="time" [(ngModel)]="slot.endTime"
-                              class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:outline-none bg-white" />
+                              class="rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-2.5 py-1.5 text-sm text-[var(--text-primary)] focus:border-[var(--color-primary)] focus:outline-none" />
                             <button (click)="removeSlot($index)"
-                              class="text-red-400 hover:text-red-600 transition-colors text-sm font-medium ml-1">
+                              class="ml-1 text-sm font-medium text-red-400 hover:text-red-600 transition-colors">
                               ✕
                             </button>
                             @if (slot.startTime && slot.endTime && slot.startTime >= slot.endTime) {
@@ -300,7 +281,7 @@ interface DaySlot {
                         }
                       </div>
                       <button (click)="addSlot()" type="button"
-                        class="mt-2 inline-flex items-center gap-1 rounded-md border border-dashed border-gray-300 px-3 py-1.5 text-xs text-gray-500 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
+                        class="mt-2 inline-flex items-center gap-1 rounded-md border border-dashed border-[var(--surface-card-border)] px-3 py-1.5 text-xs text-[var(--text-secondary)] hover:border-[var(--color-primary-light)] hover:text-[var(--color-primary)] transition-colors">
                         <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
@@ -312,8 +293,8 @@ interface DaySlot {
                     </div>
                   }
                   <div>
-                    <label class="block text-xs text-gray-500 mb-1">Motivo</label>
-                    <input type="text" [(ngModel)]="newExcReason" placeholder="Opzionale" class="w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm" />
+                    <label class="mb-1 block text-xs text-[var(--text-secondary)]">Motivo</label>
+                    <input type="text" [(ngModel)]="newExcReason" placeholder="Opzionale" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-2.5 py-1.5 text-sm text-[var(--text-primary)] focus:border-[var(--color-primary)] focus:outline-none" />
                   </div>
                   <div class="flex justify-end">
                     <app-button (click)="addException()" [disabled]="!newExcDate">Aggiungi</app-button>

@@ -1,4 +1,12 @@
-import { Component, DestroyRef, HostListener, inject, OnInit, signal, computed } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  HostListener,
+  inject,
+  OnInit,
+  signal,
+  computed,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
@@ -24,7 +32,20 @@ const HOUR_START = 7;
 const HOUR_END = 21;
 const SLOT_HEIGHT = 60; // px per hour
 const SNAP_MINUTES = 5; // snap to 5 min grid
-const MONTHS_IT = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+const MONTHS_IT = [
+  'Gennaio',
+  'Febbraio',
+  'Marzo',
+  'Aprile',
+  'Maggio',
+  'Giugno',
+  'Luglio',
+  'Agosto',
+  'Settembre',
+  'Ottobre',
+  'Novembre',
+  'Dicembre',
+];
 const PICKER_DAYS = ['L', 'M', 'M', 'G', 'V', 'S', 'D'];
 const ACTIVE_STATUSES: string[] = ['REQUESTED', 'CONFIRMED', 'PROPOSED_NEW_TIME'];
 
@@ -50,23 +71,36 @@ interface ProfAvailability {
             <a routerLink="/appuntamenti/nuovo">
               <app-button>
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 4v16m8-8H4"
+                  />
                 </svg>
                 <span class="hidden sm:inline">Nuovo appuntamento</span>
                 <span class="sm:hidden">Nuovo</span>
               </app-button>
             </a>
             <div class="flex gap-1 rounded-lg border border-gray-200 p-0.5 bg-white">
-              <button (click)="viewMode.set('list')"
-                [class]="viewMode() === 'list'
-                  ? 'rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm'
-                  : 'rounded-md px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors'">
+              <button
+                (click)="viewMode.set('list')"
+                [class]="
+                  viewMode() === 'list'
+                    ? 'rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm'
+                    : 'rounded-md px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors'
+                "
+              >
                 Lista
               </button>
-              <button (click)="viewMode.set('calendar')"
-                [class]="viewMode() === 'calendar'
-                  ? 'rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm'
-                  : 'rounded-md px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors'">
+              <button
+                (click)="viewMode.set('calendar')"
+                [class]="
+                  viewMode() === 'calendar'
+                    ? 'rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm'
+                    : 'rounded-md px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors'
+                "
+              >
                 Calendario
               </button>
             </div>
@@ -75,20 +109,36 @@ interface ProfAvailability {
 
         <!-- Day navigation -->
         <div class="mb-4 flex items-center gap-4">
-          <button (click)="prevDay()"
-            class="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 active:bg-gray-100 transition-colors shrink-0 shadow-sm">
+          <button
+            (click)="prevDay()"
+            class="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 active:bg-gray-100 transition-colors shrink-0 shadow-sm"
+          >
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </button>
           <div class="relative flex-1 text-center">
-            <h3 class="text-base sm:text-lg font-semibold text-gray-900 inline-flex items-center gap-2">
+            <h3
+              class="text-base sm:text-lg font-semibold text-gray-900 inline-flex items-center gap-2"
+            >
               {{ dateLabel() }}
-              <button (click)="$event.stopPropagation(); openDatePicker()"
+              <button
+                (click)="$event.stopPropagation(); openDatePicker()"
                 class="inline-flex items-center justify-center rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-indigo-600 transition-colors"
-                title="Scegli data">
+                title="Scegli data"
+              >
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
                 </svg>
               </button>
             </h3>
@@ -97,34 +147,59 @@ interface ProfAvailability {
             }
             <!-- Date picker popover -->
             @if (showDatePicker()) {
-              <div (click)="$event.stopPropagation()"
-                class="absolute left-1/2 top-full mt-2 z-50 w-72 -translate-x-1/2 rounded-2xl border border-gray-200 bg-white shadow-xl">
+              <div
+                (click)="$event.stopPropagation()"
+                class="absolute left-1/2 top-full mt-2 z-50 w-72 -translate-x-1/2 rounded-2xl border border-gray-200 bg-white shadow-xl"
+              >
                 <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-                  <button (click)="calPickerPrevMonth()" type="button"
-                    class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors">
+                  <button
+                    (click)="calPickerPrevMonth()"
+                    type="button"
+                    class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                  >
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 19l-7-7 7-7"
+                      />
                     </svg>
                   </button>
-                  <span class="text-sm font-semibold text-gray-900">{{ calPickerMonthLabel() }}</span>
-                  <button (click)="calPickerNextMonth()" type="button"
-                    class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors">
+                  <span class="text-sm font-semibold text-gray-900">{{
+                    calPickerMonthLabel()
+                  }}</span>
+                  <button
+                    (click)="calPickerNextMonth()"
+                    type="button"
+                    class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                  >
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 5l7 7-7 7"
+                      />
                     </svg>
                   </button>
                 </div>
                 <div class="grid grid-cols-7 px-2 pt-2">
                   @for (day of pickerDays; track $index) {
-                    <div class="py-1 text-center text-[10px] font-medium text-gray-400 uppercase">{{ day }}</div>
+                    <div class="py-1 text-center text-[10px] font-medium text-gray-400 uppercase">
+                      {{ day }}
+                    </div>
                   }
                 </div>
                 <div class="grid grid-cols-7 px-2 pb-3">
                   @for (day of calPickerDays(); track $index) {
                     @if (day) {
-                      <button (click)="selectPickerDate(day.dateStr)" type="button"
+                      <button
+                        (click)="selectPickerDate(day.dateStr)"
+                        type="button"
                         [class]="getPickerDayClass(day)"
-                        class="py-1.5 text-center text-sm transition-all duration-100 rounded-lg">
+                        class="py-1.5 text-center text-sm transition-all duration-100 rounded-lg"
+                      >
                         {{ day.num }}
                       </button>
                     } @else {
@@ -135,10 +210,17 @@ interface ProfAvailability {
               </div>
             }
           </div>
-          <button (click)="nextDay()"
-            class="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 active:bg-gray-100 transition-colors shrink-0 shadow-sm">
+          <button
+            (click)="nextDay()"
+            class="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 active:bg-gray-100 transition-colors shrink-0 shadow-sm"
+          >
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
             </svg>
           </button>
         </div>
@@ -146,23 +228,42 @@ interface ProfAvailability {
         <!-- Week day quick nav -->
         <div class="mb-6 grid grid-cols-7 gap-1">
           @for (d of weekDays(); track d.date) {
-            <button (click)="goToDate(d.date)" class="relative"
-              [class]="d.date === currentDate()
-                ? 'rounded-xl bg-indigo-600 px-1 sm:px-2 py-2 text-center text-white shadow-sm'
-                : d.isToday
-                  ? 'rounded-xl border-2 border-indigo-300 px-1 sm:px-2 py-2 text-center text-indigo-700 hover:bg-indigo-50 transition-colors'
-                  : 'rounded-xl border border-gray-200 px-1 sm:px-2 py-2 text-center text-gray-700 hover:bg-gray-50 transition-colors'">
+            <button
+              (click)="goToDate(d.date)"
+              class="relative"
+              [class]="
+                d.date === currentDate()
+                  ? 'rounded-xl bg-indigo-600 px-1 sm:px-2 py-2 text-center text-white shadow-sm'
+                  : d.isToday
+                    ? 'rounded-xl border-2 border-indigo-300 px-1 sm:px-2 py-2 text-center text-indigo-700 hover:bg-indigo-50 transition-colors'
+                    : 'rounded-xl border border-gray-200 px-1 sm:px-2 py-2 text-center text-gray-700 hover:bg-gray-50 transition-colors'
+              "
+            >
               @if (d.capacityStatus) {
-                <span class="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white"
-                  [class]="d.capacityStatus === 'red' ? 'bg-red-500' : d.capacityStatus === 'yellow' ? 'bg-amber-400' : 'bg-emerald-500'">
+                <span
+                  class="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white"
+                  [class]="
+                    d.capacityStatus === 'red'
+                      ? 'bg-red-500'
+                      : d.capacityStatus === 'yellow'
+                        ? 'bg-amber-400'
+                        : 'bg-emerald-500'
+                  "
+                >
                 </span>
               }
               <div class="text-[10px] sm:text-xs">{{ d.dayLabel }}</div>
               <div class="text-sm font-semibold">{{ d.dayNum }}</div>
               @if (d.appointmentCount > 0) {
                 <div class="mt-0.5 flex justify-center">
-                  <span class="inline-flex items-center justify-center rounded-full px-1.5 py-0 text-[9px] font-semibold leading-4 min-w-[16px]"
-                    [class]="d.date === currentDate() ? 'bg-white/20 text-white' : 'bg-indigo-100 text-indigo-700'">
+                  <span
+                    class="inline-flex items-center justify-center rounded-full px-1.5 py-0 text-[9px] font-semibold leading-4 min-w-[16px]"
+                    [class]="
+                      d.date === currentDate()
+                        ? 'bg-white/20 text-white'
+                        : 'bg-indigo-100 text-indigo-700'
+                    "
+                  >
                     {{ d.appointmentCount }}
                   </span>
                 </div>
@@ -173,7 +274,9 @@ interface ProfAvailability {
 
         @if (isLoading()) {
           <div class="flex justify-center py-12">
-            <div class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+            <div
+              class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"
+            ></div>
           </div>
         } @else {
           <!-- LIST VIEW -->
@@ -188,14 +291,24 @@ interface ProfAvailability {
                   <a [routerLink]="['/appuntamenti', apt.id]">
                     <app-card extraClass="hover:shadow-md transition-shadow !p-4 sm:!p-5">
                       <div class="flex items-center gap-3 sm:gap-4">
-                        <div class="flex flex-col items-center rounded-xl bg-gradient-to-b from-indigo-50 to-indigo-100/50 px-2.5 py-1.5 sm:px-3 sm:py-2 text-center shrink-0">
-                          <span class="text-base sm:text-lg font-bold text-indigo-700">{{ formatTime(apt.startDatetime) }}</span>
-                          <span class="text-[10px] sm:text-xs text-indigo-500">{{ formatTime(apt.endDatetime) }}</span>
+                        <div
+                          class="flex flex-col items-center rounded-xl bg-gradient-to-b from-indigo-50 to-indigo-100/50 px-2.5 py-1.5 sm:px-3 sm:py-2 text-center shrink-0"
+                        >
+                          <span class="text-base sm:text-lg font-bold text-indigo-700">{{
+                            formatTime(apt.startDatetime)
+                          }}</span>
+                          <span class="text-[10px] sm:text-xs text-indigo-500">{{
+                            formatTime(apt.endDatetime)
+                          }}</span>
                         </div>
                         <div class="min-w-0 flex-1">
                           <div class="flex items-center gap-2 flex-wrap">
-                            <span class="font-semibold text-gray-900 truncate">{{ apt.clientFullName }}</span>
-                            <app-badge [variant]="statusVariant(apt.status)">{{ statusLabel(apt.status) }}</app-badge>
+                            <span class="font-semibold text-gray-900 truncate">{{
+                              apt.clientFullName
+                            }}</span>
+                            <app-badge [variant]="statusVariant(apt.status)">{{
+                              statusLabel(apt.status)
+                            }}</app-badge>
                           </div>
                           <div class="mt-0.5 text-sm text-gray-500 truncate">
                             @if (apt.serviceTypeName) {
@@ -204,8 +317,18 @@ interface ProfAvailability {
                             {{ apt.professionalFullName }}
                           </div>
                         </div>
-                        <svg class="h-4 w-4 text-gray-400 shrink-0 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        <svg
+                          class="h-4 w-4 text-gray-400 shrink-0 hidden sm:block"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 5l7 7-7 7"
+                          />
                         </svg>
                       </div>
                     </app-card>
@@ -220,10 +343,16 @@ interface ProfAvailability {
             <!-- Legend -->
             @if (serviceTypes().length > 0) {
               <div class="mb-4 flex flex-wrap items-center gap-3 px-1">
-                <span class="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider">Servizi:</span>
+                <span
+                  class="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider"
+                  >Servizi:</span
+                >
                 @for (svc of serviceTypes(); track svc.id) {
                   <div class="flex items-center gap-1.5">
-                    <span class="h-2.5 w-2.5 rounded-full shrink-0" [style.background-color]="svc.color || '#D1D5DB'"></span>
+                    <span
+                      class="h-2.5 w-2.5 rounded-full shrink-0"
+                      [style.background-color]="svc.color || '#D1D5DB'"
+                    ></span>
                     <span class="text-[10px] sm:text-xs text-gray-600">{{ svc.name }}</span>
                   </div>
                 }
@@ -235,82 +364,123 @@ interface ProfAvailability {
                 <p class="text-gray-400">Nessun professionista attivo nello studio.</p>
               </app-card>
             } @else {
-              <div class="rounded-2xl border border-gray-200/80 bg-white overflow-x-auto -mx-4 sm:mx-0 shadow-[var(--shadow-card)]">
+              <div
+                class="rounded-2xl border border-gray-200/80 bg-white overflow-x-auto -mx-4 sm:mx-0 shadow-[var(--shadow-card)]"
+              >
                 <!-- Header: professional names -->
-                <div class="grid border-b border-gray-200 sticky top-0 bg-white z-10" [style.grid-template-columns]="calendarGridCols()">
-                  <div class="border-r border-gray-100 bg-gray-50/80 min-w-[44px] sm:min-w-[56px]"></div>
+                <div
+                  class="grid border-b border-gray-200 sticky top-0 bg-white z-10"
+                  [style.grid-template-columns]="calendarGridCols()"
+                >
+                  <div
+                    class="border-r border-gray-100 bg-gray-50/80 min-w-[44px] sm:min-w-[56px]"
+                  ></div>
                   @for (pro of activeProfessionals(); track pro.id) {
-                    <div class="border-r border-gray-100 px-2 sm:px-3 py-2 sm:py-3 text-center last:border-r-0 min-w-[100px] sm:min-w-[140px]">
-                      <div class="text-xs sm:text-sm font-semibold text-gray-900 truncate">{{ pro.firstName }} {{ pro.lastName }}</div>
+                    <div
+                      class="border-r border-gray-100 px-2 sm:px-3 py-2 sm:py-3 text-center last:border-r-0 min-w-[100px] sm:min-w-[140px]"
+                    >
+                      <div class="text-xs sm:text-sm font-semibold text-gray-900 truncate">
+                        {{ pro.firstName }} {{ pro.lastName }}
+                      </div>
                     </div>
                   }
                 </div>
                 <!-- Body -->
-                <div class="relative grid" [style.grid-template-columns]="calendarGridCols()" [style.height.px]="calendarHeight">
+                <div
+                  class="relative grid"
+                  [style.grid-template-columns]="calendarGridCols()"
+                  [style.height.px]="calendarHeight"
+                >
                   <!-- Time labels -->
                   <div class="border-r border-gray-100 min-w-[44px] sm:min-w-[56px]">
                     @for (h of hours; track h) {
-                      <div class="absolute pr-1 sm:pr-2 text-right text-[10px] sm:text-xs text-gray-400 font-medium"
+                      <div
+                        class="absolute pr-1 sm:pr-2 text-right text-[10px] sm:text-xs text-gray-400 font-medium"
                         [style.top.px]="(h - hourStart) * slotHeight"
                         [style.width.px]="isMobile ? 44 : 56"
-                        [style.line-height.px]="0">
+                        [style.line-height.px]="0"
+                      >
                         {{ h }}:00
+                      </div>
+                      <div
+                        class="absolute pr-1 sm:pr-2 text-right text-[8px] sm:text-[9px] text-gray-300"
+                        [style.top.px]="(h - hourStart) * slotHeight + slotHeight / 2"
+                        [style.width.px]="isMobile ? 44 : 56"
+                        [style.line-height.px]="0"
+                      >
+                        {{ h }}:30
                       </div>
                     }
                   </div>
+
                   <!-- Professional columns -->
                   @for (pro of activeProfessionals(); track pro.id) {
-                    <div class="relative border-r border-gray-100 last:border-r-0 min-w-[100px] sm:min-w-[140px]">
+                    <div
+                      class="relative border-r border-gray-100 last:border-r-0 min-w-[100px] sm:min-w-[140px]"
+                    >
                       <!-- Hour grid lines -->
                       @for (h of hours; track h) {
-                        <div class="absolute inset-x-0 border-t border-gray-100"
-                          [style.top.px]="(h - hourStart) * slotHeight">
-                        </div>
-                        <div class="absolute inset-x-0 border-t border-gray-50"
-                          [style.top.px]="(h - hourStart) * slotHeight + slotHeight / 2">
-                        </div>
+                        <div
+                          class="absolute inset-x-0 border-t border-gray-100"
+                          [style.top.px]="(h - hourStart) * slotHeight"
+                        ></div>
+                        <div
+                          class="absolute inset-x-0 border-t border-dashed border-gray-300/20"
+                          [style.top.px]="(h - hourStart) * slotHeight + slotHeight / 4"
+                        ></div>
+                        <div
+                          class="absolute inset-x-0 border-t border-gray-50"
+                          [style.top.px]="(h - hourStart) * slotHeight + slotHeight / 2"
+                        ></div>
+                        <div
+                          class="absolute inset-x-0 border-t border-dashed border-gray-300/20"
+                          [style.top.px]="(h - hourStart) * slotHeight + (slotHeight * 3) / 4"
+                        ></div>
                       }
 
                       <!-- Unavailability overlays -->
                       @for (block of getUnavailableBlocks(pro.id); track $index) {
-                        <div class="absolute inset-x-0 z-[2] pointer-events-none"
+                        <div
+                          class="absolute inset-x-0 z-[2] pointer-events-none"
                           [style.top.px]="block.topPx"
-                          [style.height.px]="block.heightPx">
-                          <div class="h-full w-full bg-gray-200/40" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(156,163,175,0.15) 4px, rgba(156,163,175,0.15) 8px)"></div>
+                          [style.height.px]="block.heightPx"
+                        >
+                          <div
+                            class="h-full w-full bg-gray-200/40"
+                            style="background-image: repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(156,163,175,0.15) 4px, rgba(156,163,175,0.15) 8px)"
+                          ></div>
                         </div>
                       }
 
                       <!-- Clickable area (continuous, computes precise time from Y pos) -->
-                      <div class="absolute inset-0 z-[3] cursor-pointer"
-                        (click)="onColumnClick($event, pro.id)">
-                      </div>
+                      <div
+                        class="absolute inset-0 z-[3] cursor-pointer"
+                        (click)="onColumnClick($event, pro.id)"
+                      ></div>
 
                       <!-- Appointments (on top of clickable area) -->
                       @for (apt of appointmentsForProfessional(pro.id); track apt.id) {
-                        <a [routerLink]="['/appuntamenti', apt.id]"
-                          class="absolute inset-x-0.5 mx-0.5 rounded-lg px-1.5 sm:px-2 py-0.5 text-xs overflow-hidden cursor-pointer hover:opacity-90 transition-opacity border-l-[3px] z-[6] shadow-sm"
+                        <a
+                          [routerLink]="['/appuntamenti', apt.id]"
+                          class="absolute inset-x-0.5 mx-0.5 rounded-lg border border-[var(--surface-card-border)] px-1.5 sm:px-2 py-0.5 text-xs overflow-hidden cursor-pointer hover:shadow-[var(--shadow-card-hover)] transition-shadow border-l-[3px] z-[6] shadow-[var(--shadow-soft)]"
                           [style.top.px]="calendarTop(apt)"
                           [style.height.px]="calendarBlockHeight(apt)"
-                          [style.min-height.px]="22"
                           [style.background-color]="aptBg(apt)"
-                          [style.border-left-color]="aptBorder(apt)">
-                          <div class="font-semibold truncate leading-tight text-gray-900 text-[10px] sm:text-xs">
-                            {{ formatTime(apt.startDatetime) }} {{ apt.clientFullName }}
-                          </div>
-                          @if (calendarBlockHeight(apt) > 30) {
-                            <div class="truncate text-[9px] sm:text-[10px] leading-tight text-gray-600">
-                              {{ apt.serviceTypeName || 'Nessun servizio' }}
-                            </div>
-                          }
-                          @if (calendarBlockHeight(apt) > 44) {
-                            <div class="mt-0.5">
-                              <span class="inline-flex items-center rounded-full px-1.5 py-0.5 text-[8px] sm:text-[9px] font-medium"
-                                [style.background-color]="statusBg(apt.status)"
-                                [style.color]="statusTextColor(apt.status)">
-                                {{ statusLabel(apt.status) }}
+                          [style.border-left-color]="aptBorder(apt)"
+                        >
+                          <div
+                            class="flex h-full w-full flex-col items-start justify-center leading-none text-gray-900 text-[9px] sm:text-xs"
+                            [style.font-size]="isCompactAppointment(apt) ? '8.5px' : '10px'"
+                          >
+                            <div class="font-semibold truncate">
+                              {{ formatTime(apt.startDatetime) }}
+                              {{ apt.clientFullName.charAt(0) }}.
+                              {{ apt.clientFullName.split(' ').slice(-1)[0] }}
+                              <span class="font-normal text-gray-600">
+                                - {{ apt.serviceTypeName || 'Nessun servizio' }}
                               </span>
                             </div>
-                          }
+                          </div>
                         </a>
                       }
                     </div>
@@ -369,12 +539,19 @@ export class AgendaComponent implements OnInit {
   readonly dateLabel = computed(() => {
     const parts = this.currentDate().split('-');
     const d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
-    return d.toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+    return d.toLocaleDateString('it-IT', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
   });
 
   readonly isToday = computed(() => this.currentDate() === this.toDateStr(new Date()));
 
-  readonly calPickerMonthLabel = computed(() => `${MONTHS_IT[this.calPickerMonth()]} ${this.calPickerYear()}`);
+  readonly calPickerMonthLabel = computed(
+    () => `${MONTHS_IT[this.calPickerMonth()]} ${this.calPickerYear()}`,
+  );
 
   readonly calPickerDays = computed(() => {
     const year = this.calPickerYear();
@@ -384,11 +561,21 @@ export class AgendaComponent implements OnInit {
     if (dow === 0) dow = 7;
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const todayStr = this.toDateStr(new Date());
-    const cells: (null | { num: number; dateStr: string; isToday: boolean; isSelected: boolean })[] = [];
+    const cells: (null | {
+      num: number;
+      dateStr: string;
+      isToday: boolean;
+      isSelected: boolean;
+    })[] = [];
     for (let i = 1; i < dow; i++) cells.push(null);
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      cells.push({ num: d, dateStr, isToday: dateStr === todayStr, isSelected: dateStr === this.currentDate() });
+      cells.push({
+        num: d,
+        dateStr,
+        isToday: dateStr === todayStr,
+        isSelected: dateStr === this.currentDate(),
+      });
     }
     return cells;
   });
@@ -410,7 +597,7 @@ export class AgendaComponent implements OnInit {
       d.setDate(monday.getDate() + i);
       const dateStr = this.toDateStr(d);
       const appointmentCount = apts.filter(
-        (a) => a.startDatetime.startsWith(dateStr) && ACTIVE_STATUSES.includes(a.status)
+        (a) => a.startDatetime.startsWith(dateStr) && ACTIVE_STATUSES.includes(a.status),
       ).length;
       let capacityStatus: 'green' | 'yellow' | 'red' | null = null;
       if (hasThresholds) {
@@ -460,14 +647,18 @@ export class AgendaComponent implements OnInit {
         });
       },
     });
-    this.svcService.list().subscribe({ next: (list) => this.serviceTypes.set(list.filter((s) => s.active)) });
+    this.svcService
+      .list()
+      .subscribe({ next: (list) => this.serviceTypes.set(list.filter((s) => s.active)) });
     this.loadAppointments();
 
-    this.router.events.pipe(
-      filter((e) => e instanceof NavigationEnd),
-      filter((e) => (e as NavigationEnd).urlAfterRedirects.startsWith('/agenda')),
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe(() => this.loadAppointments());
+    this.router.events
+      .pipe(
+        filter((e) => e instanceof NavigationEnd),
+        filter((e) => (e as NavigationEnd).urlAfterRedirects.startsWith('/agenda')),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => this.loadAppointments());
   }
 
   @HostListener('document:click')
@@ -513,8 +704,12 @@ export class AgendaComponent implements OnInit {
     return 'text-gray-700 hover:bg-gray-100';
   }
 
-  prevDay(): void { this.shiftDate(-1); }
-  nextDay(): void { this.shiftDate(1); }
+  prevDay(): void {
+    this.shiftDate(-1);
+  }
+  nextDay(): void {
+    this.shiftDate(1);
+  }
 
   goToDate(date: string): void {
     this.currentDate.set(date);
@@ -530,12 +725,13 @@ export class AgendaComponent implements OnInit {
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
     const clickY = event.clientY - rect.top;
 
-    // Convert pixel position to minutes from hourStart
+    // Convert pixel position to the top edge of the clicked 15-minute slot
     const totalMinutesFromStart = (clickY / SLOT_HEIGHT) * 60;
     const rawMinutes = HOUR_START * 60 + totalMinutesFromStart;
-
-    // Snap to nearest SNAP_MINUTES
-    const snappedMinutes = Math.round(rawMinutes / SNAP_MINUTES) * SNAP_MINUTES;
+    // Math.round instead of Math.floor: sub-pixel clicks at the exact boundary of the
+    // available window (e.g. y=119.9px → 8:59.9 → floor=8:45 rejected) now round to
+    // the nearest slot (9:00) instead of silently failing.
+    const snappedMinutes = Math.round(rawMinutes / 15) * 15;
     const hours = Math.floor(snappedMinutes / 60);
     const minutes = snappedMinutes % 60;
 
@@ -566,7 +762,9 @@ export class AgendaComponent implements OnInit {
       if (exception.slots.length > 0) {
         const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
         // Time is unavailable if it falls within any exception slot
-        const inExcSlot = exception.slots.some((s) => timeStr >= s.startTime && timeStr < s.endTime);
+        const inExcSlot = exception.slots.some(
+          (s) => timeStr >= s.startTime && timeStr < s.endTime,
+        );
         if (inExcSlot) return false;
       }
     }
@@ -649,7 +847,12 @@ export class AgendaComponent implements OnInit {
   appointmentsForProfessional(professionalId: string): AppointmentResponse[] {
     const d = this.currentDate();
     return this.allAppointments()
-      .filter((a) => a.professionalId === professionalId && a.startDatetime.startsWith(d) && ACTIVE_STATUSES.includes(a.status))
+      .filter(
+        (a) =>
+          a.professionalId === professionalId &&
+          a.startDatetime.startsWith(d) &&
+          ACTIVE_STATUSES.includes(a.status),
+      )
       .sort((a, b) => a.startDatetime.localeCompare(b.startDatetime));
   }
 
@@ -666,10 +869,15 @@ export class AgendaComponent implements OnInit {
     return (durationMinutes / 60) * SLOT_HEIGHT;
   }
 
+  isCompactAppointment(apt: AppointmentResponse): boolean {
+    const start = new Date(apt.startDatetime).getTime();
+    const end = new Date(apt.endDatetime).getTime();
+    const durationMinutes = (end - start) / 60000;
+    return durationMinutes <= 15;
+  }
+
   aptBg(apt: AppointmentResponse): string {
-    const hex = apt.serviceTypeColor;
-    if (!hex) return '#F3F4F6';
-    return hex + '20';
+    return 'var(--surface-subtle)';
   }
 
   aptBorder(apt: AppointmentResponse): string {
@@ -677,12 +885,26 @@ export class AgendaComponent implements OnInit {
   }
 
   statusBg(status: AppointmentStatus): string {
-    const map: Record<string, string> = { REQUESTED: '#FEF3C7', CONFIRMED: '#D1FAE5', PROPOSED_NEW_TIME: '#DBEAFE', CANCELLED: '#FEE2E2', COMPLETED: '#F3F4F6', NO_SHOW: '#EDE9FE' };
+    const map: Record<string, string> = {
+      REQUESTED: '#FEF3C7',
+      CONFIRMED: '#D1FAE5',
+      PROPOSED_NEW_TIME: '#DBEAFE',
+      CANCELLED: '#FEE2E2',
+      COMPLETED: '#F3F4F6',
+      NO_SHOW: '#EDE9FE',
+    };
     return map[status] ?? '#F3F4F6';
   }
 
   statusTextColor(status: AppointmentStatus): string {
-    const map: Record<string, string> = { REQUESTED: '#92400E', CONFIRMED: '#065F46', PROPOSED_NEW_TIME: '#1E40AF', CANCELLED: '#991B1B', COMPLETED: '#374151', NO_SHOW: '#5B21B6' };
+    const map: Record<string, string> = {
+      REQUESTED: '#92400E',
+      CONFIRMED: '#065F46',
+      PROPOSED_NEW_TIME: '#1E40AF',
+      CANCELLED: '#991B1B',
+      COMPLETED: '#374151',
+      NO_SHOW: '#5B21B6',
+    };
     return map[status] ?? '#374151';
   }
 
@@ -729,12 +951,26 @@ export class AgendaComponent implements OnInit {
   }
 
   statusLabel(status: AppointmentStatus): string {
-    const map: Record<string, string> = { REQUESTED: 'Da confermare', CONFIRMED: 'Confermato', PROPOSED_NEW_TIME: 'Proposta', CANCELLED: 'Cancellato', COMPLETED: 'Completato', NO_SHOW: 'Non presentato' };
+    const map: Record<string, string> = {
+      REQUESTED: 'Da confermare',
+      CONFIRMED: 'Confermato',
+      PROPOSED_NEW_TIME: 'Proposta',
+      CANCELLED: 'Cancellato',
+      COMPLETED: 'Completato',
+      NO_SHOW: 'Non presentato',
+    };
     return map[status] ?? status;
   }
 
   statusVariant(status: AppointmentStatus): 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple' {
-    const map: Record<string, 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple'> = { REQUESTED: 'amber', CONFIRMED: 'green', PROPOSED_NEW_TIME: 'blue', CANCELLED: 'red', COMPLETED: 'gray', NO_SHOW: 'purple' };
+    const map: Record<string, 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple'> = {
+      REQUESTED: 'amber',
+      CONFIRMED: 'green',
+      PROPOSED_NEW_TIME: 'blue',
+      CANCELLED: 'red',
+      COMPLETED: 'gray',
+      NO_SHOW: 'purple',
+    };
     return map[status] ?? 'gray';
   }
 }

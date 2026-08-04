@@ -6,13 +6,15 @@ import { CardComponent } from '../../shared/components/card/card.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { EntityListComponent } from '../../shared/components/entity-list/entity-list.component';
+import { EntityListRowComponent } from '../../shared/components/entity-list/entity-list-row.component';
 import { ProfessionalService } from '../../core/services/professional.service';
 import type { ProfessionalResponse } from '../../core/models/domain.model';
 
 @Component({
   selector: 'app-professionals',
   standalone: true,
-  imports: [RouterLink, FormsModule, PageShellComponent, CardComponent, ButtonComponent, BadgeComponent, EmptyStateComponent],
+  imports: [RouterLink, FormsModule, PageShellComponent, CardComponent, ButtonComponent, BadgeComponent, EmptyStateComponent, EntityListComponent, EntityListRowComponent],
   template: `
     <app-page-shell>
       <div class="mx-auto max-w-4xl">
@@ -67,29 +69,22 @@ import type { ProfessionalResponse } from '../../core/models/domain.model';
             <p class="text-gray-400">Nessun risultato per "{{ searchQuery() }}"</p>
           </app-card>
         } @else {
-          <div class="grid gap-4 sm:grid-cols-2">
+          <app-entity-list>
             @for (pro of filteredProfessionals(); track pro.id) {
-              <a [routerLink]="['/professionisti', pro.id]" class="block">
-                <app-card extraClass="hover:shadow-md transition-shadow !p-5">
-                  <div class="flex items-center gap-3">
-                    <div class="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-violet-100 to-indigo-100 text-sm font-bold text-violet-700">
-                      {{ pro.firstName.charAt(0) }}{{ pro.lastName.charAt(0) }}
-                    </div>
-                    <div class="min-w-0 flex-1">
-                      <div class="flex items-center gap-2">
-                        <span class="font-semibold text-gray-900 truncate">{{ pro.firstName }} {{ pro.lastName }}</span>
-                        <app-badge [variant]="pro.active ? 'green' : 'gray'">{{ pro.active ? 'Attivo' : 'Inattivo' }}</app-badge>
-                      </div>
-                      <p class="text-sm text-gray-500 truncate">{{ pro.email || pro.phone || 'Nessun contatto' }}</p>
-                    </div>
-                    <svg class="h-4 w-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                    </svg>
+              <app-entity-list-row [route]="['/professionisti', pro.id]">
+                <div class="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-violet-100 to-indigo-100 text-sm font-bold text-violet-700 shrink-0">
+                  {{ pro.firstName.charAt(0) }}{{ pro.lastName.charAt(0) }}
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="font-semibold text-[var(--text-primary)] truncate">{{ pro.firstName }} {{ pro.lastName }}</span>
+                    <span class="shrink-0"><app-badge [variant]="pro.active ? 'green' : 'gray'">{{ pro.active ? 'Attivo' : 'Inattivo' }}</app-badge></span>
                   </div>
-                </app-card>
-              </a>
+                  <p class="text-sm text-[var(--text-secondary)] truncate">{{ pro.email || pro.phone || 'Nessun contatto' }}</p>
+                </div>
+              </app-entity-list-row>
             }
-          </div>
+          </app-entity-list>
         }
       </div>
     </app-page-shell>

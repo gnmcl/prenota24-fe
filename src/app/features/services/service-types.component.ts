@@ -7,6 +7,8 @@ import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
+import { EntityListComponent } from '../../shared/components/entity-list/entity-list.component';
+import { EntityListRowComponent } from '../../shared/components/entity-list/entity-list-row.component';
 import { ServiceTypeService } from '../../core/services/service-type.service';
 import { ProfessionalService } from '../../core/services/professional.service';
 import type { ServiceTypeResponse, CreateServiceTypeRequest, ProfessionalResponse, UUID } from '../../core/models/domain.model';
@@ -17,7 +19,7 @@ const PRESET_COLORS = ['#4F46E5', '#7C3AED', '#059669', '#D97706', '#DC2626', '#
 @Component({
   selector: 'app-service-types',
   standalone: true,
-  imports: [FormsModule, PageShellComponent, CardComponent, ButtonComponent, BadgeComponent, EmptyStateComponent, ConfirmDialogComponent, AlertComponent],
+  imports: [FormsModule, PageShellComponent, CardComponent, ButtonComponent, BadgeComponent, EmptyStateComponent, ConfirmDialogComponent, AlertComponent, EntityListComponent, EntityListRowComponent],
   template: `
     <app-page-shell>
       <div class="mx-auto max-w-4xl">
@@ -76,22 +78,23 @@ const PRESET_COLORS = ['#4F46E5', '#7C3AED', '#059669', '#D97706', '#DC2626', '#
               </div>
               <!-- Professional association -->
               <div class="sm:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Professionisti abilitati</label>
+                <label class="mb-2 block text-sm font-medium text-[var(--text-secondary)]">Professionisti abilitati</label>
                 @if (allProfessionals().length === 0) {
-                  <p class="text-sm text-gray-400">Nessun professionista nel team.</p>
+                  <p class="text-sm text-[var(--text-tertiary)]">Nessun professionista nel team.</p>
                 } @else {
                   <div class="grid gap-2 sm:grid-cols-2">
                     @for (pro of allProfessionals(); track pro.id) {
-                      <label class="flex items-center gap-2 rounded-lg border px-3 py-2 cursor-pointer hover:bg-gray-50 transition-colors"
-                        [class.border-indigo-600]="formProfessionalIds.has(pro.id)"
-                        [class.bg-indigo-50]="formProfessionalIds.has(pro.id)"
-                        [class.border-gray-200]="!formProfessionalIds.has(pro.id)">
+                      <label
+                        class="flex items-center gap-2 rounded-lg border px-3 py-2 cursor-pointer transition-colors hover:bg-[var(--surface-hover)]"
+                        [style.borderColor]="formProfessionalIds.has(pro.id) ? 'var(--color-primary)' : 'var(--surface-card-border)'"
+                        [style.backgroundColor]="formProfessionalIds.has(pro.id) ? 'rgba(79, 70, 229, 0.12)' : 'var(--surface-card)'"
+                      >
                         <input type="checkbox" [checked]="formProfessionalIds.has(pro.id)" (change)="toggleProfessional(pro.id)"
-                          class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                          class="rounded border-[var(--surface-input-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]" />
                         <div>
-                          <span class="text-sm font-medium text-gray-900">{{ pro.firstName }} {{ pro.lastName }}</span>
+                          <span class="text-sm font-medium text-[var(--text-primary)]">{{ pro.firstName }} {{ pro.lastName }}</span>
                           @if (pro.email) {
-                            <span class="block text-xs text-gray-400">{{ pro.email }}</span>
+                            <span class="block text-xs text-[var(--text-tertiary)]">{{ pro.email }}</span>
                           }
                         </div>
                       </label>
@@ -140,38 +143,38 @@ const PRESET_COLORS = ['#4F46E5', '#7C3AED', '#059669', '#D97706', '#DC2626', '#
             </div>
           }
 
-          <div class="space-y-3">
+          <app-entity-list>
             @for (svc of filteredServices(); track svc.id) {
-              <app-card extraClass="!p-4 sm:!p-5">
-                <div class="flex items-center justify-between gap-3 sm:gap-4">
+              <app-entity-list-row [showChevron]="false" [clickable]="false">
+                <div class="flex items-center justify-between gap-3 sm:gap-4 w-full min-w-0">
                   <div class="flex items-center gap-3 min-w-0">
                     <span class="h-4 w-4 rounded-full shrink-0" [style.background-color]="svc.color || '#94A3B8'"></span>
                     <div class="min-w-0">
                       <div class="flex items-center gap-2 flex-wrap">
-                        <span class="font-semibold text-gray-900 truncate">{{ svc.name }}</span>
+                        <span class="font-semibold text-[var(--text-primary)] truncate">{{ svc.name }}</span>
                         <app-badge [variant]="svc.active ? 'green' : 'gray'">{{ svc.active ? 'Attivo' : 'Inattivo' }}</app-badge>
                       </div>
-                      <div class="flex items-center gap-2 text-sm text-gray-500 flex-wrap">
+                      <div class="flex items-center gap-2 text-sm text-[var(--text-secondary)] flex-wrap">
                         <span>{{ svc.durationMinutes }} min</span>
                         @if (svc.price) {
-                          <span class="text-gray-300">·</span>
+                          <span class="text-[var(--text-tertiary)]">·</span>
                           <span>€{{ svc.price }}</span>
                         }
                         @if (svc.professionalIds.length > 0) {
-                          <span class="text-gray-300 hidden sm:inline">·</span>
+                          <span class="text-[var(--text-tertiary)] hidden sm:inline">·</span>
                           <span class="hidden sm:inline">{{ svc.professionalIds.length }} professionista/i</span>
                         }
                       </div>
                     </div>
                   </div>
-                  <div class="flex items-center gap-2 shrink-0">
-                    <button (click)="editService(svc)" class="text-sm text-indigo-600 hover:text-indigo-700 font-medium transition-colors">Modifica</button>
-                    <button (click)="confirmDelete(svc)" class="text-sm text-red-500 hover:text-red-700 font-medium transition-colors">Elimina</button>
+                  <div class="flex items-center gap-3 shrink-0">
+                    <button (click)="editService(svc)" class="text-sm text-[var(--color-primary)] hover:underline font-medium transition-colors">Modifica</button>
+                    <button (click)="confirmDelete(svc)" class="text-sm text-red-500 hover:underline font-medium transition-colors">Elimina</button>
                   </div>
                 </div>
-              </app-card>
+              </app-entity-list-row>
             }
-          </div>
+          </app-entity-list>
         }
 
         <!-- Delete confirm -->

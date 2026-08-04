@@ -8,7 +8,6 @@ import { CardComponent } from '../../shared/components/card/card.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
-import { StepIndicatorComponent } from '../../shared/components/step-indicator/step-indicator.component';
 import type {
   StudioPublicResponse,
   ServiceTypeResponse,
@@ -26,11 +25,10 @@ import type {
     ButtonComponent,
     InputComponent,
     AlertComponent,
-    StepIndicatorComponent,
   ],
   template: `
     @if (isLoading()) {
-      <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
+      <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center px-4">
         <div class="h-10 w-10 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
       </div>
     } @else if (!studio()) {
@@ -45,14 +43,14 @@ import type {
 
         <!-- Header -->
         <header class="border-b border-gray-200/60 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-          <div class="mx-auto flex h-14 max-w-3xl items-center px-6">
+          <div class="mx-auto flex h-14 max-w-3xl items-center px-4 sm:px-6">
             <span class="text-lg font-bold tracking-tight text-indigo-600">Prenota24</span>
             <span class="mx-3 text-gray-300">|</span>
             <span class="text-sm font-medium text-gray-700 truncate">{{ studio()!.name }}</span>
           </div>
         </header>
 
-        <main class="mx-auto max-w-3xl px-6 py-10">
+        <main class="mx-auto max-w-3xl px-4 sm:px-6 py-6 sm:py-10">
 
           @if (success()) {
             <!-- ── Success ── -->
@@ -75,13 +73,46 @@ import type {
 
           } @else {
             <!-- ── Page title ── -->
-            <div class="mb-8">
+            <div class="mb-6 sm:mb-8">
               <h1 class="text-2xl font-bold text-gray-900">Prenota un appuntamento</h1>
               <p class="text-sm text-gray-500 mt-1">{{ studio()!.name }}</p>
             </div>
 
             <!-- ── Step indicator ── -->
-            <app-step-indicator [steps]="stepLabels" [currentStep]="step()" />
+            <nav aria-label="Progress" class="mb-6 sm:mb-8">
+              <div class="overflow-x-auto">
+                <ol class="flex min-w-max items-center gap-2 pb-1">
+                  @for (stepLabel of stepLabels; track stepLabel; let idx = $index) {
+                    <li class="flex items-center gap-2">
+                      <span
+                        class="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full text-[11px] sm:text-xs font-bold"
+                        [class]="idx < step()
+                          ? 'bg-[var(--button-primary-bg)] text-[var(--text-inverted)]'
+                          : idx === step()
+                            ? 'border-2 border-[var(--color-primary)] text-[var(--color-primary)]'
+                            : 'border border-[var(--surface-subtle-border)] text-[var(--text-tertiary)]'"
+                      >
+                        {{ idx < step() ? '✓' : idx + 1 }}
+                      </span>
+                      <span
+                        class="text-xs sm:text-sm font-medium"
+                        [class]="idx === step()
+                          ? 'text-[var(--color-primary)]'
+                          : idx < step()
+                            ? 'text-[var(--text-primary)]'
+                            : 'text-[var(--text-tertiary)]'"
+                      >
+                        <span class="sm:hidden">{{ stepLabelsMobile[idx] }}</span>
+                        <span class="hidden sm:inline">{{ stepLabel }}</span>
+                      </span>
+                      @if (idx < stepLabels.length - 1) {
+                        <span class="mx-1 h-px w-5 sm:w-8 bg-[var(--surface-subtle-border)]"></span>
+                      }
+                    </li>
+                  }
+                </ol>
+              </div>
+            </nav>
 
             @if (serverError()) {
               <div class="mb-6">
@@ -94,12 +125,12 @@ import type {
               @if (services().length === 0) {
                 <p class="text-gray-500">Nessun servizio disponibile al momento.</p>
               } @else {
-                <div class="grid gap-4 sm:grid-cols-2">
+                <div class="grid gap-3 sm:gap-4 sm:grid-cols-2">
                   @for (service of services(); track service.id) {
                     <button
                       type="button"
                       (click)="selectService(service)"
-                      class="text-left rounded-2xl border border-gray-200 bg-white p-5 shadow-sm
+                       class="text-left rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm
                              hover:border-indigo-400 hover:shadow-md transition-all
                              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                     >
@@ -130,12 +161,12 @@ import type {
 
             <!-- ══ STEP 1: Select professional ══ -->
             @else if (step() === 1) {
-              <div class="grid gap-4 sm:grid-cols-2">
+              <div class="grid gap-3 sm:gap-4 sm:grid-cols-2">
                 @for (prof of availableProfessionals(); track prof.id) {
                   <button
                     type="button"
                     (click)="selectProfessional(prof)"
-                    class="text-left rounded-2xl border border-gray-200 bg-white p-5 shadow-sm
+                          class="text-left rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm
                            hover:border-indigo-400 hover:shadow-md transition-all
                            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                   >
@@ -156,7 +187,7 @@ import type {
                 }
               </div>
               <div class="mt-6">
-                <app-button variant="secondary" (click)="goBack()">← Indietro</app-button>
+                <app-button variant="secondary" (click)="goBack()" extraClass="w-full sm:w-auto">← Indietro</app-button>
               </div>
             }
 
@@ -190,7 +221,7 @@ import type {
                   [min]="todayStr"
                   [value]="selectedDate()"
                   (change)="onDateChange($event)"
-                  class="block w-full max-w-xs rounded-lg border border-gray-300 px-3.5 py-2.5
+                  class="block w-full rounded-lg border border-gray-300 px-3.5 py-2.5
                          text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2
                          focus:ring-indigo-500 mb-6"
                 />
@@ -207,7 +238,7 @@ import type {
                     </div>
                   } @else {
                     <p class="text-sm font-medium text-gray-700 mb-3">Orari disponibili</p>
-                    <div class="flex flex-wrap gap-2">
+                    <div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                       @for (slot of slots(); track slot.start) {
                         <button
                           type="button"
@@ -223,7 +254,7 @@ import type {
               </app-card>
 
               <div class="mt-6">
-                <app-button variant="secondary" (click)="goBack()">← Indietro</app-button>
+                <app-button variant="secondary" (click)="goBack()" extraClass="w-full sm:w-auto">← Indietro</app-button>
               </div>
             }
 
@@ -303,11 +334,11 @@ import type {
                     <input type="text" tabindex="-1" autocomplete="off" formControlName="honeypot" />
                   </div>
 
-                  <div class="flex items-center justify-between gap-4 pt-2 border-t border-gray-100">
-                    <app-button variant="secondary" type="button" (click)="goBack()">
+                  <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-2 border-t border-gray-100">
+                    <app-button variant="secondary" type="button" (click)="goBack()" extraClass="w-full sm:w-auto">
                       ← Indietro
                     </app-button>
-                    <app-button type="submit" [isLoading]="submitLoading()">
+                    <app-button type="submit" [isLoading]="submitLoading()" extraClass="w-full sm:w-auto">
                       Invia richiesta
                     </app-button>
                   </div>
@@ -346,6 +377,7 @@ export class PublicBookingComponent implements OnInit {
   readonly confirmedSlot = signal<TimeSlotResponse | null>(null);
 
   readonly stepLabels = ['Servizio', 'Professionista', 'Data e orario', 'I tuoi dati'];
+  readonly stepLabelsMobile = ['Servizio', 'Staff', 'Orario', 'Dati'];
 
   readonly availableProfessionals = computed((): ProfessionalResponse[] => {
     const svc = this.selectedService();
@@ -364,7 +396,16 @@ export class PublicBookingComponent implements OnInit {
   });
 
   get todayStr(): string {
-    return new Date().toISOString().split('T')[0];
+    const timezone = this.studio()?.timezone ?? 'Europe/Rome';
+    const parts = new Intl.DateTimeFormat('en', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(new Date());
+    const value = (type: Intl.DateTimeFormatPartTypes): string =>
+      parts.find(part => part.type === type)?.value ?? '';
+    return `${value('year')}-${value('month')}-${value('day')}`;
   }
 
   ngOnInit(): void {
@@ -528,7 +569,7 @@ export class PublicBookingComponent implements OnInit {
 
   slotButtonClass(slot: TimeSlotResponse): string {
     const isSelected = this.selectedSlot()?.start === slot.start;
-    const base = 'rounded-lg border px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500';
+    const base = 'rounded-lg border px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 w-full sm:w-auto';
     return isSelected
       ? `${base} bg-indigo-600 text-white border-indigo-600`
       : `${base} bg-white text-gray-700 border-gray-300 hover:border-indigo-400 hover:text-indigo-600`;

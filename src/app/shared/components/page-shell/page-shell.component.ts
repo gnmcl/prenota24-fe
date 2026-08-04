@@ -3,6 +3,7 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { StudioService } from '../../../core/services/studio.service';
 import { ThemeService } from '../../../core/services/theme.service';
+import { PendingAppointmentsService } from '../../../core/services/pending-appointments.service';
 
 interface NavItem {
   path: string;
@@ -33,8 +34,11 @@ interface NavItem {
               <nav class="hidden md:flex items-center gap-1">
                 @for (item of navItems(); track item.path) {
                   <a [routerLink]="item.path" routerLinkActive="bg-[var(--surface-active-nav)] text-indigo-700 dark:text-indigo-300"
-                    class="rounded-lg px-3 py-2 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-colors">
+                    class="relative rounded-lg px-3 py-2 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-colors">
                     {{ item.label }}
+                    @if (isAppointmentsPath(item.path) && pendingService.pendingCount() > 0) {
+                      <span class="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 ring-1 ring-white dark:ring-gray-900"></span>
+                    }
                   </a>
                 }
               </nav>
@@ -135,7 +139,7 @@ interface NavItem {
 
               <!-- Mobile menu toggle -->
               <button (click)="mobileMenuOpen.set(!mobileMenuOpen())"
-                class="md:hidden rounded-lg p-2 text-[var(--text-tertiary)] hover:bg-[var(--surface-hover)]">
+                class="relative md:hidden rounded-lg p-2 text-[var(--text-tertiary)] hover:bg-[var(--surface-hover)]">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   @if (!mobileMenuOpen()) {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
@@ -143,6 +147,9 @@ interface NavItem {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                   }
                 </svg>
+                @if (pendingService.pendingCount() > 0) {
+                  <span class="absolute top-0.5 right-0.5 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-[var(--surface-header)]"></span>
+                }
               </button>
             </div>
           }
@@ -160,6 +167,9 @@ interface NavItem {
                   <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="item.icon" />
                 </svg>
                 {{ item.label }}
+                @if (isAppointmentsPath(item.path) && pendingService.pendingCount() > 0) {
+                  <span class="ml-auto h-2 w-2 rounded-full bg-red-500"></span>
+                }
               </a>
             }
             @if (!isProfessional()) {
@@ -196,9 +206,14 @@ interface NavItem {
               <a [routerLink]="item.path" routerLinkActive="text-indigo-600 dark:text-indigo-400"
                 [routerLinkActiveOptions]="{exact: item.path === '/dashboard' || item.path === '/pro/dashboard'}"
                 class="flex flex-col items-center gap-0.5 py-2 text-[var(--text-tertiary)] transition-colors">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="item.icon" />
-                </svg>
+                <span class="relative">
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="item.icon" />
+                  </svg>
+                  @if (isAppointmentsPath(item.path) && pendingService.pendingCount() > 0) {
+                    <span class="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-red-500 ring-1 ring-[var(--surface-header)]"></span>
+                  }
+                </span>
                 <span class="text-[10px] font-medium">{{ item.label }}</span>
               </a>
             }
@@ -224,6 +239,7 @@ export class PageShellComponent {
   readonly authService = inject(AuthService);
   readonly studioService = inject(StudioService);
   readonly themeService = inject(ThemeService);
+  readonly pendingService = inject(PendingAppointmentsService);
   private readonly router = inject(Router);
   readonly mobileMenuOpen = signal(false);
   readonly studioDropdownOpen = signal(false);
@@ -285,6 +301,10 @@ export class PageShellComponent {
     // Admin: Dashboard, Appuntamenti, Agenda, Clienti, Team
     return [items[0], items[1], items[5], items[2], items[3]].filter(Boolean);
   });
+
+  isAppointmentsPath(path: string): boolean {
+    return path === '/appuntamenti' || path === '/pro/appuntamenti';
+  }
 
   handleLogout(): void {
     this.authService.logout();

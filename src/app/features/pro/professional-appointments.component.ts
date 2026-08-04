@@ -6,7 +6,7 @@ import { CardComponent } from '../../shared/components/card/card.component';
 import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
-import type { AppointmentResponse, AppointmentStatus, ClientSummaryResponse, CreateAppointmentRequest, CreateClientRequest, ServiceTypeResponse, TimeSlotResponse, UUID } from '../../core/models/domain.model';
+import type { AppointmentResponse, AppointmentStatus, ClientSummaryResponse, CreateAppointmentRequest, CreateClientRequest, ProposeNewTimeRequest, ServiceTypeResponse, TimeSlotResponse, UUID } from '../../core/models/domain.model';
 import { AuthService } from '../../core/services/auth.service';
 import { FormsModule } from '@angular/forms';
 
@@ -153,6 +153,10 @@ const SLOT_HEIGHT = 60;
                                 class="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-700 hover:bg-gray-200 transition-colors">
                                 Completa
                               </button>
+                              <button (click)="openProposePanel(apt); $event.stopPropagation()"
+                                class="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 hover:bg-blue-200 transition-colors">
+                                Modifica
+                              </button>
                               <button (click)="doAction(apt.id, 'no-show'); $event.stopPropagation()"
                                 class="rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-medium text-purple-700 hover:bg-purple-200 transition-colors">
                                 No-show
@@ -208,6 +212,7 @@ const SLOT_HEIGHT = 60;
                           <button (click)="doAction(apt.id, 'cancel')" class="text-red-600 hover:text-red-800 font-medium text-sm transition-colors">Cancella</button>
                         } @else if (apt.status === 'CONFIRMED') {
                           <button (click)="doAction(apt.id, 'complete')" class="text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium text-sm transition-colors">Completa</button>
+                          <button (click)="openProposePanel(apt)" class="text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors">Modifica</button>
                           <button (click)="doAction(apt.id, 'no-show')" class="text-purple-600 hover:text-purple-800 font-medium text-sm transition-colors">No-show</button>
                         } @else {
                           <span class="text-[var(--text-tertiary)] text-sm">—</span>
@@ -353,9 +358,11 @@ const SLOT_HEIGHT = 60;
             </div>
 
             <div class="max-h-[75vh] overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
+              <!-- Proposta principale (obbligatoria) -->
+              <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Proposta principale *</p>
               <div class="grid gap-4 lg:grid-cols-[280px_1fr]">
                 <div class="rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-hover)] p-4">
-                  <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Data proposta</label>
+                  <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Data</label>
                   <input
                     type="date"
                     [value]="proposalDay()"
@@ -363,7 +370,6 @@ const SLOT_HEIGHT = 60;
                     (change)="onProposalDateChange($event)"
                     class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
-                  <p class="mt-2 text-xs text-[var(--text-tertiary)]">Il sistema mostra solo slot realmente disponibili nella tua agenda.</p>
                 </div>
 
                 <div class="rounded-xl border border-blue-100 dark:border-blue-900/40 bg-blue-50/60 dark:bg-blue-950/20 p-4">
@@ -405,12 +411,87 @@ const SLOT_HEIGHT = 60;
                       </div>
                     }
                   }
-
-                  @if (proposeError()) {
-                    <div class="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{{ proposeError() }}</div>
-                  }
                 </div>
               </div>
+              @if (selectedProposalSlot()) {
+                <p class="mt-2 text-xs text-green-700">✓ Proposta 1: {{ formatProposalSlot(selectedProposalSlot()!) }}</p>
+              }
+
+              <!-- Proposta alternativa 2 (opzionale) -->
+              <div class="mt-5 border-t border-[var(--surface-card-border)] pt-4">
+                <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Proposta alternativa 2 (opzionale)</p>
+                <div class="grid gap-4 lg:grid-cols-[280px_1fr]">
+                  <div class="rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-hover)] p-4">
+                    <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Data</label>
+                    <input type="date" [value]="proposalDay2()" [min]="todayStr" (change)="onProposalDateChange2($event)"
+                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" />
+                  </div>
+                  <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                    @if (slotsLoading2()) {
+                      <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <div class="h-4 w-4 animate-spin rounded-full border-2 border-gray-200 border-t-gray-600"></div>
+                        Caricamento...
+                      </div>
+                    } @else if (proposalDay2() && availableProposalSlots2().length === 0) {
+                      <div class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">Nessuno slot disponibile.</div>
+                    } @else if (availableProposalSlots2().length > 0) {
+                      <div class="grid gap-2 sm:grid-cols-2">
+                        @for (slot of availableProposalSlots2(); track slot.start) {
+                          <button (click)="selectedProposalSlot2.set(slot)"
+                            [class]="selectedProposalSlot2()?.start === slot.start
+                              ? 'w-full rounded-lg border px-3 py-2 text-left text-sm font-medium border-indigo-600 bg-indigo-600 text-white'
+                              : 'w-full rounded-lg border px-3 py-2 text-left text-sm font-medium border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'">
+                            {{ formatProposalSlot(slot) }}
+                          </button>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+                @if (selectedProposalSlot2()) {
+                  <p class="mt-2 text-xs text-green-700">✓ Proposta 2: {{ formatProposalSlot(selectedProposalSlot2()!) }}</p>
+                }
+              </div>
+
+              <!-- Proposta alternativa 3 (opzionale) -->
+              <div class="mt-5 border-t border-[var(--surface-card-border)] pt-4">
+                <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Proposta alternativa 3 (opzionale)</p>
+                <div class="grid gap-4 lg:grid-cols-[280px_1fr]">
+                  <div class="rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-hover)] p-4">
+                    <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Data</label>
+                    <input type="date" [value]="proposalDay3()" [min]="todayStr" (change)="onProposalDateChange3($event)"
+                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" />
+                  </div>
+                  <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                    @if (slotsLoading3()) {
+                      <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <div class="h-4 w-4 animate-spin rounded-full border-2 border-gray-200 border-t-gray-600"></div>
+                        Caricamento...
+                      </div>
+                    } @else if (proposalDay3() && availableProposalSlots3().length === 0) {
+                      <div class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">Nessuno slot disponibile.</div>
+                    } @else if (availableProposalSlots3().length > 0) {
+                      <div class="grid gap-2 sm:grid-cols-2">
+                        @for (slot of availableProposalSlots3(); track slot.start) {
+                          <button (click)="selectedProposalSlot3.set(slot)"
+                            [class]="selectedProposalSlot3()?.start === slot.start
+                              ? 'w-full rounded-lg border px-3 py-2 text-left text-sm font-medium border-indigo-600 bg-indigo-600 text-white'
+                              : 'w-full rounded-lg border px-3 py-2 text-left text-sm font-medium border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'">
+                            {{ formatProposalSlot(slot) }}
+                          </button>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+                @if (selectedProposalSlot3()) {
+                  <p class="mt-2 text-xs text-green-700">✓ Proposta 3: {{ formatProposalSlot(selectedProposalSlot3()!) }}</p>
+                }
+              </div>
+
+              @if (proposeError()) {
+                <div class="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{{ proposeError() }}</div>
+              }
             </div>
 
             <div class="flex flex-col-reverse gap-2 border-t border-[var(--surface-card-border)] px-4 py-3 sm:flex-row sm:justify-end sm:px-6">
@@ -458,6 +539,15 @@ export class ProfessionalAppointmentsComponent implements OnInit {
   readonly availableProposalSlots = signal<TimeSlotResponse[]>([]);
   readonly selectedProposalSlot = signal<TimeSlotResponse | null>(null);
   readonly proposalDay = signal('');
+  // Optional alternative slots 2 and 3
+  readonly proposalDay2 = signal('');
+  readonly availableProposalSlots2 = signal<TimeSlotResponse[]>([]);
+  readonly slotsLoading2 = signal(false);
+  readonly selectedProposalSlot2 = signal<TimeSlotResponse | null>(null);
+  readonly proposalDay3 = signal('');
+  readonly availableProposalSlots3 = signal<TimeSlotResponse[]>([]);
+  readonly slotsLoading3 = signal(false);
+  readonly selectedProposalSlot3 = signal<TimeSlotResponse | null>(null);
 
   newApt = this.freshAppointment();
   quickClient = { firstName: '', lastName: '', email: '', phone: '' };
@@ -685,8 +775,14 @@ export class ProfessionalAppointmentsComponent implements OnInit {
   openProposePanel(apt: AppointmentResponse): void {
     this.selectedAppointmentForProposal.set(apt);
     this.proposalDay.set(this.toDateStr(new Date(apt.startDatetime)));
+    this.proposalDay2.set('');
+    this.proposalDay3.set('');
     this.selectedProposalSlot.set(null);
+    this.selectedProposalSlot2.set(null);
+    this.selectedProposalSlot3.set(null);
     this.availableProposalSlots.set([]);
+    this.availableProposalSlots2.set([]);
+    this.availableProposalSlots3.set([]);
     this.proposeError.set('');
     this.showProposePanel.set(true);
     this.loadProposalSlots();
@@ -698,7 +794,13 @@ export class ProfessionalAppointmentsComponent implements OnInit {
     this.slotsLoading.set(false);
     this.selectedAppointmentForProposal.set(null);
     this.selectedProposalSlot.set(null);
+    this.selectedProposalSlot2.set(null);
+    this.selectedProposalSlot3.set(null);
     this.availableProposalSlots.set([]);
+    this.availableProposalSlots2.set([]);
+    this.availableProposalSlots3.set([]);
+    this.proposalDay2.set('');
+    this.proposalDay3.set('');
     this.proposeError.set('');
   }
 
@@ -719,9 +821,25 @@ export class ProfessionalAppointmentsComponent implements OnInit {
     const slot = this.selectedProposalSlot();
     if (!apt || !slot) return;
 
+    const slot2 = this.selectedProposalSlot2();
+    const slot3 = this.selectedProposalSlot3();
+    const selectedSlots = [slot, slot2, slot3].filter(
+      (candidate): candidate is TimeSlotResponse => candidate !== null,
+    );
+    if (new Set(selectedSlots.map(candidate => candidate.start)).size !== selectedSlots.length) {
+      this.proposeError.set('Le proposte di orario devono essere distinte.');
+      return;
+    }
+    const payload: ProposeNewTimeRequest = {
+      proposedStart: slot.start,
+      proposedEnd: slot.end,
+      ...(slot2 ? { proposedStart2: slot2.start, proposedEnd2: slot2.end } : {}),
+      ...(slot3 ? { proposedStart3: slot3.start, proposedEnd3: slot3.end } : {}),
+    };
+
     this.proposing.set(true);
     this.proposeError.set('');
-    this.portalService.proposeNewTime(apt.id, { proposedStart: slot.start, proposedEnd: slot.end }).subscribe({
+    this.portalService.proposeNewTime(apt.id, payload).subscribe({
       next: (updated) => {
         this._all.update((list) => list.map((a) => a.id === updated.id ? updated : a));
         this.proposing.set(false);
@@ -760,6 +878,22 @@ export class ProfessionalAppointmentsComponent implements OnInit {
     return { clientId: '', serviceTypeId: '', date: this.toDateStr(new Date()), startTime: '', endTime: '', notes: '', confirmImmediately: true };
   }
 
+  onProposalDateChange2(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    if (!input?.value) return;
+    this.proposalDay2.set(input.value);
+    this.selectedProposalSlot2.set(null);
+    this.loadProposalSlots2();
+  }
+
+  onProposalDateChange3(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    if (!input?.value) return;
+    this.proposalDay3.set(input.value);
+    this.selectedProposalSlot3.set(null);
+    this.loadProposalSlots3();
+  }
+
   private loadProposalSlots(): void {
     const apt = this.selectedAppointmentForProposal();
     if (!apt || !this.proposalDay()) return;
@@ -778,6 +912,28 @@ export class ProfessionalAppointmentsComponent implements OnInit {
         this.availableProposalSlots.set([]);
         this.proposeError.set(err?.error?.message || 'Errore nel caricamento degli slot disponibili');
       },
+    });
+  }
+
+  private loadProposalSlots2(): void {
+    const apt = this.selectedAppointmentForProposal();
+    if (!apt || !this.proposalDay2()) return;
+    const durationMinutes = Math.max(5, Math.round((new Date(apt.endDatetime).getTime() - new Date(apt.startDatetime).getTime()) / 60000));
+    this.slotsLoading2.set(true);
+    this.portalService.getAvailableSlots(this.proposalDay2(), durationMinutes).subscribe({
+      next: slots => { this.availableProposalSlots2.set(slots); this.slotsLoading2.set(false); },
+      error: () => { this.availableProposalSlots2.set([]); this.slotsLoading2.set(false); },
+    });
+  }
+
+  private loadProposalSlots3(): void {
+    const apt = this.selectedAppointmentForProposal();
+    if (!apt || !this.proposalDay3()) return;
+    const durationMinutes = Math.max(5, Math.round((new Date(apt.endDatetime).getTime() - new Date(apt.startDatetime).getTime()) / 60000));
+    this.slotsLoading3.set(true);
+    this.portalService.getAvailableSlots(this.proposalDay3(), durationMinutes).subscribe({
+      next: slots => { this.availableProposalSlots3.set(slots); this.slotsLoading3.set(false); },
+      error: () => { this.availableProposalSlots3.set([]); this.slotsLoading3.set(false); },
     });
   }
 

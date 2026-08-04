@@ -303,6 +303,7 @@ export interface AppointmentResponse {
   id: UUID;
   studioId: UUID;
   studioSlug: string;
+  studioTimezone: string;
   professionalId: UUID;
   professionalFullName: string;
   clientId: UUID;
@@ -316,6 +317,10 @@ export interface AppointmentResponse {
   notes: string | null;
   proposedStart: string | null;
   proposedEnd: string | null;
+  proposedStart2: string | null;
+  proposedEnd2: string | null;
+  proposedStart3: string | null;
+  proposedEnd3: string | null;
   cancellationReason: string | null;
   cancelledBy: CancelledBy | null;
   token: string;
@@ -344,6 +349,15 @@ export interface UpdateAppointmentRequest {
 export interface ProposeNewTimeRequest {
   proposedStart: string;
   proposedEnd: string;
+  proposedStart2?: string;
+  proposedEnd2?: string;
+  proposedStart3?: string;
+  proposedEnd3?: string;
+}
+
+export interface AcceptProposalRequest {
+  selectedStart: string; // ISO-8601 UTC
+  selectedEnd: string;   // ISO-8601 UTC
 }
 
 export const APPOINTMENT_CAPACITY_LEVELS = ['AVAILABLE', 'WARNING', 'CRITICAL'] as const;

@@ -8,6 +8,7 @@ import type {
   TimeSlotResponse,
   AppointmentResponse,
   PublicBookingRequest,
+  AcceptProposalRequest,
   UUID,
 } from '../models/domain.model';
 
@@ -48,8 +49,8 @@ export class PublicBookingService {
     return this.http.get<AppointmentResponse>(`${APPOINTMENTS_BASE}/${token}`);
   }
 
-  acceptProposedTime(token: string): Observable<AppointmentResponse> {
-    return this.http.post<AppointmentResponse>(`${APPOINTMENTS_BASE}/${token}/accept`, {});
+  acceptProposedTime(token: string, payload: AcceptProposalRequest): Observable<AppointmentResponse> {
+    return this.http.post<AppointmentResponse>(`${APPOINTMENTS_BASE}/${token}/accept`, payload);
   }
 
   rejectProposedTime(token: string): Observable<AppointmentResponse> {

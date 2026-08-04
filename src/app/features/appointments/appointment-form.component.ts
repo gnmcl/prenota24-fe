@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
@@ -21,47 +22,103 @@ import type {
 } from '../../core/models/domain.model';
 import { getErrorMessage } from '../../shared/utils/errors';
 
-const MONTHS_IT = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+const MONTHS_IT = [
+  'Gennaio',
+  'Febbraio',
+  'Marzo',
+  'Aprile',
+  'Maggio',
+  'Giugno',
+  'Luglio',
+  'Agosto',
+  'Settembre',
+  'Ottobre',
+  'Novembre',
+  'Dicembre',
+];
 const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
 
 @Component({
   selector: 'app-appointment-form',
   standalone: true,
-  imports: [RouterLink, FormsModule, PageShellComponent, CardComponent, ButtonComponent, AlertComponent],
+  imports: [
+    RouterLink,
+    FormsModule,
+    PageShellComponent,
+    CardComponent,
+    ButtonComponent,
+    AlertComponent,
+  ],
   template: `
     <app-page-shell>
       <div class="mx-auto max-w-2xl pb-10">
-        <a routerLink="/appuntamenti" class="mb-6 inline-flex items-center gap-1 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+        <a
+          routerLink="/appuntamenti"
+          class="mb-6 inline-flex items-center gap-1 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+        >
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
           Torna alla lista
         </a>
 
-        <h2 class="mb-6 text-xl sm:text-2xl font-bold text-[var(--text-primary)]">Nuovo appuntamento</h2>
+        <h2 class="mb-6 text-xl sm:text-2xl font-bold text-[var(--text-primary)]">
+          Nuovo appuntamento
+        </h2>
 
         <!-- Step progress indicator -->
         <div class="mb-8 flex items-start">
           @for (s of steps(); track s.n) {
             <div class="flex flex-col items-center" [class]="s.n < 4 ? 'flex-1' : ''">
               <div class="flex items-center w-full">
-                <button type="button"
+                <button
+                  type="button"
                   (click)="s.done ? goToStep(s.n) : null"
                   [disabled]="!s.done && !s.active"
                   class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all"
-                  [class]="s.done ? 'bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer' : s.active ? 'border-2 border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400' : 'border-2 border-[var(--surface-card-border)] text-[var(--text-tertiary)] cursor-not-allowed'">
+                  [class]="
+                    s.done
+                      ? 'bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer'
+                      : s.active
+                        ? 'border-2 border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
+                        : 'border-2 border-[var(--surface-card-border)] text-[var(--text-tertiary)] cursor-not-allowed'
+                  "
+                >
                   @if (s.done) {
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="3"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
                   } @else {
                     {{ s.n }}
                   }
                 </button>
                 @if (s.n < 4) {
-                  <div class="h-0.5 flex-1 mx-1 rounded transition-colors" [class]="s.done ? 'bg-indigo-600' : 'bg-[var(--surface-card-border)]'"></div>
+                  <div
+                    class="h-0.5 flex-1 mx-1 rounded transition-colors"
+                    [class]="s.done ? 'bg-indigo-600' : 'bg-[var(--surface-card-border)]'"
+                  ></div>
                 }
               </div>
-              <span class="mt-1.5 text-[10px] font-medium leading-tight"
-                [class]="s.active ? 'text-indigo-600 dark:text-indigo-400' : s.done ? 'text-[var(--text-secondary)]' : 'text-[var(--text-tertiary)]'">
+              <span
+                class="mt-1.5 text-[10px] font-medium leading-tight"
+                [class]="
+                  s.active
+                    ? 'text-indigo-600 dark:text-indigo-400'
+                    : s.done
+                      ? 'text-[var(--text-secondary)]'
+                      : 'text-[var(--text-tertiary)]'
+                "
+              >
                 {{ s.label }}
               </span>
             </div>
@@ -75,44 +132,88 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
         <!-- Completed steps summaries -->
         @if (currentStep() > 1) {
           <div class="mb-4 space-y-2">
-            <div class="flex items-center justify-between rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-hover)] px-4 py-2.5 text-sm">
+            <div
+              class="flex items-center justify-between rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-hover)] px-4 py-2.5 text-sm"
+            >
               <div class="flex items-center gap-2 min-w-0">
-                <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white text-[10px] font-bold">✓</span>
+                <span
+                  class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white text-[10px] font-bold"
+                  >✓</span
+                >
                 <span class="text-[var(--text-tertiary)] shrink-0">Servizio:</span>
                 @if (selectedServiceId()) {
                   <span class="flex items-center gap-1.5 min-w-0">
                     @if (selectedServiceColor()) {
-                      <span class="h-2 w-2 shrink-0 rounded-full" [style.background-color]="selectedServiceColor()"></span>
+                      <span
+                        class="h-2 w-2 shrink-0 rounded-full"
+                        [style.background-color]="selectedServiceColor()"
+                      ></span>
                     }
-                    <span class="font-medium text-[var(--text-primary)] truncate">{{ selectedServiceName() }}</span>
-                    <span class="text-[var(--text-tertiary)] shrink-0">· {{ selectedDuration() }} min</span>
+                    <span class="font-medium text-[var(--text-primary)] truncate">{{
+                      selectedServiceName()
+                    }}</span>
+                    <span class="text-[var(--text-tertiary)] shrink-0"
+                      >· {{ selectedDuration() }} min</span
+                    >
                   </span>
                 } @else {
                   <span class="font-medium text-[var(--text-primary)]">Nessun servizio</span>
                 }
               </div>
-              <button (click)="goToStep(1)" type="button" class="ml-3 shrink-0 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:opacity-75 transition-opacity">Modifica</button>
+              <button
+                (click)="goToStep(1)"
+                type="button"
+                class="ml-3 shrink-0 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:opacity-75 transition-opacity"
+              >
+                Modifica
+              </button>
             </div>
 
             @if (currentStep() > 2) {
-              <div class="flex items-center justify-between rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-hover)] px-4 py-2.5 text-sm">
+              <div
+                class="flex items-center justify-between rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-hover)] px-4 py-2.5 text-sm"
+              >
                 <div class="flex items-center gap-2 min-w-0">
-                  <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white text-[10px] font-bold">✓</span>
+                  <span
+                    class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white text-[10px] font-bold"
+                    >✓</span
+                  >
                   <span class="text-[var(--text-tertiary)] shrink-0">Professionista:</span>
-                  <span class="font-medium text-[var(--text-primary)] truncate">{{ selectedProfessionalName() }}</span>
+                  <span class="font-medium text-[var(--text-primary)] truncate">{{
+                    selectedProfessionalName()
+                  }}</span>
                 </div>
-                <button (click)="goToStep(2)" type="button" class="ml-3 shrink-0 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:opacity-75 transition-opacity">Modifica</button>
+                <button
+                  (click)="goToStep(2)"
+                  type="button"
+                  class="ml-3 shrink-0 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:opacity-75 transition-opacity"
+                >
+                  Modifica
+                </button>
               </div>
             }
 
             @if (currentStep() > 3) {
-              <div class="flex items-center justify-between rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-hover)] px-4 py-2.5 text-sm">
+              <div
+                class="flex items-center justify-between rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-hover)] px-4 py-2.5 text-sm"
+              >
                 <div class="flex items-center gap-2 min-w-0">
-                  <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white text-[10px] font-bold">✓</span>
+                  <span
+                    class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white text-[10px] font-bold"
+                    >✓</span
+                  >
                   <span class="text-[var(--text-tertiary)] shrink-0">Cliente:</span>
-                  <span class="font-medium text-[var(--text-primary)] truncate">{{ selectedClientName() }}</span>
+                  <span class="font-medium text-[var(--text-primary)] truncate">{{
+                    selectedClientName()
+                  }}</span>
                 </div>
-                <button (click)="goToStep(3)" type="button" class="ml-3 shrink-0 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:opacity-75 transition-opacity">Modifica</button>
+                <button
+                  (click)="goToStep(3)"
+                  type="button"
+                  class="ml-3 shrink-0 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:opacity-75 transition-opacity"
+                >
+                  Modifica
+                </button>
               </div>
             }
           </div>
@@ -122,29 +223,70 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
         <app-card>
           <!-- Step 1: Service -->
           @if (currentStep() === 1) {
-            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Servizio <span class="normal-case font-normal">(opzionale)</span></h3>
-            <input type="text" [ngModel]="serviceSearchText()" (ngModelChange)="onServiceSearch($event)" placeholder="Cerca servizio per nome..."
-              class="mb-3 w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+            <h3
+              class="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]"
+            >
+              Servizio <span class="normal-case font-normal">(opzionale)</span>
+            </h3>
+            @if (selectedDate() && selectedProfessionalName() && selectedStartTime()) {
+              <p class="mb-3 text-xs text-[var(--text-tertiary)]">
+                Slot preimpostato:
+                <span class="font-medium text-[var(--text-secondary)]">{{ selectedDate() }}</span>
+                ·
+                <span class="font-medium text-[var(--text-secondary)]">{{
+                  selectedStartTime()
+                }}</span>
+                ·
+                <span class="font-medium text-[var(--text-secondary)]">{{
+                  selectedProfessionalName()
+                }}</span>
+                @if (maxSelectableDurationMinutes() !== null) {
+                  · massimo {{ maxSelectableDurationMinutes() }} min
+                }
+              </p>
+            }
+            <input
+              type="text"
+              [ngModel]="serviceSearchText()"
+              (ngModelChange)="onServiceSearch($event)"
+              placeholder="Cerca servizio per nome..."
+              class="mb-3 w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors"
+            />
             <div class="max-h-64 overflow-y-auto space-y-1">
-              <button (click)="selectNoService()" type="button"
-                [class]="!selectedServiceId()
-                  ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 p-3 text-left text-sm transition-colors'
-                  : 'w-full rounded-lg border border-[var(--surface-card-border)] p-3 text-left text-sm hover:bg-[var(--surface-hover)] transition-colors'">
+              <button
+                (click)="selectNoService()"
+                type="button"
+                [class]="
+                  !selectedServiceId()
+                    ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 p-3 text-left text-sm transition-colors'
+                    : 'w-full rounded-lg border border-[var(--surface-card-border)] p-3 text-left text-sm hover:bg-[var(--surface-hover)] transition-colors'
+                "
+              >
                 <span class="font-medium text-[var(--text-primary)]">Nessun servizio</span>
                 <span class="block text-xs text-[var(--text-tertiary)]">Durata personalizzata</span>
               </button>
               @for (svc of filteredServices(); track svc.id) {
-                <button (click)="selectService(svc)" type="button"
-                  [class]="selectedServiceId() === svc.id
-                    ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 p-3 text-left text-sm transition-colors'
-                    : 'w-full rounded-lg border border-[var(--surface-card-border)] p-3 text-left text-sm hover:bg-[var(--surface-hover)] transition-colors'">
+                <button
+                  (click)="selectService(svc)"
+                  type="button"
+                  [class]="
+                    selectedServiceId() === svc.id
+                      ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 p-3 text-left text-sm transition-colors'
+                      : 'w-full rounded-lg border border-[var(--surface-card-border)] p-3 text-left text-sm hover:bg-[var(--surface-hover)] transition-colors'
+                  "
+                >
                   <div class="flex items-center gap-2">
                     @if (svc.color) {
-                      <span class="h-3 w-3 rounded-full shrink-0" [style.background-color]="svc.color"></span>
+                      <span
+                        class="h-3 w-3 rounded-full shrink-0"
+                        [style.background-color]="svc.color"
+                      ></span>
                     }
                     <span class="font-medium text-[var(--text-primary)]">{{ svc.name }}</span>
                   </div>
-                  <span class="block text-xs text-[var(--text-secondary)]">{{ svc.durationMinutes }} min{{ svc.price ? ' · €' + svc.price : '' }}</span>
+                  <span class="block text-xs text-[var(--text-secondary)]"
+                    >{{ svc.durationMinutes }} min{{ svc.price ? ' · €' + svc.price : '' }}</span
+                  >
                 </button>
               }
             </div>
@@ -152,21 +294,41 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
 
           <!-- Step 2: Professional -->
           @if (currentStep() === 2) {
-            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Professionista</h3>
-            <input type="text" [ngModel]="professionalSearchText()" (ngModelChange)="onProfessionalSearch($event)" placeholder="Cerca per nome o email..."
-              class="mb-3 w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+            <h3
+              class="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]"
+            >
+              Professionista
+            </h3>
+            <input
+              type="text"
+              [ngModel]="professionalSearchText()"
+              (ngModelChange)="onProfessionalSearch($event)"
+              placeholder="Cerca per nome o email..."
+              class="mb-3 w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors"
+            />
             @if (searchedProfessionals().length === 0) {
-              <p class="text-sm text-[var(--text-tertiary)]">Nessun professionista disponibile per il servizio selezionato.</p>
+              <p class="text-sm text-[var(--text-tertiary)]">
+                Nessun professionista disponibile per il servizio selezionato.
+              </p>
             } @else {
               <div class="max-h-64 overflow-y-auto space-y-1">
                 @for (pro of searchedProfessionals(); track pro.id) {
-                  <button (click)="selectProfessional(pro)" type="button"
-                    [class]="selectedProfessionalId() === pro.id
-                      ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 p-3 text-left transition-colors'
-                      : 'w-full rounded-lg border border-[var(--surface-card-border)] p-3 text-left hover:bg-[var(--surface-hover)] transition-colors'">
-                    <span class="font-medium text-[var(--text-primary)]">{{ pro.firstName }} {{ pro.lastName }}</span>
+                  <button
+                    (click)="selectProfessional(pro)"
+                    type="button"
+                    [class]="
+                      selectedProfessionalId() === pro.id
+                        ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 p-3 text-left transition-colors'
+                        : 'w-full rounded-lg border border-[var(--surface-card-border)] p-3 text-left hover:bg-[var(--surface-hover)] transition-colors'
+                    "
+                  >
+                    <span class="font-medium text-[var(--text-primary)]"
+                      >{{ pro.firstName }} {{ pro.lastName }}</span
+                    >
                     @if (pro.email) {
-                      <span class="block text-xs text-[var(--text-secondary)]">{{ pro.email }}</span>
+                      <span class="block text-xs text-[var(--text-secondary)]">{{
+                        pro.email
+                      }}</span>
                     }
                   </button>
                 }
@@ -176,17 +338,37 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
 
           <!-- Step 3: Client -->
           @if (currentStep() === 3) {
-            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Cliente</h3>
-            <input type="text" [(ngModel)]="clientSearch" (input)="searchClients()" placeholder="Cerca cliente per nome o email..."
-              class="mb-3 w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+            <h3
+              class="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]"
+            >
+              Cliente
+            </h3>
+            <input
+              type="text"
+              [(ngModel)]="clientSearch"
+              (input)="searchClients()"
+              placeholder="Cerca cliente per nome o email..."
+              class="mb-3 w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors"
+            />
             @if (clientResults().length > 0) {
               <div class="max-h-48 overflow-y-auto space-y-1 mb-3">
                 @for (c of clientResults(); track c.id) {
-                  <button (click)="selectedClientId.set(c.id); selectedClientName.set(c.firstName + ' ' + c.lastName); showNewClientForm.set(false)" type="button"
-                    [class]="selectedClientId() === c.id
-                      ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-2 text-left text-sm transition-colors'
-                      : 'w-full rounded-lg border border-[var(--surface-card-border)] px-3 py-2 text-left text-sm hover:bg-[var(--surface-hover)] transition-colors'">
-                    <span class="font-medium text-[var(--text-primary)]">{{ c.firstName }} {{ c.lastName }}</span>
+                  <button
+                    (click)="
+                      selectedClientId.set(c.id);
+                      selectedClientName.set(c.firstName + ' ' + c.lastName);
+                      showNewClientForm.set(false)
+                    "
+                    type="button"
+                    [class]="
+                      selectedClientId() === c.id
+                        ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-2 text-left text-sm transition-colors'
+                        : 'w-full rounded-lg border border-[var(--surface-card-border)] px-3 py-2 text-left text-sm hover:bg-[var(--surface-hover)] transition-colors'
+                    "
+                  >
+                    <span class="font-medium text-[var(--text-primary)]"
+                      >{{ c.firstName }} {{ c.lastName }}</span
+                    >
                     @if (c.email) {
                       <span class="text-[var(--text-tertiary)] ml-2">{{ c.email }}</span>
                     }
@@ -195,51 +377,104 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
               </div>
             }
             @if (selectedClientName()) {
-              <div class="mb-3 flex items-center gap-2 rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-2 text-sm">
-                <span class="font-medium text-indigo-700 dark:text-indigo-300">{{ selectedClientName() }}</span>
-                <button (click)="selectedClientId.set(null); selectedClientName.set('')" type="button" class="ml-auto text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">
-                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              <div
+                class="mb-3 flex items-center gap-2 rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-2 text-sm"
+              >
+                <span class="font-medium text-indigo-700 dark:text-indigo-300">{{
+                  selectedClientName()
+                }}</span>
+                <button
+                  (click)="selectedClientId.set(null); selectedClientName.set('')"
+                  type="button"
+                  class="ml-auto text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
+                >
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
                 </button>
               </div>
             }
             @if (!showNewClientForm()) {
-              <button (click)="showNewClientForm.set(true)" type="button"
-                class="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400 font-medium hover:opacity-75 transition-opacity mt-1">
+              <button
+                (click)="showNewClientForm.set(true)"
+                type="button"
+                class="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400 font-medium hover:opacity-75 transition-opacity mt-1"
+              >
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 4v16m8-8H4"
+                  />
                 </svg>
                 Crea nuovo cliente
               </button>
             } @else {
-              <div class="mt-3 rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-hover)] p-4 space-y-3">
+              <div
+                class="mt-3 rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-hover)] p-4 space-y-3"
+              >
                 <h4 class="text-sm font-semibold text-[var(--text-primary)]">Nuovo cliente</h4>
                 <div class="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1">Nome *</label>
-                    <input type="text" [(ngModel)]="newClientFirstName"
-                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+                    <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1"
+                      >Nome *</label
+                    >
+                    <input
+                      type="text"
+                      [(ngModel)]="newClientFirstName"
+                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors"
+                    />
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1">Cognome *</label>
-                    <input type="text" [(ngModel)]="newClientLastName"
-                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+                    <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1"
+                      >Cognome *</label
+                    >
+                    <input
+                      type="text"
+                      [(ngModel)]="newClientLastName"
+                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors"
+                    />
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1">Email</label>
-                    <input type="email" [(ngModel)]="newClientEmail"
-                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+                    <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1"
+                      >Email</label
+                    >
+                    <input
+                      type="email"
+                      [(ngModel)]="newClientEmail"
+                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors"
+                    />
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1">Telefono</label>
-                    <input type="tel" [(ngModel)]="newClientPhone"
-                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+                    <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1"
+                      >Telefono</label
+                    >
+                    <input
+                      type="tel"
+                      [(ngModel)]="newClientPhone"
+                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors"
+                    />
                   </div>
                 </div>
                 <div class="flex items-center gap-2 pt-1">
-                  <app-button [disabled]="!newClientFirstName.trim() || !newClientLastName.trim()" [isLoading]="creatingClient()" (click)="createNewClient()">
+                  <app-button
+                    [disabled]="!newClientFirstName.trim() || !newClientLastName.trim()"
+                    [isLoading]="creatingClient()"
+                    (click)="createNewClient()"
+                  >
                     Crea e seleziona
                   </app-button>
-                  <button (click)="showNewClientForm.set(false)" type="button" class="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+                  <button
+                    (click)="showNewClientForm.set(false)"
+                    type="button"
+                    class="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                  >
                     Annulla
                   </button>
                 </div>
@@ -249,34 +484,75 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
 
           <!-- Step 4: Date, time and notes -->
           @if (currentStep() === 4) {
-            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Data e ora</h3>
+            <h3
+              class="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]"
+            >
+              Data e ora
+            </h3>
 
             <!-- Calendar -->
             <div class="rounded-xl border border-[var(--surface-card-border)] overflow-hidden mb-4">
-              <div class="flex items-center justify-between bg-[var(--surface-hover)] px-4 py-3 border-b border-[var(--surface-card-border)]">
-                <button (click)="calPrevMonth()" type="button" class="rounded-lg p-1.5 text-[var(--text-secondary)] hover:bg-[var(--surface-card)] hover:text-[var(--text-primary)] transition-colors">
-                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+              <div
+                class="flex items-center justify-between bg-[var(--surface-hover)] px-4 py-3 border-b border-[var(--surface-card-border)]"
+              >
+                <button
+                  (click)="calPrevMonth()"
+                  type="button"
+                  class="rounded-lg p-1.5 text-[var(--text-secondary)] hover:bg-[var(--surface-card)] hover:text-[var(--text-primary)] transition-colors"
+                >
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
                 </button>
-                <span class="text-sm font-semibold text-[var(--text-primary)]">{{ calMonthLabel() }}</span>
-                <button (click)="calNextMonth()" type="button" class="rounded-lg p-1.5 text-[var(--text-secondary)] hover:bg-[var(--surface-card)] hover:text-[var(--text-primary)] transition-colors">
-                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                <span class="text-sm font-semibold text-[var(--text-primary)]">{{
+                  calMonthLabel()
+                }}</span>
+                <button
+                  (click)="calNextMonth()"
+                  type="button"
+                  class="rounded-lg p-1.5 text-[var(--text-secondary)] hover:bg-[var(--surface-card)] hover:text-[var(--text-primary)] transition-colors"
+                >
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
                 </button>
               </div>
-              <div class="grid grid-cols-7 border-b border-[var(--surface-card-border)] bg-[var(--surface-hover)]">
+              <div
+                class="grid grid-cols-7 border-b border-[var(--surface-card-border)] bg-[var(--surface-hover)]"
+              >
                 @for (day of daysOfWeek; track day) {
-                  <div class="py-2 text-center text-[10px] sm:text-xs font-medium text-[var(--text-tertiary)] uppercase">{{ day }}</div>
+                  <div
+                    class="py-2 text-center text-[10px] sm:text-xs font-medium text-[var(--text-tertiary)] uppercase"
+                  >
+                    {{ day }}
+                  </div>
                 }
               </div>
               <div class="grid grid-cols-7">
                 @for (day of calDays(); track $index) {
                   @if (day) {
-                    <button (click)="selectDate(day.dateStr)" type="button"
+                    <button
+                      (click)="selectDate(day.dateStr)"
+                      type="button"
                       [disabled]="day.isPast"
                       [class]="getCalDayClass(day)"
-                      class="relative py-2.5 sm:py-3 text-center text-sm transition-all duration-150">
+                      class="relative py-2.5 sm:py-3 text-center text-sm transition-all duration-150"
+                    >
                       {{ day.num }}
                       @if (day.isToday) {
-                        <span class="absolute bottom-1 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-indigo-500"></span>
+                        <span
+                          class="absolute bottom-1 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-indigo-500"
+                        ></span>
                       }
                     </button>
                   } @else {
@@ -291,13 +567,30 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                 {{ selectedDateLabel() }}
               </div>
               @if (isDailyLimitReached()) {
-                <div class="mb-4 flex items-start gap-3 rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-4 py-3">
-                  <svg class="mt-0.5 h-4 w-4 shrink-0 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                <div
+                  class="mb-4 flex items-start gap-3 rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-4 py-3"
+                >
+                  <svg
+                    class="mt-0.5 h-4 w-4 shrink-0 text-red-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                    />
                   </svg>
                   <div>
-                    <p class="text-sm font-semibold text-red-700 dark:text-red-400">Soglia massima raggiunta</p>
-                    <p class="text-xs text-red-600 dark:text-red-400 mt-0.5">Il numero massimo di appuntamenti per questo giorno è stato raggiunto. Scegli un altro giorno.</p>
+                    <p class="text-sm font-semibold text-red-700 dark:text-red-400">
+                      Soglia massima raggiunta
+                    </p>
+                    <p class="text-xs text-red-600 dark:text-red-400 mt-0.5">
+                      Il numero massimo di appuntamenti per questo giorno è stato raggiunto. Scegli
+                      un altro giorno.
+                    </p>
                   </div>
                 </div>
               }
@@ -305,21 +598,42 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
 
             <!-- Slot picker -->
             @if (selectedDate() && selectedProfessionalId()) {
-              <div class="rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-hover)] p-4 mb-4">
+              <div
+                class="rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-hover)] p-4 mb-4"
+              >
                 <div class="grid gap-4 sm:grid-cols-2 mb-4">
                   <div>
-                    <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1">Orario *</label>
-                    <input type="time" [ngModel]="selectedStartTime()" (ngModelChange)="selectedStartTime.set($event)" step="300"
-                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+                    <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1"
+                      >Orario *</label
+                    >
+                    <input
+                      type="time"
+                      [ngModel]="selectedStartTime()"
+                      (ngModelChange)="setStartTime($event)"
+                      step="300"
+                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors"
+                    />
                   </div>
                   <div>
                     @if (!selectedServiceId()) {
-                      <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1">Durata (min)</label>
-                      <input type="number" [ngModel]="selectedDuration()" (ngModelChange)="setDuration($event)" min="5" step="5"
-                        class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+                      <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1"
+                        >Durata (min)</label
+                      >
+                      <input
+                        type="number"
+                        [ngModel]="selectedDuration()"
+                        (ngModelChange)="setDuration($event)"
+                        min="5"
+                        step="5"
+                        class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors"
+                      />
                     } @else {
-                      <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1">Fine</label>
-                      <div class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-hover)] px-3 py-2.5 text-sm text-[var(--text-secondary)]">
+                      <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1"
+                        >Fine</label
+                      >
+                      <div
+                        class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-hover)] px-3 py-2.5 text-sm text-[var(--text-secondary)]"
+                      >
                         {{ computedEndTime() || '—' }}
                       </div>
                     }
@@ -330,42 +644,64 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                   <div class="mb-3 flex items-center gap-2">
                     @if (resolvedSlot()) {
                       <div class="h-2.5 w-2.5 rounded-full bg-emerald-500"></div>
-                      <span class="text-xs font-medium text-emerald-600 dark:text-emerald-400">Orario disponibile</span>
+                      <span class="text-xs font-medium text-emerald-600 dark:text-emerald-400"
+                        >Orario disponibile</span
+                      >
                     } @else {
                       <div class="h-2.5 w-2.5 rounded-full bg-red-400"></div>
-                      <span class="text-xs font-medium text-red-600 dark:text-red-400">Orario non disponibile</span>
+                      <span class="text-xs font-medium text-red-600 dark:text-red-400"
+                        >Orario non disponibile</span
+                      >
                     }
                   </div>
                 }
 
                 @if (loadingSlots()) {
                   <div class="flex items-center gap-2">
-                    <div class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--surface-card-border)] border-t-indigo-600"></div>
-                    <span class="text-xs text-[var(--text-tertiary)]">Carico orari disponibili...</span>
+                    <div
+                      class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--surface-card-border)] border-t-indigo-600"
+                    ></div>
+                    <span class="text-xs text-[var(--text-tertiary)]"
+                      >Carico orari disponibili...</span
+                    >
                   </div>
                 } @else if (availableSlots().length > 0) {
                   <div class="flex flex-wrap items-center gap-2">
                     <span class="text-xs text-[var(--text-tertiary)]">Disponibili:</span>
                     @for (slot of availableSlots(); track slot.start) {
-                      <button (click)="selectSlot(slot)" type="button"
-                        [class]="selectedStartTime() === formatSlotTime(slot.start)
-                          ? 'rounded-full bg-indigo-600 px-3 py-1 text-xs font-medium text-white'
-                          : 'rounded-full border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-1 text-xs text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors'">
+                      <button
+                        (click)="selectSlot(slot)"
+                        type="button"
+                        [class]="
+                          selectedStartTime() === formatSlotTime(slot.start)
+                            ? 'rounded-full bg-indigo-600 px-3 py-1 text-xs font-medium text-white'
+                            : 'rounded-full border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-1 text-xs text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors'
+                        "
+                      >
                         {{ formatSlotTime(slot.start) }}
                       </button>
                     }
                   </div>
                 } @else {
-                  <p class="text-xs text-[var(--text-tertiary)]">Nessun orario disponibile per questo giorno.</p>
+                  <p class="text-xs text-[var(--text-tertiary)]">
+                    Nessun orario disponibile per questo giorno.
+                  </p>
                 }
               </div>
             }
 
             <!-- Notes -->
             <div>
-              <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">Note <span class="font-normal text-[var(--text-tertiary)]">(opzionale)</span></label>
-              <textarea [(ngModel)]="notes" rows="3" placeholder="Note sull'appuntamento..."
-                class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none resize-none transition-colors">
+              <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1.5"
+                >Note
+                <span class="font-normal text-[var(--text-tertiary)]">(opzionale)</span></label
+              >
+              <textarea
+                [(ngModel)]="notes"
+                rows="3"
+                placeholder="Note sull'appuntamento..."
+                class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none resize-none transition-colors"
+              >
               </textarea>
             </div>
           }
@@ -423,7 +759,9 @@ export class AppointmentFormComponent implements OnInit {
   readonly selectedDate = signal('');
   readonly selectedStartTime = signal('');
   readonly currentStep = signal<1 | 2 | 3 | 4>(1);
+  readonly maxSelectableDurationMinutes = signal<number | null>(null);
   notes = '';
+  private maxSelectableDurationRequestId = 0;
 
   // New client inline form
   readonly showNewClientForm = signal(false);
@@ -461,12 +799,21 @@ export class AppointmentFormComponent implements OnInit {
     if (hasThresholds) {
       for (const apt of this.monthAppointments()) {
         if (!ACTIVE.includes(apt.status)) continue;
-        const localDate = new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(new Date(apt.startDatetime));
+        const localDate = new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(
+          new Date(apt.startDatetime),
+        );
         countByDate.set(localDate, (countByDate.get(localDate) ?? 0) + 1);
       }
     }
 
-    const cells: (null | { num: number; dateStr: string; isToday: boolean; isPast: boolean; isSelected: boolean; capacityStatus: 'green' | 'yellow' | 'red' | null })[] = [];
+    const cells: (null | {
+      num: number;
+      dateStr: string;
+      isToday: boolean;
+      isPast: boolean;
+      isSelected: boolean;
+      capacityStatus: 'green' | 'yellow' | 'red' | null;
+    })[] = [];
     for (let i = 1; i < dow; i++) cells.push(null);
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -479,7 +826,14 @@ export class AppointmentFormComponent implements OnInit {
         else if (warn !== null && count >= warn) capacityStatus = 'yellow';
         else if (count > 0) capacityStatus = 'green';
       }
-      cells.push({ num: d, dateStr, isToday: dateStr === todayStr, isPast, isSelected: dateStr === this.selectedDate(), capacityStatus });
+      cells.push({
+        num: d,
+        dateStr,
+        isToday: dateStr === todayStr,
+        isPast,
+        isSelected: dateStr === this.selectedDate(),
+        capacityStatus,
+      });
     }
     return cells;
   });
@@ -489,7 +843,12 @@ export class AppointmentFormComponent implements OnInit {
     if (!sd) return '';
     const parts = sd.split('-');
     const d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
-    return d.toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+    return d.toLocaleDateString('it-IT', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
   });
 
   readonly computedEndTime = computed(() => {
@@ -511,7 +870,10 @@ export class AppointmentFormComponent implements OnInit {
     const ACTIVE = ['REQUESTED', 'CONFIRMED', 'PROPOSED_NEW_TIME'];
     const count = this.monthAppointments().filter((a) => {
       if (!ACTIVE.includes(a.status)) return false;
-      return new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(new Date(a.startDatetime)) === date;
+      return (
+        new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(new Date(a.startDatetime)) ===
+        date
+      );
     }).length;
     return count >= max;
   });
@@ -526,7 +888,17 @@ export class AppointmentFormComponent implements OnInit {
 
   readonly filteredServices = computed(() => {
     const q = this.serviceSearchText().toLowerCase().trim();
-    const all = this.services();
+    const maxDuration = this.maxSelectableDurationMinutes();
+    const profId = this.selectedProfessionalId();
+    const all = this.services().filter((svc) => {
+      if (profId && svc.professionalIds.length > 0 && !svc.professionalIds.includes(profId)) {
+        return false;
+      }
+      if (maxDuration !== null && svc.durationMinutes > maxDuration) {
+        return false;
+      }
+      return true;
+    });
     if (!q) return all;
     return all.filter((s) => s.name.toLowerCase().includes(q));
   });
@@ -544,30 +916,54 @@ export class AppointmentFormComponent implements OnInit {
     const q = this.professionalSearchText().toLowerCase().trim();
     const filtered = this.filteredProfessionals();
     if (!q) return filtered;
-    return filtered.filter((p) =>
-      (p.firstName + ' ' + p.lastName).toLowerCase().includes(q) ||
-      (p.email ?? '').toLowerCase().includes(q)
+    return filtered.filter(
+      (p) =>
+        (p.firstName + ' ' + p.lastName).toLowerCase().includes(q) ||
+        (p.email ?? '').toLowerCase().includes(q),
     );
   });
 
-  readonly canSubmit = computed(() =>
-    !this.isDailyLimitReached() &&
-    !!this.selectedProfessionalId() && !!this.selectedClientId() && !!this.selectedDate() && !!this.resolvedSlot()
+  readonly canSubmit = computed(
+    () =>
+      !this.isDailyLimitReached() &&
+      !!this.selectedProfessionalId() &&
+      !!this.selectedClientId() &&
+      !!this.selectedDate() &&
+      !!this.resolvedSlot(),
   );
 
   readonly steps = computed(() => [
-    { n: 1 as const, label: 'Servizio', done: this.currentStep() > 1, active: this.currentStep() === 1 },
-    { n: 2 as const, label: 'Professionista', done: this.currentStep() > 2, active: this.currentStep() === 2 },
-    { n: 3 as const, label: 'Cliente', done: this.currentStep() > 3, active: this.currentStep() === 3 },
+    {
+      n: 1 as const,
+      label: 'Servizio',
+      done: this.currentStep() > 1,
+      active: this.currentStep() === 1,
+    },
+    {
+      n: 2 as const,
+      label: 'Professionista',
+      done: this.currentStep() > 2,
+      active: this.currentStep() === 2,
+    },
+    {
+      n: 3 as const,
+      label: 'Cliente',
+      done: this.currentStep() > 3,
+      active: this.currentStep() === 3,
+    },
     { n: 4 as const, label: 'Data e ora', done: false, active: this.currentStep() === 4 },
   ]);
 
   readonly canAdvance = computed(() => {
     switch (this.currentStep()) {
-      case 1: return true;
-      case 2: return !!this.selectedProfessionalId();
-      case 3: return !!this.selectedClientId();
-      default: return false;
+      case 1:
+        return true;
+      case 2:
+        return !!this.selectedProfessionalId();
+      case 3:
+        return !!this.selectedClientId();
+      default:
+        return false;
     }
   });
 
@@ -585,13 +981,16 @@ export class AppointmentFormComponent implements OnInit {
         this.applyQueryParams();
       },
     });
-    this.svcService.list().subscribe({ next: (list) => this.services.set(list.filter((s) => s.active)) });
+    this.svcService
+      .list()
+      .subscribe({ next: (list) => this.services.set(list.filter((s) => s.active)) });
     this.loadMonthAppointments();
   }
 
   private applyQueryParams(): void {
     const params = this.route.snapshot.queryParamMap;
     const date = params.get('date');
+    const time = params.get('time');
     const profId = params.get('professionalId');
 
     if (date) {
@@ -605,13 +1004,14 @@ export class AppointmentFormComponent implements OnInit {
       const pro = this.professionals().find((p) => p.id === profId);
       if (pro) {
         this.selectProfessional(pro);
-        this.currentStep.set(3);
       }
     }
 
-    if (date && profId) {
-      this.loadAvailableSlots();
+    if (time) {
+      this.setStartTime(time);
     }
+
+    this.refreshMaxSelectableDuration();
   }
 
   searchClients(): void {
@@ -627,14 +1027,19 @@ export class AppointmentFormComponent implements OnInit {
     }, 300);
   }
 
-  onServiceSearch(value: string): void { this.serviceSearchText.set(value); }
-  onProfessionalSearch(value: string): void { this.professionalSearchText.set(value); }
+  onServiceSearch(value: string): void {
+    this.serviceSearchText.set(value);
+  }
+  onProfessionalSearch(value: string): void {
+    this.professionalSearchText.set(value);
+  }
 
   selectProfessional(pro: ProfessionalResponse): void {
     this.selectedProfessionalId.set(pro.id);
     this.selectedProfessionalName.set(pro.firstName + ' ' + pro.lastName);
     this.selectedStartTime.set('');
     if (this.selectedDate()) this.loadAvailableSlots();
+    this.refreshMaxSelectableDuration();
   }
 
   clearProfessional(): void {
@@ -642,6 +1047,7 @@ export class AppointmentFormComponent implements OnInit {
     this.selectedProfessionalName.set('');
     this.selectedStartTime.set('');
     this.availableSlots.set([]);
+    this.maxSelectableDurationMinutes.set(null);
   }
 
   selectService(svc: ServiceTypeResponse): void {
@@ -650,7 +1056,6 @@ export class AppointmentFormComponent implements OnInit {
     this.selectedServiceColor.set(svc.color ?? null);
     this.selectedDuration.set(svc.durationMinutes);
     this.resetProfessionalIfNeeded();
-    this.selectedStartTime.set('');
     if (this.selectedDate() && this.selectedProfessionalId()) this.loadAvailableSlots();
   }
 
@@ -660,7 +1065,6 @@ export class AppointmentFormComponent implements OnInit {
     this.selectedServiceColor.set(null);
     this.selectedDuration.set(30);
     this.resetProfessionalIfNeeded();
-    this.selectedStartTime.set('');
     if (this.selectedDate() && this.selectedProfessionalId()) this.loadAvailableSlots();
   }
 
@@ -673,13 +1077,21 @@ export class AppointmentFormComponent implements OnInit {
 
   // Calendar navigation
   calPrevMonth(): void {
-    if (this.calMonth() === 0) { this.calMonth.set(11); this.calYear.update((y) => y - 1); }
-    else { this.calMonth.update((m) => m - 1); }
+    if (this.calMonth() === 0) {
+      this.calMonth.set(11);
+      this.calYear.update((y) => y - 1);
+    } else {
+      this.calMonth.update((m) => m - 1);
+    }
     this.loadMonthAppointments();
   }
   calNextMonth(): void {
-    if (this.calMonth() === 11) { this.calMonth.set(0); this.calYear.update((y) => y + 1); }
-    else { this.calMonth.update((m) => m + 1); }
+    if (this.calMonth() === 11) {
+      this.calMonth.set(0);
+      this.calYear.update((y) => y + 1);
+    } else {
+      this.calMonth.update((m) => m + 1);
+    }
     this.loadMonthAppointments();
   }
 
@@ -688,6 +1100,7 @@ export class AppointmentFormComponent implements OnInit {
     this.selectedStartTime.set('');
     this.availableSlots.set([]);
     if (this.selectedProfessionalId()) this.loadAvailableSlots();
+    this.refreshMaxSelectableDuration();
   }
 
   setDuration(val: number): void {
@@ -696,17 +1109,35 @@ export class AppointmentFormComponent implements OnInit {
     if (this.selectedDate() && this.selectedProfessionalId()) this.loadAvailableSlots();
   }
 
-  goToStep(n: 1 | 2 | 3 | 4): void { this.currentStep.set(n); }
-  nextStep(): void { if (this.currentStep() < 4 && this.canAdvance()) this.currentStep.update((s) => (s + 1) as 1 | 2 | 3 | 4); }
-  prevStep(): void { if (this.currentStep() > 1) this.currentStep.update((s) => (s - 1) as 1 | 2 | 3 | 4); }
+  goToStep(n: 1 | 2 | 3 | 4): void {
+    this.currentStep.set(n);
+  }
+  nextStep(): void {
+    if (this.currentStep() < 4 && this.canAdvance())
+      this.currentStep.update((s) => (s + 1) as 1 | 2 | 3 | 4);
+  }
+  prevStep(): void {
+    if (this.currentStep() > 1) this.currentStep.update((s) => (s - 1) as 1 | 2 | 3 | 4);
+  }
 
-  getCalDayClass(day: { isSelected: boolean; isPast: boolean; isToday: boolean; capacityStatus: 'green' | 'yellow' | 'red' | null }): string {
+  getCalDayClass(day: {
+    isSelected: boolean;
+    isPast: boolean;
+    isToday: boolean;
+    capacityStatus: 'green' | 'yellow' | 'red' | null;
+  }): string {
     if (day.isSelected) return 'bg-indigo-600 text-white font-semibold rounded-lg shadow-sm';
     if (day.isPast) return 'text-[var(--text-tertiary)] cursor-not-allowed';
-    let base = day.isToday ? 'text-indigo-600 dark:text-indigo-400 font-bold rounded-lg' : 'text-[var(--text-primary)] rounded-lg';
-    if (day.capacityStatus === 'red') base += ' bg-red-100 dark:bg-red-900/40 hover:bg-red-200 dark:hover:bg-red-900/60';
-    else if (day.capacityStatus === 'yellow') base += ' bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50';
-    else if (day.capacityStatus === 'green') base += ' bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50';
+    let base = day.isToday
+      ? 'text-indigo-600 dark:text-indigo-400 font-bold rounded-lg'
+      : 'text-[var(--text-primary)] rounded-lg';
+    if (day.capacityStatus === 'red')
+      base += ' bg-red-100 dark:bg-red-900/40 hover:bg-red-200 dark:hover:bg-red-900/60';
+    else if (day.capacityStatus === 'yellow')
+      base += ' bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50';
+    else if (day.capacityStatus === 'green')
+      base +=
+        ' bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50';
     else base += ' hover:bg-[var(--surface-hover)]';
     return base;
   }
@@ -721,7 +1152,10 @@ export class AppointmentFormComponent implements OnInit {
       this.availableSlots.set([]);
       this.loadingSlots.set(true);
       this.profService.getAvailableSlots(profId, date, duration).subscribe({
-        next: (slots) => { this.availableSlots.set(slots); this.loadingSlots.set(false); },
+        next: (slots) => {
+          this.availableSlots.set(slots);
+          this.loadingSlots.set(false);
+        },
         error: () => this.loadingSlots.set(false),
       });
     }, 300);
@@ -741,7 +1175,69 @@ export class AppointmentFormComponent implements OnInit {
 
   /** Clicking a suggestion fills the time input */
   selectSlot(slot: TimeSlotResponse): void {
-    this.selectedStartTime.set(this.formatSlotTime(slot.start));
+    this.setStartTime(this.formatSlotTime(slot.start));
+  }
+
+  setStartTime(time: string): void {
+    this.selectedStartTime.set(time);
+    this.refreshMaxSelectableDuration();
+  }
+
+  private refreshMaxSelectableDuration(): void {
+    const profId = this.selectedProfessionalId();
+    const date = this.selectedDate();
+    const time = this.selectedStartTime();
+
+    if (!profId || !date || !time) {
+      this.maxSelectableDurationMinutes.set(null);
+      return;
+    }
+
+    this.maxSelectableDurationMinutes.set(null);
+    const requestId = ++this.maxSelectableDurationRequestId;
+    void this.resolveMaxSelectableDuration(profId, date, time).then((duration) => {
+      if (requestId === this.maxSelectableDurationRequestId) {
+        // null means the API failed → don't filter (keep null = no restriction)
+        this.maxSelectableDurationMinutes.set(duration ?? null);
+      }
+    });
+  }
+
+  private async resolveMaxSelectableDuration(
+    profId: UUID,
+    date: string,
+    time: string,
+  ): Promise<number | null> {
+    try {
+      // Request the finest granularity (5-minute slots).
+      // The backend generates slots at multiples of durationMinutes, so duration=5
+      // gives a slot every 5 minutes — the finest grid we need.
+      const slots = await firstValueFrom(this.profService.getAvailableSlots(profId, date, 5));
+
+      if (!slots.length) return 0;
+
+      // Find the slot whose start matches the clicked time.
+      const clickedIdx = slots.findIndex((slot) => this.formatSlotTime(slot.start) === time);
+      if (clickedIdx === -1) return 0; // clicked time not free even for 5 min
+
+      // Walk forward counting consecutive 5-minute blocks.
+      // A block is consecutive when its start === the previous block's end (no gap).
+      let count = 1;
+      for (let i = clickedIdx + 1; i < slots.length; i++) {
+        const prevEndMs = new Date(slots[i - 1].end).getTime();
+        const currStartMs = new Date(slots[i].start).getTime();
+        if (currStartMs === prevEndMs) {
+          count++;
+        } else {
+          break;
+        }
+      }
+
+      return count * 5;
+    } catch {
+      // API error: disable the filter so users can still select any service.
+      return null;
+    }
   }
 
   formatSlotTime(iso: string): string {
@@ -756,27 +1252,29 @@ export class AppointmentFormComponent implements OnInit {
   createNewClient(): void {
     if (!this.newClientFirstName.trim() || !this.newClientLastName.trim()) return;
     this.creatingClient.set(true);
-    this.clientService.create({
-      firstName: this.newClientFirstName.trim(),
-      lastName: this.newClientLastName.trim(),
-      email: this.newClientEmail.trim() || undefined,
-      phone: this.newClientPhone.trim() || undefined,
-    }).subscribe({
-      next: (client) => {
-        this.selectedClientId.set(client.id);
-        this.selectedClientName.set(client.firstName + ' ' + client.lastName);
-        this.showNewClientForm.set(false);
-        this.creatingClient.set(false);
-        this.newClientFirstName = '';
-        this.newClientLastName = '';
-        this.newClientEmail = '';
-        this.newClientPhone = '';
-      },
-      error: (err) => {
-        this.creatingClient.set(false);
-        this.error.set(getErrorMessage(err));
-      },
-    });
+    this.clientService
+      .create({
+        firstName: this.newClientFirstName.trim(),
+        lastName: this.newClientLastName.trim(),
+        email: this.newClientEmail.trim() || undefined,
+        phone: this.newClientPhone.trim() || undefined,
+      })
+      .subscribe({
+        next: (client) => {
+          this.selectedClientId.set(client.id);
+          this.selectedClientName.set(client.firstName + ' ' + client.lastName);
+          this.showNewClientForm.set(false);
+          this.creatingClient.set(false);
+          this.newClientFirstName = '';
+          this.newClientLastName = '';
+          this.newClientEmail = '';
+          this.newClientPhone = '';
+        },
+        error: (err) => {
+          this.creatingClient.set(false);
+          this.error.set(getErrorMessage(err));
+        },
+      });
   }
 
   onSubmit(): void {
@@ -787,20 +1285,22 @@ export class AppointmentFormComponent implements OnInit {
 
     this.isSaving.set(true);
     this.error.set('');
-    this.aptService.create({
-      professionalId: profId,
-      clientId: clientId,
-      serviceTypeId: this.selectedServiceId() ?? undefined,
-      startDatetime: slot.start,
-      endDatetime: slot.end,
-      notes: this.notes.trim() || undefined,
-      confirmImmediately: true,
-    }).subscribe({
-      next: (a) => this.router.navigate(['/appuntamenti', a.id]),
-      error: (err) => {
-        this.isSaving.set(false);
-        this.error.set(getErrorMessage(err));
-      },
-    });
+    this.aptService
+      .create({
+        professionalId: profId,
+        clientId: clientId,
+        serviceTypeId: this.selectedServiceId() ?? undefined,
+        startDatetime: slot.start,
+        endDatetime: slot.end,
+        notes: this.notes.trim() || undefined,
+        confirmImmediately: true,
+      })
+      .subscribe({
+        next: (a) => this.router.navigate(['/appuntamenti', a.id]),
+        error: (err) => {
+          this.isSaving.set(false);
+          this.error.set(getErrorMessage(err));
+        },
+      });
   }
 }

@@ -5,6 +5,8 @@ import { PageShellComponent } from '../../shared/components/page-shell/page-shel
 import { CardComponent } from '../../shared/components/card/card.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { EntityListComponent } from '../../shared/components/entity-list/entity-list.component';
+import { EntityListRowComponent } from '../../shared/components/entity-list/entity-list-row.component';
 import { ClientService } from '../../core/services/client.service';
 import type { ClientSummaryResponse, Page } from '../../core/models/domain.model';
 import { getErrorMessage } from '../../shared/utils/errors';
@@ -12,7 +14,7 @@ import { getErrorMessage } from '../../shared/utils/errors';
 @Component({
   selector: 'app-clients',
   standalone: true,
-  imports: [RouterLink, FormsModule, PageShellComponent, CardComponent, ButtonComponent, EmptyStateComponent],
+  imports: [RouterLink, FormsModule, PageShellComponent, CardComponent, ButtonComponent, EmptyStateComponent, EntityListComponent, EntityListRowComponent],
   template: `
     <app-page-shell>
       <div class="mx-auto max-w-4xl">
@@ -68,37 +70,29 @@ import { getErrorMessage } from '../../shared/utils/errors';
               (action)="router.navigate(['/clienti/nuovo'])"
             />
           } @else {
-            <app-card extraClass="!p-0 overflow-hidden">
-              <div class="divide-y divide-gray-100">
-                @for (client of clients(); track client.id) {
-                  <a [routerLink]="['/clienti', client.id]"
-                    class="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer">
-                    <div class="flex items-center gap-4">
-                      <div class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
-                        {{ client.firstName.charAt(0) }}{{ client.lastName.charAt(0) }}
-                      </div>
-                      <div>
-                        <div class="font-medium text-gray-900">{{ client.firstName }} {{ client.lastName }}</div>
-                        <div class="text-sm text-gray-500">
-                          @if (client.email) {
-                            {{ client.email }}
-                          }
-                          @if (client.email && client.phone) {
-                            <span class="mx-1">·</span>
-                          }
-                          @if (client.phone) {
-                            {{ client.phone }}
-                          }
-                        </div>
-                      </div>
+            <app-entity-list>
+              @for (client of clients(); track client.id) {
+                <app-entity-list-row [route]="['/clienti', client.id]">
+                  <div class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700 shrink-0">
+                    {{ client.firstName.charAt(0) }}{{ client.lastName.charAt(0) }}
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <div class="font-medium text-[var(--text-primary)] truncate">{{ client.firstName }} {{ client.lastName }}</div>
+                    <div class="text-sm text-[var(--text-secondary)] truncate">
+                      @if (client.email) {
+                        {{ client.email }}
+                      }
+                      @if (client.email && client.phone) {
+                        <span class="mx-1">·</span>
+                      }
+                      @if (client.phone) {
+                        {{ client.phone }}
+                      }
                     </div>
-                    <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                    </svg>
-                  </a>
-                }
-              </div>
-            </app-card>
+                  </div>
+                </app-entity-list-row>
+              }
+            </app-entity-list>
 
             <!-- Pagination -->
             @if (totalPages() > 1) {

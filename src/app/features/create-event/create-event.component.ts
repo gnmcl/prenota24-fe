@@ -119,7 +119,7 @@ export class CreateEventComponent {
 
     const startTime = this.form.get('startTime')?.value;
     const endTime = this.form.get('endTime')?.value;
-    
+
     if (startTime && endTime && startTime >= endTime) {
       this.serverError = "L'orario di fine deve essere dopo l'orario di inizio";
       return;
