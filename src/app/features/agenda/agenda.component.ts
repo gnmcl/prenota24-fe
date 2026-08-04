@@ -14,6 +14,8 @@ import { PageShellComponent } from '../../shared/components/page-shell/page-shel
 import { CardComponent } from '../../shared/components/card/card.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { BadgeComponent } from '../../shared/components/badge/badge.component';
+import { AlertComponent } from '../../shared/components/alert/alert.component';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { AppointmentService } from '../../core/services/appointment.service';
 import { ProfessionalService } from '../../core/services/professional.service';
 import { ServiceTypeService } from '../../core/services/service-type.service';
@@ -31,7 +33,7 @@ import type {
 const HOUR_START = 7;
 const HOUR_END = 21;
 const SLOT_HEIGHT = 60; // px per hour
-const SNAP_MINUTES = 5; // snap to 5 min grid
+const SNAP_MINUTES = 15;
 const MONTHS_IT = [
   'Gennaio',
   'Febbraio',
@@ -55,10 +57,35 @@ interface ProfAvailability {
   exceptions: AvailabilityExceptionResponse[];
 }
 
+type SlotAvailability =
+  | { available: true }
+  | { available: false; message: string };
+
+interface PendingBooking {
+  professionalId: string;
+  professionalName: string;
+  date: string;
+  time: string;
+}
+
+interface UnavailableBlock {
+  topPx: number;
+  heightPx: number;
+  label: string;
+}
+
 @Component({
   selector: 'app-agenda',
   standalone: true,
-  imports: [RouterLink, PageShellComponent, CardComponent, ButtonComponent, BadgeComponent],
+  imports: [
+    RouterLink,
+    PageShellComponent,
+    CardComponent,
+    ButtonComponent,
+    BadgeComponent,
+    AlertComponent,
+    ConfirmDialogComponent,
+  ],
   template: `
     <app-page-shell>
       <div class="mx-auto" [class]="viewMode() === 'calendar' ? 'max-w-full' : 'max-w-4xl'">
@@ -272,6 +299,27 @@ interface ProfAvailability {
           }
         </div>
 
+        @if (bookingFeedback()) {
+          <div class="mb-4">
+            <app-alert
+              variant="info"
+              [message]="bookingFeedback()!"
+              (dismiss)="bookingFeedback.set(null)"
+            />
+          </div>
+        }
+
+        @if (isCheckingBookingSlot()) {
+          <app-card extraClass="mb-4 !p-4">
+            <div class="flex items-center gap-3 text-sm text-[var(--text-secondary)]">
+              <div
+                class="h-5 w-5 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-600"
+              ></div>
+              Verifica della disponibilità dell’orario in corso…
+            </div>
+          </app-card>
+        }
+
         @if (isLoading()) {
           <div class="flex justify-center py-12">
             <div
@@ -364,6 +412,14 @@ interface ProfAvailability {
                 <p class="text-gray-400">Nessun professionista attivo nello studio.</p>
               </app-card>
             } @else {
+              <div class="mb-3 flex items-center gap-2 px-1 text-xs text-[var(--text-secondary)]">
+                <span
+                  aria-hidden="true"
+                  class="h-3 w-5 shrink-0 border border-gray-300/60"
+                  style="background-image: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(156,163,175,0.3) 3px, rgba(156,163,175,0.3) 6px)"
+                ></span>
+                Le fasce tratteggiate non sono prenotabili.
+              </div>
               <div
                 class="rounded-2xl border border-gray-200/80 bg-white overflow-x-auto -mx-4 sm:mx-0 shadow-[var(--shadow-card)]"
               >
@@ -441,14 +497,22 @@ interface ProfAvailability {
                       <!-- Unavailability overlays -->
                       @for (block of getUnavailableBlocks(pro.id); track $index) {
                         <div
-                          class="absolute inset-x-0 z-[2] pointer-events-none"
+                          class="absolute inset-x-0 z-[2] pointer-events-none overflow-hidden"
+                          role="img"
+                          [attr.aria-label]="block.label"
                           [style.top.px]="block.topPx"
                           [style.height.px]="block.heightPx"
                         >
                           <div
-                            class="h-full w-full bg-gray-200/40"
+                            class="flex h-full w-full items-center justify-center bg-gray-200/40 px-1 text-center"
                             style="background-image: repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(156,163,175,0.15) 4px, rgba(156,163,175,0.15) 8px)"
-                          ></div>
+                          >
+                            @if (block.heightPx >= 42) {
+                              <span class="text-[10px] font-medium leading-tight text-gray-500">
+                                {{ block.label }}
+                              </span>
+                            }
+                          </div>
                         </div>
                       }
 
@@ -491,6 +555,16 @@ interface ProfAvailability {
           }
         }
       </div>
+
+      <app-confirm-dialog
+        [open]="pendingBooking() !== null"
+        title="Conferma l’orario selezionato"
+        [message]="bookingConfirmationMessage()"
+        confirmLabel="Continua"
+        confirmVariant="primary"
+        (onCancel)="pendingBooking.set(null)"
+        (onConfirm)="continueBooking()"
+      />
     </app-page-shell>
   `,
 })
@@ -510,6 +584,9 @@ export class AgendaComponent implements OnInit {
   readonly serviceTypes = signal<ServiceTypeResponse[]>([]);
   readonly profAvailabilities = signal<ProfAvailability[]>([]);
   readonly isLoading = signal(true);
+  readonly bookingFeedback = signal<string | null>(null);
+  readonly isCheckingBookingSlot = signal(false);
+  readonly pendingBooking = signal<PendingBooking | null>(null);
 
   // Date picker
   readonly showDatePicker = signal(false);
@@ -522,6 +599,7 @@ export class AgendaComponent implements OnInit {
   readonly hours = Array.from({ length: HOUR_END - HOUR_START }, (_, i) => HOUR_START + i);
   readonly calendarHeight = (HOUR_END - HOUR_START) * SLOT_HEIGHT;
   isMobile = false;
+  private bookingSlotCheckId = 0;
 
   readonly dayAppointments = computed(() => {
     const d = this.currentDate();
@@ -712,6 +790,7 @@ export class AgendaComponent implements OnInit {
   }
 
   goToDate(date: string): void {
+    this.resetBookingSelection();
     this.currentDate.set(date);
     this.loadAppointments();
   }
@@ -725,30 +804,59 @@ export class AgendaComponent implements OnInit {
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
     const clickY = event.clientY - rect.top;
 
-    // Convert pixel position to the top edge of the clicked 15-minute slot
+    // Convert pixel position to the top edge of the clicked time slot.
     const totalMinutesFromStart = (clickY / SLOT_HEIGHT) * 60;
     const rawMinutes = HOUR_START * 60 + totalMinutesFromStart;
-    // Math.round instead of Math.floor: sub-pixel clicks at the exact boundary of the
-    // available window (e.g. y=119.9px → 8:59.9 → floor=8:45 rejected) now round to
-    // the nearest slot (9:00) instead of silently failing.
-    const snappedMinutes = Math.round(rawMinutes / 15) * 15;
+    const snappedMinutes = Math.round(rawMinutes / SNAP_MINUTES) * SNAP_MINUTES;
     const hours = Math.floor(snappedMinutes / 60);
     const minutes = snappedMinutes % 60;
 
-    // Check if this time is within the professional's availability
-    if (!this.isTimeAvailable(professionalId, hours, minutes)) return;
+    const availability = this.getSlotAvailability(professionalId, hours, minutes);
+    if (!availability.available) {
+      this.pendingBooking.set(null);
+      this.bookingFeedback.set(availability.message);
+      return;
+    }
 
     const date = this.currentDate();
     const time = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    this.bookingFeedback.set(null);
+    this.pendingBooking.set(null);
+    this.verifyBookingSlot(professionalId, date, time);
+  }
+
+  continueBooking(): void {
+    const booking = this.pendingBooking();
+    if (!booking) return;
+
     this.router.navigate(['/appuntamenti/nuovo'], {
-      queryParams: { date, time, professionalId },
+      queryParams: {
+        date: booking.date,
+        time: booking.time,
+        professionalId: booking.professionalId,
+      },
     });
   }
 
-  /** Check if a specific time is within the professional's availability for current day */
-  isTimeAvailable(professionalId: string, hour: number, minute: number): boolean {
+  private getSlotAvailability(
+    professionalId: string,
+    hour: number,
+    minute: number,
+  ): SlotAvailability {
+    if (hour < HOUR_START || hour >= HOUR_END) {
+      return {
+        available: false,
+        message: `Puoi creare appuntamenti solo tra le ${String(HOUR_START).padStart(2, '0')}:00 e le ${String(HOUR_END).padStart(2, '0')}:00.`,
+      };
+    }
+
     const avail = this.profAvailabilities().find((a) => a.profId === professionalId);
-    if (!avail) return true; // No availability data = available
+    if (!avail) {
+      return {
+        available: false,
+        message: 'La disponibilità del professionista è ancora in caricamento. Riprova tra qualche istante.',
+      };
+    }
 
     const parts = this.currentDate().split('-');
     const dayDate = new Date(+parts[0], +parts[1] - 1, +parts[2]);
@@ -758,27 +866,77 @@ export class AgendaComponent implements OnInit {
     // Check exceptions first
     const exception = avail.exceptions.find((e) => e.date === this.currentDate());
     if (exception) {
-      if (exception.isUnavailableAllDay) return false;
+      if (exception.isUnavailableAllDay) {
+        return { available: false, message: 'Il professionista non è disponibile in questa giornata.' };
+      }
       if (exception.slots.length > 0) {
         const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-        // Time is unavailable if it falls within any exception slot
         const inExcSlot = exception.slots.some(
           (s) => timeStr >= s.startTime && timeStr < s.endTime,
         );
-        if (inExcSlot) return false;
+        if (inExcSlot) {
+          return {
+            available: false,
+            message: 'Questo orario non è disponibile a causa di un’eccezione in agenda.',
+          };
+        }
       }
     }
 
     // Check regular availability
     const slot = avail.slots.find((s) => s.dayOfWeek === dayOfWeek);
-    if (!slot) return false; // No slot for this day = unavailable
+    if (!slot) {
+      return { available: false, message: 'Il professionista non lavora in questa giornata.' };
+    }
 
     const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-    return timeStr >= slot.startTime && timeStr < slot.endTime;
+    if (timeStr < slot.startTime || timeStr >= slot.endTime) {
+      return {
+        available: false,
+        message: `Il professionista è disponibile dalle ${slot.startTime} alle ${slot.endTime}.`,
+      };
+    }
+
+    return { available: true };
+  }
+
+  private verifyBookingSlot(professionalId: string, date: string, time: string): void {
+    const requestId = ++this.bookingSlotCheckId;
+    this.isCheckingBookingSlot.set(true);
+
+    this.profService.getAvailableSlots(professionalId, date, 5).subscribe({
+      next: (slots) => {
+        if (requestId !== this.bookingSlotCheckId) return;
+
+        this.isCheckingBookingSlot.set(false);
+        const isStillAvailable = slots.some((slot) => this.formatSlotTime(slot.start) === time);
+        if (!isStillAvailable) {
+          this.bookingFeedback.set('Questo orario non è più disponibile. Scegline un altro.');
+          return;
+        }
+
+        const professional = this.activeProfessionals().find((pro) => pro.id === professionalId);
+        this.pendingBooking.set({
+          professionalId,
+          professionalName: professional
+            ? `${professional.firstName} ${professional.lastName}`
+            : 'Professionista selezionato',
+          date,
+          time,
+        });
+      },
+      error: () => {
+        if (requestId !== this.bookingSlotCheckId) return;
+        this.isCheckingBookingSlot.set(false);
+        this.bookingFeedback.set(
+          'Non è possibile verificare la disponibilità in questo momento. Riprova tra qualche istante.',
+        );
+      },
+    });
   }
 
   /** Get unavailable time blocks for a professional on the current date (for overlay rendering) */
-  getUnavailableBlocks(professionalId: string): { topPx: number; heightPx: number }[] {
+  getUnavailableBlocks(professionalId: string): UnavailableBlock[] {
     const avail = this.profAvailabilities().find((a) => a.profId === professionalId);
     if (!avail) return [];
 
@@ -790,18 +948,20 @@ export class AgendaComponent implements OnInit {
     // Check for exception
     const exception = avail.exceptions.find((e) => e.date === this.currentDate());
     if (exception?.isUnavailableAllDay) {
-      // Entire day unavailable
-      return [{ topPx: 0, heightPx: this.calendarHeight }];
+      return [{
+        topPx: 0,
+        heightPx: this.calendarHeight,
+        label: exception.reason?.trim() || 'Non disponibile oggi',
+      }];
     }
 
     // If the exception has specific unavailable slots, overlay those on top of regular availability
     const slot = avail.slots.find((s) => s.dayOfWeek === dayOfWeek);
     if (!slot) {
-      // No availability for this day → entire day unavailable
-      return [{ topPx: 0, heightPx: this.calendarHeight }];
+      return [{ topPx: 0, heightPx: this.calendarHeight, label: 'Non lavora oggi' }];
     }
 
-    const blocks: { topPx: number; heightPx: number }[] = [];
+    const blocks: UnavailableBlock[] = [];
     const toMinutes = (t: string) => {
       const [h, m] = t.split(':').map(Number);
       return h * 60 + m;
@@ -818,14 +978,22 @@ export class AgendaComponent implements OnInit {
     if (startMin > calStartMin) {
       const topPx = 0;
       const heightPx = ((startMin - calStartMin) / 60) * SLOT_HEIGHT;
-      blocks.push({ topPx, heightPx });
+      blocks.push({
+        topPx,
+        heightPx,
+        label: `Prenotabile dalle ${this.formatAvailabilityTime(availStart)}`,
+      });
     }
 
     // Block after available time
     if (endMin < calEndMin) {
       const topPx = ((endMin - calStartMin) / 60) * SLOT_HEIGHT;
       const heightPx = ((calEndMin - endMin) / 60) * SLOT_HEIGHT;
-      blocks.push({ topPx, heightPx });
+      blocks.push({
+        topPx,
+        heightPx,
+        label: `Prenotabile fino alle ${this.formatAvailabilityTime(availEnd)}`,
+      });
     }
 
     // Add exception slot blocks (unavailable ranges within the working day)
@@ -836,7 +1004,11 @@ export class AgendaComponent implements OnInit {
         const topPx = ((Math.max(excStartMin, calStartMin) - calStartMin) / 60) * SLOT_HEIGHT;
         const bottomPx = ((Math.min(excEndMin, calEndMin) - calStartMin) / 60) * SLOT_HEIGHT;
         if (bottomPx > topPx) {
-          blocks.push({ topPx, heightPx: bottomPx - topPx });
+          blocks.push({
+            topPx,
+            heightPx: bottomPx - topPx,
+            label: exception.reason?.trim() || 'Non disponibile',
+          });
         }
       }
     }
@@ -909,11 +1081,19 @@ export class AgendaComponent implements OnInit {
   }
 
   private shiftDate(days: number): void {
+    this.resetBookingSelection();
     const parts = this.currentDate().split('-');
     const d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
     d.setDate(d.getDate() + days);
     this.currentDate.set(this.toDateStr(d));
     this.loadAppointments();
+  }
+
+  private resetBookingSelection(): void {
+    this.bookingSlotCheckId++;
+    this.isCheckingBookingSlot.set(false);
+    this.pendingBooking.set(null);
+    this.bookingFeedback.set(null);
   }
 
   private loadAppointments(): void {
@@ -948,6 +1128,35 @@ export class AgendaComponent implements OnInit {
 
   formatTime(iso: string): string {
     return new Date(iso).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  formatDate(date: string): string {
+    const [year, month, day] = date.split('-').map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString('it-IT', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+    });
+  }
+
+  bookingConfirmationMessage(): string {
+    const booking = this.pendingBooking();
+    if (!booking) return '';
+
+    return `${booking.professionalName} · ${booking.time} · ${this.formatDate(booking.date)}. La disponibilità definitiva sarà verificata dopo la scelta del servizio.`;
+  }
+
+  private formatSlotTime(iso: string): string {
+    return new Date(iso).toLocaleTimeString('it-IT', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: this.studioService.studio()?.timezone ?? 'Europe/Rome',
+    });
+  }
+
+  private formatAvailabilityTime(time: string): string {
+    const [hours = '00', minutes = '00'] = time.split(':');
+    return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
   }
 
   statusLabel(status: AppointmentStatus): string {

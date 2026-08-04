@@ -12,14 +12,21 @@ import { ButtonComponent } from '../button/button.component';
           class="absolute inset-0 bg-black/40 backdrop-blur-sm"
           (click)="onCancel.emit()"
         ></div>
-        <div class="relative mx-4 w-full max-w-sm rounded-2xl border border-[var(--surface-card-border)] bg-[var(--surface-card)] p-6 shadow-2xl">
-          <h3 class="text-lg font-bold text-[var(--text-primary)]">{{ title }}</h3>
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="confirm-dialog-title"
+          class="relative mx-4 w-full max-w-sm rounded-2xl border border-[var(--surface-card-border)] bg-[var(--surface-card)] p-6 shadow-2xl"
+        >
+          <h3 id="confirm-dialog-title" class="text-lg font-bold text-[var(--text-primary)]">
+            {{ title }}
+          </h3>
           <p class="mt-2 text-sm text-[var(--text-secondary)]">{{ message }}</p>
           <div class="mt-6 flex gap-3 justify-end">
             <app-button variant="secondary" (click)="onCancel.emit()" [disabled]="isLoading">
               Annulla
             </app-button>
-            <app-button variant="danger" (click)="onConfirm.emit()" [isLoading]="isLoading">
+            <app-button [variant]="confirmVariant" (click)="onConfirm.emit()" [isLoading]="isLoading">
               {{ confirmLabel }}
             </app-button>
           </div>
@@ -33,6 +40,7 @@ export class ConfirmDialogComponent {
   @Input() title = '';
   @Input() message = '';
   @Input() confirmLabel = 'Conferma';
+  @Input() confirmVariant: 'primary' | 'danger' = 'danger';
   @Input() isLoading = false;
   @Output() onConfirm = new EventEmitter<void>();
   @Output() onCancel = new EventEmitter<void>();
