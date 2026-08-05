@@ -1,0 +1,9 @@
+{
+  "title": "Registro verticale",
+  "image": ".impeccable/mocks/dashboard-vertical-ledger.png",
+  "approved": true,
+  "approvalRole": "B — struttura primaria",
+  "syntheticData": true,
+  "visualWorld": "Registro di coordinamento",
+  "prompt": "Dashboard desktop Prenota24 ad alta fedeltà. Rail sinistra, utility bar, indice orizzontale di sette giorni e registro cronologico verticale dominante con colonna oraria, righe compatte, stato, durata e azioni. Rail destra con Da confermare, Calendario ed Eventi. La struttura deve trasformarsi naturalmente in una sequenza mobile. Stesso mondo visivo: #F5F6F2, #171A1F, #315CF4, #B8F34A, hairline, sans compatta, nessuna card flottante, ombra, gradiente, glassmorphism, KPI grid o decorazione AI-SaaS."
+}

@@ -1,0 +1,70 @@
+{
+  "title": "Scegli il nuovo mondo visivo di Prenota24",
+  "question": "Quale direzione deve guidare dashboard e futuro design system?",
+  "options": [
+    {
+      "id": "coordination-ledger",
+      "label": "Registro di coordinamento",
+      "kicker": "DIREZIONE PROPOSTA",
+      "lineage": "fogli di coordinamento architettonico e planning di produzione",
+      "thesis": "La giornata di studio diventa un foglio operativo vivo: rigoroso, leggero e immediatamente leggibile.",
+      "palette": ["#F5F6F2", "#171A1F", "#315CF4", "#B8F34A"],
+      "materials": ["carta tecnica fredda", "inchiostro", "segni di registro"],
+      "viewport": "Nessun hero e nessuna griglia di KPI: una testata compatta apre direttamente su agenda temporale, richieste e calendario coordinati da un'unica griglia.",
+      "risk": "Può risultare troppo tecnico se annotazioni e linee superano il contenuto reale.",
+      "sketch": ".impeccable/sketches/coordination-ledger.webp"
+    },
+    {
+      "id": "split-flap-studio",
+      "label": "Tabellone di studio",
+      "lineage": "tabelloni split-flap delle stazioni e sale operative",
+      "thesis": "Appuntamenti e cambi di stato si leggono come partenze ordinate nel tempo.",
+      "case": "Identificazione forte con orari e cambi; chiarezza alta, ma la metafora rischia di dominare il lavoro quotidiano.",
+      "palette": ["#101214", "#F4F5F2", "#F0B429", "#CE4A43"],
+      "materials": ["lamelle opache", "acciaio spazzolato", "lampade di stato"],
+      "viewport": "Una board cronologica domina la vista; richieste e anomalie entrano come righe prioritarie, il resto resta nei pannelli laterali.",
+      "risk": "Se resa letteralmente può sembrare una stazione invece di un gestionale per studi.",
+      "sketch": ".impeccable/sketches/split-flap-studio.webp",
+      "hero": "https://impeccable.style/worlds/cards/signals-instruments-split-flap-concourse-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/signals-instruments-split-flap-concourse.webp"
+    },
+    {
+      "id": "iridescent-edge",
+      "label": "Margine iridescente",
+      "lineage": "bordi sottili di luce nelle nubi iridescenti",
+      "thesis": "Un campo quasi acromatico usa sottili bande cromatiche soltanto dove stato e attenzione cambiano.",
+      "case": "Chiarezza eccellente e grande leggerezza; l'identificazione con il lavoro di studio è più astratta.",
+      "palette": ["#F8FAF9", "#273038", "#6ED6B7", "#9E7AE8"],
+      "materials": ["bianco minerale", "grafite", "bande cromatiche sottili"],
+      "viewport": "Agenda e calendario respirano su un campo continuo, con il colore confinato a bordi di stato e selezioni.",
+      "risk": "Può diventare anonimo se il sistema di bordi non resta riconoscibile e disciplinato.",
+      "sketch": ".impeccable/sketches/iridescent-edge.webp",
+      "hero": "https://impeccable.style/worlds/cards/clouds-storms-auroras-iridescent-cloud-edge-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/clouds-storms-auroras-iridescent-cloud-edge.webp"
+    },
+    {
+      "id": "graphite-console",
+      "label": "Console grafite",
+      "lineage": "superfici operative dark-first divise da giunti sottili",
+      "thesis": "Una postazione persistente e compatta rende stato, focus e azioni impossibili da confondere.",
+      "case": "Chiarezza operativa forte; perde identificazione in studi luminosi e rischia un tono da strumento per sviluppatori.",
+      "palette": ["#17191D", "#24272D", "#F0F2F4", "#70D6A8"],
+      "materials": ["grafite", "giunti hairline", "accenti di stato"],
+      "viewport": "Navigazione e pannelli persistono; la giornata si ricompone dentro una superficie continua senza card galleggianti.",
+      "risk": "Il dark-first può affaticare durante l'uso diurno e allontanare il prodotto dal contesto degli studi.",
+      "sketch": ".impeccable/sketches/graphite-console.png",
+      "hero": "https://impeccable.style/worlds/cards/digital-design-canon-dark-first-developer-console-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/digital-design-canon-dark-first-developer-console.webp"
+    }
+  ],
+  "reroll": true,
+  "canon": true,
+  "canonCard": {
+    "label": "Standard della categoria",
+    "thesis": "Dashboard SaaS familiare, eseguita con rigore: sidebar, KPI e card modulari.",
+    "viewport": "Sidebar, riga di metriche, agenda e calendario in card separate con un solo accento blu.",
+    "risk": "È chiara ma coincide con il linguaggio chunky e intercambiabile che il redesign vuole superare.",
+    "sketch": ".impeccable/sketches/canon.webp"
+  },
+  "steer": true
+}

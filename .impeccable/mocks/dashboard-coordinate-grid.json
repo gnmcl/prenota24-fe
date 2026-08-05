@@ -1,0 +1,8 @@
+{
+  "title": "Griglia coordinata",
+  "image": ".impeccable/mocks/dashboard-coordinate-grid.png",
+  "approved": false,
+  "syntheticData": true,
+  "visualWorld": "Registro di coordinamento",
+  "prompt": "Dashboard desktop Prenota24 ad alta fedeltà. Rail sinistra da 72px, utility bar compatta e unica griglia continua: agenda orizzontale per professionisti al 56%, coda Da confermare al 27%, calendario ed eventi al 17%. Carta tecnica fredda #F5F6F2, inchiostro #171A1F, cobalto #315CF4, verde registro #B8F34A. Sans compatta, numeri tabulari, regole da 1px, superfici opache. Vietati hero, KPI card, ombre, gradienti, vetro, pill decorative, grafici fittizi e pattern SaaS generici. Implementabile con HTML/CSS/SVG semantici."
+}

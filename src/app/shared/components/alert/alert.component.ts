@@ -8,7 +8,7 @@ import { NgClass } from '@angular/common';
   template: `
     <div
       role="alert"
-      class="flex items-start justify-between rounded-lg border px-4 py-3 text-sm"
+      class="flex items-start justify-between rounded-[var(--radius-lg)] border px-4 py-3 text-sm"
       [ngClass]="variantClasses"
     >
       <span>{{ message }}</span>
@@ -18,7 +18,7 @@ import { NgClass } from '@angular/common';
           (click)="dismiss.emit()"
           class="ml-4 font-medium underline hover:no-underline"
         >
-          Dismiss
+          Chiudi
         </button>
       }
     </div>

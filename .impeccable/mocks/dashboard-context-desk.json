@@ -1,0 +1,9 @@
+{
+  "title": "Tavolo contestuale",
+  "image": ".impeccable/mocks/dashboard-context-desk.png",
+  "approved": true,
+  "approvalRole": "C — comportamento contestuale",
+  "syntheticData": true,
+  "visualWorld": "Registro di coordinamento",
+  "prompt": "Dashboard desktop Prenota24 ad alta fedeltà orientata all'azione in-place. Rail e utility bar compatte; indice settimanale; superficie unica divisa da hairline: Attenzione 22%, agenda temporale 48%, pannello Dettagli appuntamento 30% con conferma, modifica, annullamento e calendario. Una linea cobalto collega l'appuntamento selezionato ai dettagli. Stesso mondo #F5F6F2, #171A1F, #315CF4, #B8F34A; geometria squadrata, sans compatta, niente modali, card, ombre, gradienti, pill decorative o cliché AI dashboard."
+}

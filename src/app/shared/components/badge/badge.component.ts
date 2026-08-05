@@ -13,7 +13,7 @@ export class BadgeComponent {
   readonly variant = input<'indigo' | 'green' | 'red' | 'amber' | 'gray' | 'purple' | 'blue'>('gray');
 
   classes() {
-    const base = 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold';
+    const base = 'inline-flex items-center rounded-sm border border-current/20 px-2 py-0.5 text-[11px] font-semibold leading-4';
     const map: Record<string, string> = {
       indigo: 'bg-[var(--status-accent-bg)] text-[var(--status-accent-text)]',
       green: 'bg-[var(--status-success-bg)] text-[var(--status-success-text)]',

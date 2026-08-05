@@ -4,7 +4,7 @@ import { Component, Input } from '@angular/core';
   selector: 'app-card',
   standalone: true,
   template: `
-    <div [class]="'rounded-2xl border bg-[var(--surface-card)] border-[var(--surface-card-border)] p-6 sm:p-8 shadow-[var(--shadow-card)] transition-shadow duration-200 hover:shadow-[var(--shadow-card-hover)] ' + extraClass">
+    <div [class]="'rounded-[var(--radius-lg)] border bg-[var(--surface-card)] border-[var(--surface-card-border)] p-4 sm:p-5 ' + extraClass">
       <ng-content />
     </div>
   `,

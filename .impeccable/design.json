@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-05T00:00:00Z",
+  "title": "Design System: Prenota24",
+  "extensions": {
+    "colorMeta": {
+      "cobalt": {
+        "role": "primary",
+        "displayName": "Cobalto operativo",
+        "canonical": "#315CF4",
+        "tonalRamp": ["#07143F", "#10246D", "#19379B", "#234BC9", "#315CF4", "#7893FF", "#BAC7FF", "#EEF1FF"]
+      },
+      "register-green": {
+        "role": "tertiary",
+        "displayName": "Verde registro",
+        "canonical": "#B8F34A",
+        "tonalRamp": ["#1D2D05", "#35500B", "#4F7512", "#6E9E1C", "#91CA2D", "#B8F34A", "#D8FF8B", "#F3FFD9"]
+      },
+      "technical-paper": {
+        "role": "neutral",
+        "displayName": "Carta tecnica",
+        "canonical": "#F5F6F2",
+        "tonalRamp": ["#171A1F", "#353A3A", "#5B625A", "#81887E", "#A8AEA5", "#CDD1CA", "#E7E9E4", "#F5F6F2"]
+      },
+      "charcoal": {
+        "role": "neutral",
+        "displayName": "Carbone",
+        "canonical": "#171A1F",
+        "tonalRamp": ["#101216", "#171A1F", "#30353A", "#50575A", "#747B78", "#A2A8A1", "#D1D5CE", "#F1F3ED"]
+      }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Headline operativo", "purpose": "Titoli di pagina compatti, senza voce display separata." },
+      "body": { "displayName": "Testo di lavoro", "purpose": "Contenuto operativo e azioni." },
+      "label": { "displayName": "Etichetta di registro", "purpose": "Colonne, termini, misure e stati." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "state-fast", "value": "160ms ease", "purpose": "Hover, focus e cambi di stato dei controlli." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Azione principale compatta e inequivocabile.",
+      "html": "<button class=\"ds-btn-primary\">CONFERMA</button>",
+      "css": ".ds-btn-primary{min-height:40px;padding:10px 16px;border:1px solid var(--color-primary);border-radius:6px;background:var(--color-primary);color:#fff;font:600 14px 'Public Sans',sans-serif;transition:background-color 160ms ease,border-color 160ms ease}.ds-btn-primary:hover{background:#2345C8;border-color:#2345C8}.ds-btn-primary:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Azione secondaria sul foglio di lavoro.",
+      "html": "<button class=\"ds-btn-secondary\">APRI SCHEDA</button>",
+      "css": ".ds-btn-secondary{min-height:40px;padding:10px 16px;border:1px solid #BFC4BA;border-radius:6px;background:#FBFCF8;color:#171A1F;font:600 14px 'Public Sans',sans-serif;transition:background-color 160ms ease}.ds-btn-secondary:hover{background:#ECEFE8}.ds-btn-secondary:focus-visible{outline:2px solid #315CF4;outline-offset:2px}"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "description": "Stato reale, compatto e quasi squadrato.",
+      "html": "<span class=\"ds-badge\">CONFERMATO</span>",
+      "css": ".ds-badge{display:inline-flex;align-items:center;padding:2px 8px;border:1px solid rgba(49,94,19,.2);border-radius:2px;background:#E2F5C0;color:#315E13;font:600 11px/16px 'Public Sans',sans-serif}"
+    },
+    {
+      "name": "Register Surface",
+      "kind": "custom",
+      "refersTo": "register-surface",
+      "description": "Modulo piatto che partecipa a una griglia hairline condivisa.",
+      "html": "<section class=\"ds-register\"><h3>Dettaglio appuntamento</h3><p>Contenuto operativo</p></section>",
+      "css": ".ds-register{padding:16px;background:#FBFCF8;color:#171A1F;font-family:'Public Sans',sans-serif}.ds-register h3{margin:0 0 4px;font-size:14px;font-weight:600}.ds-register p{margin:0;color:#5B625A;font-size:13px}"
+    },
+    {
+      "name": "Navigation Item",
+      "kind": "nav",
+      "description": "Voce rail con stato attivo funzionale.",
+      "html": "<a class=\"ds-nav-active\" href=\"#\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M3 12l9-9 9 9M5.25 9.75V21h13.5V9.75\"/></svg><span>Dashboard</span></a>",
+      "css": ".ds-nav-active{display:flex;min-height:44px;align-items:center;gap:12px;padding:0 12px;border-radius:6px;background:#E3E9FF;color:#315CF4;font:500 13px 'Public Sans',sans-serif;text-decoration:none}.ds-nav-active svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.65}.ds-nav-active:hover{background:#DDE5FF}.ds-nav-active:focus-visible{outline:2px solid #315CF4;outline-offset:2px}"
+    },
+    {
+      "name": "Selected Appointment Row",
+      "kind": "custom",
+      "description": "Riga tabulare selezionata che mantiene il contesto.",
+      "html": "<button class=\"ds-appointment-row\"><strong>09:30</strong><span><b>Andrea Conti</b><small>Consulenza</small></span><em>60′</em></button>",
+      "css": ".ds-appointment-row{display:grid;width:100%;grid-template-columns:64px 1fr 48px;align-items:center;gap:16px;min-height:72px;padding:12px 16px;border:0;border-bottom:1px solid #D5D8D0;background:#E3E9FF;color:#171A1F;text-align:left;font:400 14px 'Public Sans',sans-serif}.ds-appointment-row span{display:grid;gap:3px}.ds-appointment-row small{color:#5B625A}.ds-appointment-row em{text-align:right;font-style:normal;color:#5B625A}.ds-appointment-row:hover{background:#DDE5FF}.ds-appointment-row:focus-visible{outline:2px solid #315CF4;outline-offset:-2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Registro di coordinamento",
+    "overview": "Un sistema operativo continuo per lo studio: denso, leggibile e piatto. La qualità viene da griglia, tipografia, allineamento e stati reali, non da chrome decorativo.",
+    "keyCharacteristics": ["griglia hairline continua", "Public Sans compatta", "dati tabulari", "cobalto funzionale", "verde registro raro", "nessuna ombra"],
+    "rules": [
+      { "name": "Functional Accent", "body": "Cobalto per azione e selezione; verde registro per attenzione e presenza.", "section": "colors" },
+      { "name": "Flat By Construction", "body": "Profondità tramite tono e hairline, mai tramite ombre decorative.", "section": "elevation" }
+    ],
+    "dos": ["Usare superfici a registro per moduli coordinati.", "Espandere il dettaglio in-place su mobile.", "Mantenere orari e durate tabulari."],
+    "donts": ["Non usare mosaici KPI o card annidate.", "Non usare gradienti, glassmorphism o fake charts.", "Non usare pill decorative o emoji come icone."]
+  }
+}

@@ -20,7 +20,8 @@ import { Component, Input } from '@angular/core';
   `,
 })
 export class ButtonComponent {
-  @Input() variant: 'primary' | 'secondary' | 'danger' = 'primary';
+  @Input() variant: 'primary' | 'secondary' | 'danger' | 'ghost' = 'primary';
+  @Input() size: 'sm' | 'md' | 'icon' = 'md';
   @Input() isLoading = false;
   @Input() disabled = false;
   @Input() type: 'button' | 'submit' | 'reset' = 'button';
@@ -28,17 +29,25 @@ export class ButtonComponent {
 
   get buttonClasses(): string {
     const base =
-      'inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-card)] disabled:cursor-not-allowed';
+      'inline-flex items-center justify-center gap-2 rounded-[var(--radius-lg)] border text-sm font-semibold leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--surface-card)] disabled:cursor-not-allowed disabled:opacity-55';
+
+    const sizes: Record<string, string> = {
+      sm: 'min-h-9 px-3 py-2 text-xs',
+      md: 'min-h-10 px-4 py-2.5',
+      icon: 'h-10 w-10 p-0',
+    };
 
     const variants: Record<string, string> = {
       primary:
-        'bg-[var(--button-primary-bg)] text-[var(--text-inverted)] hover:bg-[var(--button-primary-hover)] focus-visible:ring-[var(--color-primary)] disabled:bg-[var(--button-primary-disabled)]',
+        'border-[var(--button-primary-bg)] bg-[var(--button-primary-bg)] text-white hover:border-[var(--button-primary-hover)] hover:bg-[var(--button-primary-hover)] disabled:bg-[var(--button-primary-disabled)]',
       secondary:
-        'bg-[var(--button-secondary-bg)] text-[var(--text-primary)] border border-[var(--button-secondary-border)] hover:bg-[var(--button-secondary-hover)] focus-visible:ring-[var(--surface-card-border)] disabled:opacity-60',
+        'border-[var(--button-secondary-border)] bg-[var(--button-secondary-bg)] text-[var(--text-primary)] hover:bg-[var(--button-secondary-hover)]',
       danger:
-        'bg-[var(--button-danger-bg)] text-[var(--text-inverted)] hover:bg-[var(--button-danger-hover)] focus-visible:ring-[var(--button-danger-bg)] disabled:bg-[var(--button-danger-disabled)]',
+        'border-[var(--button-danger-bg)] bg-[var(--button-danger-bg)] text-white hover:bg-[var(--button-danger-hover)] disabled:bg-[var(--button-danger-disabled)]',
+      ghost:
+        'border-transparent bg-transparent text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]',
     };
 
-    return `${base} ${variants[this.variant]} ${this.extraClass}`;
+    return `${base} ${sizes[this.size]} ${variants[this.variant]} ${this.extraClass}`;
   }
 }
