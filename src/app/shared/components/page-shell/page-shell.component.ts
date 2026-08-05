@@ -2,6 +2,7 @@ import { Component, computed, HostListener, inject, signal } from '@angular/core
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { PendingAppointmentsService } from '../../../core/services/pending-appointments.service';
+import { NavigationLayoutService } from '../../../core/services/navigation-layout.service';
 import { StudioService } from '../../../core/services/studio.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { ButtonComponent } from '../button/button.component';
@@ -20,57 +21,89 @@ interface NavItem {
     <div class="min-h-screen bg-[var(--surface-page)] pb-20 md:pb-0">
       @if (authService.user()) {
         <aside
-          class="fixed inset-y-0 left-0 z-40 hidden w-[72px] flex-col border-r border-[var(--surface-header-border)] bg-[var(--surface-card)] md:flex xl:w-60"
+          [class]="sidebarClasses()"
           aria-label="Navigazione principale"
         >
           <a
             [routerLink]="homeLink()"
-            class="flex h-16 items-center border-b border-[var(--surface-header-border)] px-4 xl:px-5"
+            [class]="sidebarLogoClasses()"
             aria-label="Prenota24, dashboard"
           >
             <span class="grid h-9 w-9 shrink-0 place-items-center bg-[var(--color-register)] text-[11px] font-bold tracking-[-0.04em] text-[#171A1F]">P24</span>
-            <span class="ml-3 hidden text-[15px] font-bold tracking-[-0.02em] text-[var(--text-primary)] xl:block">PRENOTA24</span>
+            @if (!navigationLayoutService.isSidebarCollapsed()) {
+              <span class="ml-3 hidden text-[15px] font-bold tracking-[-0.02em] text-[var(--text-primary)] xl:block">PRENOTA24</span>
+            }
           </a>
 
-          <nav class="flex flex-1 flex-col gap-1 overflow-y-auto px-2 py-4 xl:px-3">
+          <div class="hidden border-b border-[var(--surface-header-border)] p-2 xl:block">
+            <app-button
+              variant="ghost"
+              size="sm"
+              extraClass="w-full"
+              (click)="navigationLayoutService.toggleSidebar()"
+            >
+              <svg class="h-[18px] w-[18px] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.65" aria-hidden="true">
+                @if (navigationLayoutService.isSidebarCollapsed()) {
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7" />
+                } @else {
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m15 5-7 7 7 7" />
+                }
+              </svg>
+              @if (navigationLayoutService.isSidebarCollapsed()) {
+                <span class="sr-only">Espandi menu</span>
+              } @else {
+                <span>Riduci menu</span>
+              }
+            </app-button>
+          </div>
+
+          <nav class="flex flex-1 flex-col gap-1 overflow-y-auto px-2 py-4">
             @for (item of navItems(); track item.path) {
               <a
                 [routerLink]="item.path"
                 routerLinkActive="bg-[var(--surface-active-nav)] text-[var(--color-primary)]"
                 [routerLinkActiveOptions]="{ exact: item.path === '/dashboard' || item.path === '/pro/dashboard' }"
-                class="group relative flex min-h-11 items-center justify-center rounded-[var(--radius-lg)] px-3 text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] xl:justify-start xl:gap-3"
+                [class]="sidebarNavItemClasses()"
                 [attr.title]="item.label"
               >
                 <svg class="h-[18px] w-[18px] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.65" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="item.icon" />
                 </svg>
-                <span class="hidden text-[13px] font-medium xl:block">{{ item.label }}</span>
+                @if (!navigationLayoutService.isSidebarCollapsed()) {
+                  <span class="hidden text-[13px] font-medium xl:block">{{ item.label }}</span>
+                }
                 @if (isAppointmentsPath(item.path) && pendingService.pendingCount() > 0) {
-                  <span class="absolute right-2 top-2 h-2 w-2 bg-[var(--color-register)] ring-1 ring-[var(--text-primary)] xl:static xl:ml-auto xl:h-auto xl:min-w-5 xl:px-1 xl:py-0.5 xl:text-center xl:text-[10px] xl:font-bold xl:leading-4 xl:text-[#171A1F] xl:ring-0">
-                    <span class="hidden xl:inline">{{ pendingService.pendingCount() }}</span>
-                  </span>
+                  @if (navigationLayoutService.isSidebarCollapsed()) {
+                    <span class="absolute right-2 top-2 h-2 w-2 bg-[var(--color-register)] ring-1 ring-[var(--text-primary)]"></span>
+                  } @else {
+                    <span class="absolute right-2 top-2 h-2 w-2 bg-[var(--color-register)] ring-1 ring-[var(--text-primary)] xl:static xl:ml-auto xl:h-auto xl:min-w-5 xl:px-1 xl:py-0.5 xl:text-center xl:text-[10px] xl:font-bold xl:leading-4 xl:text-[#171A1F] xl:ring-0">
+                      <span class="hidden xl:inline">{{ pendingService.pendingCount() }}</span>
+                    </span>
+                  }
                 }
               </a>
             }
           </nav>
 
-          <div class="border-t border-[var(--surface-header-border)] p-2 xl:p-3">
+          <div class="border-t border-[var(--surface-header-border)] p-2">
             <a
               routerLink="/settings"
               routerLinkActive="bg-[var(--surface-active-nav)] text-[var(--color-primary)]"
-              class="flex min-h-11 items-center justify-center rounded-[var(--radius-lg)] px-3 text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] xl:justify-start xl:gap-3"
+              [class]="sidebarNavItemClasses()"
               title="Impostazioni"
             >
               <svg class="h-[18px] w-[18px] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.65" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <span class="hidden text-[13px] font-medium xl:block">Impostazioni</span>
+              @if (!navigationLayoutService.isSidebarCollapsed()) {
+                <span class="hidden text-[13px] font-medium xl:block">Impostazioni</span>
+              }
             </a>
           </div>
         </aside>
       }
 
-      <div [class]="authService.user() ? 'md:pl-[72px] xl:pl-60' : ''">
+      <div [class]="contentClasses()">
         <header class="sticky top-0 z-30 h-14 border-b border-[var(--surface-header-border)] bg-[var(--surface-header)] md:h-16">
           <div class="flex h-full items-center justify-between px-4 sm:px-5 lg:px-7">
             <a [routerLink]="homeLink()" class="flex items-center gap-2.5 md:hidden" aria-label="Prenota24, dashboard">
@@ -196,9 +229,35 @@ export class PageShellComponent {
   readonly studioService = inject(StudioService);
   readonly themeService = inject(ThemeService);
   readonly pendingService = inject(PendingAppointmentsService);
+  readonly navigationLayoutService = inject(NavigationLayoutService);
   private readonly router = inject(Router);
   readonly mobileMenuOpen = signal(false);
   readonly studioDropdownOpen = signal(false);
+
+  readonly sidebarClasses = computed(() => {
+    const width = this.navigationLayoutService.isSidebarCollapsed() ? '' : 'xl:w-60';
+    return `fixed inset-y-0 left-0 z-40 hidden w-[72px] flex-col border-r border-[var(--surface-header-border)] bg-[var(--surface-card)] transition-[width] duration-200 ease-out md:flex ${width}`;
+  });
+
+  readonly sidebarLogoClasses = computed(() => {
+    const alignment = this.navigationLayoutService.isSidebarCollapsed()
+      ? 'justify-center px-0'
+      : 'px-4 xl:px-5';
+    return `flex h-16 items-center border-b border-[var(--surface-header-border)] ${alignment}`;
+  });
+
+  readonly sidebarNavItemClasses = computed(() => {
+    const alignment = this.navigationLayoutService.isSidebarCollapsed()
+      ? 'justify-center'
+      : 'justify-center xl:justify-start xl:gap-3';
+    return `group relative flex min-h-11 items-center rounded-[var(--radius-lg)] px-3 text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] ${alignment}`;
+  });
+
+  readonly contentClasses = computed(() => {
+    if (!this.authService.user()) return '';
+    const desktopPadding = this.navigationLayoutService.isSidebarCollapsed() ? '' : 'xl:pl-60';
+    return `md:pl-[72px] transition-[padding] duration-200 ease-out ${desktopPadding}`;
+  });
 
   constructor() {
     const user = this.authService.user();
@@ -244,7 +303,7 @@ export class PageShellComponent {
       { path: '/dashboard', label: 'Dashboard', icon: 'M3 12l9-9 9 9M5.25 9.75V21h13.5V9.75' },
       { path: '/appuntamenti', label: 'Appuntamenti', icon: 'M8 3v3m8-3v3M4.5 9h15M5 5.5h14a1 1 0 011 1V20H4V6.5a1 1 0 011-1z' },
       { path: '/clienti', label: 'Clienti', icon: 'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2m7-10a4 4 0 100-8 4 4 0 000 8zm13 10v-2a4 4 0 00-3-3.87m-3-11.96a4 4 0 010 7.75' },
-      { path: '/professionisti', label: 'Team', icon: 'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2m3-8a4 4 0 100-8 4 4 0 000 8zm13 10v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75' },
+      { path: '/professionisti', label: 'Team', icon: 'M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.203-.576-5.957-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197A5.971 5.971 0 006 18.719M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z' },
       { path: '/servizi', label: 'Servizi', icon: 'M4 7h16M7 4v16m10-16v16M4 17h16' },
       { path: '/agenda', label: 'Agenda', icon: 'M9 5H6a2 2 0 00-2 2v12h16V7a2 2 0 00-2-2h-3M9 5a3 3 0 006 0M9 12h6m-6 4h6' },
       { path: '/eventi', label: 'Eventi', icon: 'M12 3l2.6 5.3 5.9.9-4.25 4.15 1 5.85L12 16.45 6.75 19.2l1-5.85L3.5 9.2l5.9-.9L12 3z' },

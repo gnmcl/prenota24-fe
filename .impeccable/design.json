@@ -80,7 +80,7 @@
     {
       "name": "Navigation Item",
       "kind": "nav",
-      "description": "Voce rail con stato attivo funzionale.",
+      "description": "Voce del rail desktop collassabile, con stato attivo funzionale e modalità icon-only a 72px.",
       "html": "<a class=\"ds-nav-active\" href=\"#\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M3 12l9-9 9 9M5.25 9.75V21h13.5V9.75\"/></svg><span>Dashboard</span></a>",
       "css": ".ds-nav-active{display:flex;min-height:44px;align-items:center;gap:12px;padding:0 12px;border-radius:6px;background:#E3E9FF;color:#315CF4;font:500 13px 'Public Sans',sans-serif;text-decoration:none}.ds-nav-active svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.65}.ds-nav-active:hover{background:#DDE5FF}.ds-nav-active:focus-visible{outline:2px solid #315CF4;outline-offset:2px}"
     },
@@ -95,7 +95,7 @@
   "narrative": {
     "northStar": "Registro di coordinamento",
     "overview": "Un sistema operativo continuo per lo studio: denso, leggibile e piatto. La qualità viene da griglia, tipografia, allineamento e stati reali, non da chrome decorativo.",
-    "keyCharacteristics": ["griglia hairline continua", "Public Sans compatta", "dati tabulari", "cobalto funzionale", "verde registro raro", "nessuna ombra"],
+    "keyCharacteristics": ["griglia hairline continua", "rail desktop collassabile", "Public Sans compatta", "dati tabulari", "cobalto funzionale", "verde registro raro", "nessuna ombra"],
     "rules": [
       { "name": "Functional Accent", "body": "Cobalto per azione e selezione; verde registro per attenzione e presenza.", "section": "colors" },
       { "name": "Flat By Construction", "body": "Profondità tramite tono e hairline, mai tramite ombre decorative.", "section": "elevation" }

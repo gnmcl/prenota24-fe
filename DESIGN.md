@@ -92,7 +92,7 @@ Public Sans è l’unica famiglia. È un carattere da lavoro con cifre tabulari 
 
 ## Layout
 
-La shell usa un rail da 72px sui tablet e 240px su desktop ampio, con utility bar alta 56–64px. La dashboard ha una larghezza massima di 1500px, indice settimanale orizzontale e una griglia principale registro/contesto da `1fr + 300–330px`.
+La shell usa un rail da 72px sui tablet e un rail desktop collassabile tra 240px e 72px, con utility bar alta 56–64px. La preferenza desktop resta persistente tra le sezioni; il contenuto adegua il proprio offset con la stessa transizione di 200ms. La dashboard ha una larghezza massima di 1500px, indice settimanale orizzontale e una griglia principale registro/contesto da `1fr + 300–330px`.
 
 Le superfici a registro si toccano: un contenitore hairline esterno e separatori da 1px sostituiscono gap e card flottanti. A meno di 1024px il pannello contestuale si apre subito sotto la riga selezionata. Su mobile la navigazione primaria è fissa in basso, le azioni principali sono full-width e l’indice settimanale scorre orizzontalmente senza comprimere i giorni.
 
@@ -120,7 +120,7 @@ Badge compatti, quasi squadrati, con bordo dello stesso colore al 20%. Comunican
 
 ### Navigation
 
-Icone SVG outline a 1.6–1.65px, testo 13px, stato attivo cobalto su fondo azzurro tenue. Tablet mostra il rail icon-only; mobile usa cinque destinazioni in basso e un menu per l’inventario completo.
+Icone SVG outline a 1.6–1.65px, testo 13px, stato attivo cobalto su fondo azzurro tenue. Su desktop il primo controllo riduce il rail da 240px a 72px e lo riapre; nello stato compatto restano icone, tooltip e indicatori. Tablet mostra sempre il rail icon-only; mobile usa cinque destinazioni in basso e un menu per l’inventario completo.
 
 ### Appointment Ledger
 
