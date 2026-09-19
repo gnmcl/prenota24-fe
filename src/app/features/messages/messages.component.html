@@ -1,0 +1,73 @@
+<app-page-shell>
+  <header class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-[var(--text-primary)]">Messaggi</h1>
+      <p class="mt-1 text-sm text-[var(--text-secondary)]">Le conversazioni dello studio, insieme agli appuntamenti.</p>
+    </div>
+    <app-button variant="secondary" (click)="loadList()" [isLoading]="loading()">Aggiorna elenco</app-button>
+  </header>
+
+  <div class="grid min-w-0 gap-6 lg:grid-cols-[minmax(240px,320px)_minmax(0,1fr)]">
+    <section aria-label="Conversazioni" [class.hidden]="!!selectedId()" class="min-w-0 lg:!block">
+      <app-card extraClass="!p-0 overflow-hidden">
+        <div class="border-b border-[var(--surface-card-border)] p-4">
+          <h2 class="font-semibold text-[var(--text-primary)]">Conversazioni dello studio</h2>
+          <p class="mt-1 text-xs text-[var(--text-secondary)]">Apri una chat dal dettaglio di un appuntamento.</p>
+        </div>
+        @if (error()) {
+          <div class="p-4"><app-alert variant="error" [message]="error()" /></div>
+        }
+        @if (loading()) {
+          <p role="status" class="p-6 text-sm text-[var(--text-secondary)]">Caricamento conversazioni…</p>
+        } @else {
+          @for (conversation of conversations(); track conversation.id) {
+            <a [routerLink]="['/messaggi', conversation.id]"
+              [attr.aria-current]="selectedId() === conversation.id ? 'page' : null"
+              [class.bg-[var(--surface-active-nav)]]="selectedId() === conversation.id"
+              class="block min-w-0 border-b border-[var(--surface-card-border)] p-4 transition-colors hover:bg-[var(--surface-hover)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)]">
+              <div class="flex items-center justify-between gap-3">
+                <span class="truncate text-sm font-semibold text-[var(--text-primary)]">{{ conversation.clientName }}</span>
+                @if (conversation.unreadCount > 0) {
+                  <app-badge variant="blue">{{ conversation.unreadCount }} nuovi</app-badge>
+                }
+              </div>
+              <p class="mt-1 truncate text-sm text-[var(--text-secondary)]">{{ conversation.lastMessagePreview || 'Nessun messaggio' }}</p>
+              @if (conversation.lastMessageAt) {
+                <p class="mt-2 text-xs text-[var(--text-secondary)]">{{ formatDate(conversation.lastMessageAt) }}</p>
+              }
+            </a>
+          } @empty {
+            @if (!error()) {
+              <div class="px-4"><app-empty-state icon="" title="Nessuna conversazione" description="Per iniziare, apri un appuntamento e seleziona Apri conversazione." actionLabel="Vai agli appuntamenti" actionRoute="/appuntamenti" /></div>
+            }
+          }
+        }
+        @if (totalPages() > 1) {
+          <div class="flex items-center justify-between gap-3 p-4">
+            <app-button variant="ghost" size="sm" [disabled]="page() === 0 || loading()" (click)="changePage(-1)">Precedenti</app-button>
+            <span class="text-xs text-[var(--text-secondary)]">{{ page() + 1 }} / {{ totalPages() }}</span>
+            <app-button variant="ghost" size="sm" [disabled]="page() + 1 >= totalPages() || loading()" (click)="changePage(1)">Successive</app-button>
+          </div>
+        }
+      </app-card>
+    </section>
+
+    <section aria-label="Conversazione selezionata" [class.hidden]="!selectedId()" class="min-w-0 lg:!block">
+      @if (selectedId()) {
+        <a routerLink="/messaggi" class="mb-4 inline-flex min-h-10 items-center text-sm font-medium text-[var(--color-primary)] lg:hidden">← Tutte le conversazioni</a>
+      }
+      @if (detailLoading()) {
+        <app-card><p role="status" class="py-12 text-center text-sm text-[var(--text-secondary)]">Caricamento messaggi…</p></app-card>
+      } @else if (detailError()) {
+        <app-alert variant="error" [message]="detailError()" />
+        <a routerLink="/messaggi" class="mt-4 inline-block text-sm text-[var(--color-primary)]">Torna alle conversazioni</a>
+      } @else if (selected(); as conversation) {
+        @for (item of [conversation]; track item.id) {
+          <app-message-thread [initialConversation]="item" [appointmentId]="appointmentId()" (changed)="loadList(false)" />
+        }
+      } @else {
+        <app-card><app-empty-state icon="" title="Seleziona una conversazione" description="Leggi le risposte e scrivi ai clienti senza lasciare Prenota24." /></app-card>
+      }
+    </section>
+  </div>
+</app-page-shell>

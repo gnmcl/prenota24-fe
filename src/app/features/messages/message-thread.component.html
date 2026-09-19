@@ -1,0 +1,105 @@
+@if (conversation(); as chat) {
+  <app-card extraClass="!p-0 overflow-hidden">
+    <header class="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--surface-card-border)] p-4 sm:p-5">
+      <div class="min-w-0">
+        <h2 class="break-words text-lg font-semibold text-[var(--text-primary)]">{{ chat.clientName }}</h2>
+        <p class="mt-1 text-sm text-[var(--text-secondary)]">{{ chat.clientPhone || 'Numero di telefono mancante' }}</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <app-badge [variant]="chat.whatsappConfigured ? 'green' : 'gray'">{{ chat.whatsappConfigured ? 'WhatsApp' : 'WhatsApp non collegato' }}</app-badge>
+        <a [routerLink]="['/clienti', chat.clientId]" class="text-sm font-medium text-[var(--color-primary)]">Scheda cliente</a>
+      </div>
+    </header>
+
+    @if (appointmentId()) {
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--surface-card-border)] bg-[var(--surface-hover)] px-4 py-3 text-sm sm:px-5">
+        <span class="text-[var(--text-secondary)]">Conversazione aperta da un appuntamento</span>
+        <a [routerLink]="['/appuntamenti', appointmentId()]" class="font-medium text-[var(--color-primary)]">Vedi appuntamento</a>
+      </div>
+    }
+
+    <div class="p-4 sm:p-5">
+      @if (error()) {
+        <app-alert variant="error" [message]="error()" />
+        <app-button variant="ghost" size="sm" (click)="refresh()">Riprova aggiornamento</app-button>
+      }
+      @if (loading()) {
+        <p role="status" class="py-12 text-center text-sm text-[var(--text-secondary)]">Caricamento messaggi…</p>
+      } @else {
+        @if (hasOlder()) {
+          <div class="mb-5 text-center"><app-button variant="secondary" size="sm" [isLoading]="olderLoading()" (click)="loadOlder()">Carica messaggi precedenti</app-button></div>
+        }
+        <ol #history aria-label="Cronologia messaggi" tabindex="0" (scroll)="markVisibleRead()" (focus)="markVisibleRead()" class="max-h-[45dvh] min-h-32 space-y-5 overflow-y-auto overscroll-contain pr-1 focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] sm:max-h-[480px]">
+          @for (message of messages(); track message.id) {
+            <li [id]="'message-' + message.id" class="flex min-w-0" [class.justify-end]="message.direction === 'OUTBOUND'">
+              <article class="min-w-0 max-w-[95%] sm:max-w-[85%]">
+                <div class="mb-1 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs text-[var(--text-secondary)]">
+                  <span class="font-semibold text-[var(--text-primary)]">{{ message.direction === 'INBOUND' ? chat.clientName : (message.senderName || 'Studio') }}</span>
+                  <time [attr.datetime]="message.createdAt">{{ formatDate(message.createdAt) }}</time>
+                </div>
+                <div [class]="'rounded-[var(--radius-lg)] px-4 py-3 text-sm whitespace-pre-wrap break-words [overflow-wrap:anywhere] ' + (message.direction === 'OUTBOUND' ? 'bg-[var(--surface-active-nav)] text-[var(--text-primary)]' : 'bg-[var(--surface-hover)] text-[var(--text-primary)]')">{{ message.text }}</div>
+                <div class="mt-2 flex flex-wrap items-center gap-2">
+                  @if (message.direction === 'OUTBOUND') {
+                    <app-badge [variant]="statusVariant(message.status)">{{ statusLabel(message.status) }}</app-badge>
+                  }
+                  @if (message.kind === 'TEMPLATE') { <span class="text-xs text-[var(--text-secondary)]">Modello preapprovato</span> }
+                  @if (message.appointmentId) {
+                    <a [routerLink]="['/appuntamenti', message.appointmentId]" class="text-xs font-medium text-[var(--color-primary)]">Appuntamento collegato</a>
+                  }
+                </div>
+                @if (message.errorMessage) { <p class="mt-2 text-xs text-[var(--status-danger-text)]">{{ explain(message.errorMessage) }}</p> }
+                @if (message.status === 'UNKNOWN') {
+                  <p class="mt-2 max-w-md text-xs text-[var(--text-secondary)]">La consegna non è confermata. Verifica prima di inviare nuovamente lo stesso messaggio.</p>
+                }
+              </article>
+            </li>
+          } @empty {
+            @if (!error()) { <app-empty-state icon="" title="La conversazione inizia qui" description="I messaggi inviati e le risposte del cliente appariranno in questo spazio." /> }
+          }
+        </ol>
+      }
+    </div>
+
+    <div class="border-t border-[var(--surface-card-border)] p-4 sm:p-5">
+      @if (blockedReason()) { <div class="mb-4"><app-alert variant="info" [message]="blockedReason()" /></div> }
+      @if (actionError()) { <div class="mb-4"><app-alert variant="error" [message]="actionError()" /></div> }
+      @if (notice()) { <p role="status" class="mb-3 text-sm text-[var(--text-secondary)]">{{ notice() }}</p> }
+
+      <form (ngSubmit)="send('TEXT')">
+        <app-textarea inputId="message-text" label="Messaggio al cliente" [(value)]="draft"
+          [disabled]="!canWrite() || savingConsent() || sending()" describedBy="message-help" placeholder="Scrivi un messaggio…" />
+        <p id="message-help" class="mt-2 text-xs text-[var(--text-secondary)]">Usa questa chat per comunicazioni organizzative. Evita referti e informazioni cliniche.</p>
+        @if (appointmentId()) {
+          <label class="mt-3 flex items-start gap-2 text-sm text-[var(--text-secondary)]" for="include-appointment">
+            <input id="include-appointment" name="includeAppointment" type="checkbox" [(ngModel)]="includeAppointment" class="mt-1 accent-[var(--color-primary)]" />
+            Collega questo messaggio all’appuntamento aperto
+          </label>
+        }
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <span class="text-xs text-[var(--text-secondary)]">{{ draft.length }} / 4000</span>
+          <app-button type="submit" [isLoading]="sending()" [disabled]="!canWrite() || !draft.trim() || savingConsent()">Invia messaggio</app-button>
+        </div>
+      </form>
+      @if (!canWrite() && chat.canSendTemplate) {
+        <div class="mt-4 border-t border-[var(--surface-card-border)] pt-4">
+          <p class="mb-3 text-sm text-[var(--text-secondary)]">Puoi inviare il modello di ricontatto approvato per lo studio. Potrai scrivere liberamente quando il cliente risponde.</p>
+          <app-button variant="secondary" [isLoading]="sending()" [disabled]="savingConsent()" (click)="send('TEMPLATE')">Invia modello di ricontatto</app-button>
+        </div>
+      }
+
+      <details class="mt-5 border-t border-[var(--surface-card-border)] pt-4">
+        <summary class="cursor-pointer text-sm font-medium text-[var(--text-primary)]">Preferenze WhatsApp · {{ chat.whatsappOptIn ? 'consenso registrato' : 'consenso da registrare' }}</summary>
+        <p class="mt-3 text-sm text-[var(--text-secondary)]">Registra la scelta effettiva del cliente prima di inviare messaggi. La modifica viene associata al tuo utente.</p>
+        @if (!chat.whatsappOptIn) {
+          <label for="whatsapp-consent" class="my-3 flex items-start gap-2 text-sm text-[var(--text-primary)]">
+            <input id="whatsapp-consent" type="checkbox" [(ngModel)]="consentConfirmed" class="mt-1 accent-[var(--color-primary)]" />
+            Confermo di aver raccolto il consenso del cliente a ricevere comunicazioni su WhatsApp.
+          </label>
+          <app-button variant="secondary" size="sm" [disabled]="!consentConfirmed || sending()" [isLoading]="savingConsent()" (click)="setConsent(true)">Registra consenso</app-button>
+        } @else {
+          <div class="mt-3"><app-button variant="secondary" size="sm" [isLoading]="savingConsent()" [disabled]="sending()" (click)="setConsent(false)">Registra revoca del consenso</app-button></div>
+        }
+      </details>
+    </div>
+  </app-card>
+}

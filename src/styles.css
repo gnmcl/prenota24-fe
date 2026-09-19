@@ -42,6 +42,11 @@
   --button-danger-bg: #DC2626;
   --button-danger-hover: #B91C1C;
   --button-danger-disabled: #FCA5A5;
+  --button-chat-bg: #15c81b;
+  --button-chat-hover: #11ac16;
+  --button-chat-disabled: #15c81ba8;
+
+
 
   --status-success-bg: #E2F5C0;
   --status-success-text: #315E13;

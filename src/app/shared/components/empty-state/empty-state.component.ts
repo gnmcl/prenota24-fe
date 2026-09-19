@@ -7,9 +7,11 @@ import { RouterLink } from '@angular/router';
   imports: [RouterLink],
   template: `
     <div class="flex flex-col items-start justify-center border-y border-[var(--surface-card-border)] py-10 text-left">
-      <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-[var(--radius-lg)] bg-[var(--surface-subtle)] border border-[var(--surface-subtle-border)]">
-        <span class="text-2xl">{{ icon() }}</span>
-      </div>
+      @if (icon()) {
+        <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-[var(--radius-lg)] bg-[var(--surface-subtle)] border border-[var(--surface-subtle-border)]">
+          <span class="text-2xl">{{ icon() }}</span>
+        </div>
+      }
       <h3 class="text-lg font-semibold text-[var(--text-primary)]">{{ title() }}</h3>
       @if (description()) {
         <p class="mt-1 max-w-lg text-sm text-[var(--text-secondary)]">{{ description() }}</p>

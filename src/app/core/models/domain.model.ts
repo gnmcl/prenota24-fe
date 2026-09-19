@@ -3,6 +3,53 @@
  */
 export type UUID = string & { readonly __brand: 'UUID' };
 
+/* ── Messaging ─────────────────────────── */
+
+export const MESSAGE_STATUSES = ['RECEIVED', 'QUEUED', 'SENDING', 'ACCEPTED', 'DELIVERED', 'READ', 'FAILED', 'UNKNOWN'] as const;
+export type MessageStatus = (typeof MESSAGE_STATUSES)[number];
+export const MESSAGE_KINDS = ['TEXT', 'TEMPLATE', 'UNSUPPORTED'] as const;
+export type MessageKind = (typeof MESSAGE_KINDS)[number];
+
+export interface ConversationResponse {
+  id: string;
+  clientId: string;
+  clientName: string;
+  clientPhone: string | null;
+  lastMessagePreview: string | null;
+  lastMessageAt: string | null;
+  unreadCount: number;
+  whatsappConfigured: boolean;
+  whatsappOptIn: boolean;
+  canSendText: boolean;
+  canSendTemplate: boolean;
+  sendBlockedReason: string | null;
+  serviceWindowExpiresAt: string | null;
+}
+
+export interface MessageResponse {
+  id: string;
+  sequenceNo: number;
+  conversationId: string;
+  text: string;
+  direction: 'INBOUND' | 'OUTBOUND';
+  kind: MessageKind;
+  status: MessageStatus;
+  createdAt: string;
+  appointmentId: string | null;
+  senderName: string | null;
+  errorMessage: string | null;
+}
+
+export interface SendMessageRequest {
+  text?: string;
+  appointmentId?: string;
+  requestId: string;
+  kind: 'TEXT' | 'TEMPLATE';
+}
+
+export interface MarkConversationReadRequest { messageId: string; }
+export interface UpdateConversationConsentRequest { enabled: boolean; }
+
 /**
  * Roles available within a Studio tenant.
  */

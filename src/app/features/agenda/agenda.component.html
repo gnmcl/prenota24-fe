@@ -1,0 +1,616 @@
+<app-page-shell>
+  <div class="mx-auto max-w-[1500px]">
+    <header class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h1
+          class="text-[clamp(1.55rem,2vw,2.1rem)] font-semibold leading-tight tracking-[-0.035em] text-[var(--text-primary)]"
+        >
+          Agenda
+        </h1>
+        <p class="mt-1 text-sm capitalize text-[var(--text-secondary)]">
+          {{ dayAppointments().length }} appuntamenti ·
+          {{ activeProfessionals().length }} professionisti
+        </p>
+      </div>
+
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div
+          class="grid grid-cols-2 border border-[var(--surface-card-border)] bg-[var(--surface-card)] p-0.5"
+          aria-label="Modalità agenda"
+        >
+          <app-button
+            variant="ghost"
+            size="sm"
+            [extraClass]="viewModeClass('list')"
+            (click)="setViewMode('list')"
+            [ariaPressed]="viewMode() === 'list'"
+          >
+            Lista
+          </app-button>
+          <app-button
+            variant="ghost"
+            size="sm"
+            [extraClass]="viewModeClass('calendar')"
+            (click)="setViewMode('calendar')"
+            [ariaPressed]="viewMode() === 'calendar'"
+          >
+            Calendario
+          </app-button>
+        </div>
+
+        <a routerLink="/appuntamenti/nuovo" class="block sm:hidden">
+          <app-button extraClass="w-full !min-h-11">
+            <svg
+              class="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              stroke-width="1.8"
+              aria-hidden="true"
+            >
+              <path stroke-linecap="round" d="M12 5v14M5 12h14" />
+            </svg>
+            Nuova prenotazione
+          </app-button>
+        </a>
+      </div>
+    </header>
+
+    @if (dataError()) {
+      <div class="mb-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+        <app-alert variant="error" [message]="dataError()!" />
+        <app-button variant="secondary" (click)="retryAgenda()">Riprova</app-button>
+      </div>
+    }
+
+    <section
+      class="mb-4 snap-x snap-mandatory overflow-x-auto border-y border-[var(--surface-header-border)] bg-[var(--surface-card)]"
+      aria-label="Selettore settimana"
+    >
+      <div
+        class="grid min-w-[560px] grid-cols-7 divide-x divide-[var(--surface-card-border)] sm:min-w-[640px]"
+      >
+        @for (day of weekDays(); track day.date) {
+          <app-button
+            class="snap-start"
+            variant="ghost"
+            size="sm"
+            [extraClass]="weekDayClass(day)"
+            (click)="goToDate(day.date)"
+            [ariaLabel]="weekDayAriaLabel(day)"
+            [ariaPressed]="day.date === currentDate()"
+          >
+            <span class="text-[10px] font-semibold uppercase tracking-[0.08em]">{{
+              day.dayLabel
+            }}</span>
+            <span class="text-xl font-semibold leading-6 tabular-nums">{{ day.dayNum }}</span>
+            <span class="text-[10px]">{{ day.monthName }} · {{ day.appointmentCount }} app.</span>
+            @if (day.capacityStatus) {
+              <span
+                class="absolute right-2 top-2 h-1.5 w-1.5 border border-current"
+                [class]="capacityMarkerClass(day.capacityStatus)"
+                aria-hidden="true"
+              ></span>
+            }
+          </app-button>
+        }
+      </div>
+      @if (hasCapacityWarnings()) {
+        <div
+          class="flex min-w-[560px] flex-wrap items-center gap-x-4 gap-y-1 border-t border-[var(--surface-card-border)] px-3 py-2 text-[10px] text-[var(--text-secondary)] sm:min-w-[640px]"
+        >
+          <span class="font-semibold uppercase tracking-[0.08em]">Carico settimana</span>
+          @if (hasCapacityStatus('yellow')) {
+            <span class="inline-flex items-center gap-1.5"
+              ><span class="h-1.5 w-1.5 bg-[var(--status-warning-text)]"></span>Vicino al
+              limite</span
+            >
+          }
+          @if (hasCapacityStatus('red')) {
+            <span class="inline-flex items-center gap-1.5"
+              ><span class="h-1.5 w-1.5 bg-[var(--status-danger-text)]"></span>Limite
+              raggiunto</span
+            >
+          }
+        </div>
+      }
+    </section>
+
+    <section class="border border-[var(--surface-card-border)] bg-[var(--surface-card-border)]">
+      <app-register-surface extraClass="relative overflow-visible">
+        <div
+          class="flex flex-col gap-3 border-b border-[var(--surface-card-border)] px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4"
+        >
+          <div>
+            <h2 class="text-sm font-semibold capitalize text-[var(--text-primary)]">
+              {{ dateLabel() }}
+            </h2>
+            <p class="mt-0.5 text-xs text-[var(--text-secondary)]">
+              {{
+                viewMode() === 'calendar'
+                  ? 'Pianificazione per professionista'
+                  : 'Registro cronologico della giornata'
+              }}
+            </p>
+          </div>
+
+          <div class="flex items-center gap-1">
+            <app-button
+              variant="ghost"
+              size="icon"
+              extraClass="!h-11 !w-11"
+              ariaLabel="Giorno precedente"
+              (click)="prevDay()"
+            >
+              <svg
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                stroke-width="1.8"
+                aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="m15 5-7 7 7 7" />
+              </svg>
+            </app-button>
+
+            <app-button
+              variant="ghost"
+              size="sm"
+              extraClass="!min-h-11"
+              (click)="goToTodayOrNow()"
+              >{{ isToday() ? 'Ora' : 'Oggi' }}</app-button
+            >
+
+            <app-button
+              variant="ghost"
+              size="icon"
+              extraClass="!h-11 !w-11"
+              ariaLabel="Giorno successivo"
+              (click)="nextDay()"
+            >
+              <svg
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                stroke-width="1.8"
+                aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7" />
+              </svg>
+            </app-button>
+
+            <div class="relative">
+              <app-button
+                variant="secondary"
+                size="icon"
+                extraClass="!h-11 !w-11"
+                ariaLabel="Scegli una data"
+                (click)="$event.stopPropagation(); openDatePicker()"
+              >
+                <svg
+                  class="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.7"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M8 3v3m8-3v3M4.5 9h15M5 5.5h14a1 1 0 011 1V20H4V6.5a1 1 0 011-1z"
+                  />
+                </svg>
+              </app-button>
+
+              @if (showDatePicker()) {
+                <div
+                  (click)="$event.stopPropagation()"
+                  class="absolute right-0 top-full z-50 mt-2 w-[min(21rem,calc(100vw-1.5rem))] border border-[var(--surface-card-border)] bg-[var(--surface-card)]"
+                >
+                  <div
+                    class="flex items-center justify-between border-b border-[var(--surface-card-border)] px-2 py-2"
+                  >
+                    <app-button
+                      variant="ghost"
+                      size="icon"
+                      extraClass="!h-11 !w-11"
+                      ariaLabel="Mese precedente"
+                      (click)="calPickerPrevMonth()"
+                    >
+                      <svg
+                        class="h-3.5 w-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.8"
+                        aria-hidden="true"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m15 5-7 7 7 7" />
+                      </svg>
+                    </app-button>
+                    <span class="text-xs font-semibold capitalize text-[var(--text-primary)]">{{
+                      calPickerMonthLabel()
+                    }}</span>
+                    <app-button
+                      variant="ghost"
+                      size="icon"
+                      extraClass="!h-11 !w-11"
+                      ariaLabel="Mese successivo"
+                      (click)="calPickerNextMonth()"
+                    >
+                      <svg
+                        class="h-3.5 w-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.8"
+                        aria-hidden="true"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7" />
+                      </svg>
+                    </app-button>
+                  </div>
+                  <div class="grid grid-cols-7 px-2 pt-2">
+                    @for (day of pickerDays; track $index) {
+                      <span
+                        class="py-1 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]"
+                        >{{ day }}</span
+                      >
+                    }
+                  </div>
+                  <div class="grid grid-cols-7 gap-px px-2 pb-3">
+                    @for (day of calPickerDays(); track $index) {
+                      @if (day) {
+                        <app-button
+                          variant="ghost"
+                          size="icon"
+                          [extraClass]="getPickerDayClass(day)"
+                          (click)="selectPickerDate(day.dateStr)"
+                          [ariaPressed]="day.isSelected"
+                        >
+                          {{ day.num }}
+                        </app-button>
+                      } @else {
+                        <span class="h-11" aria-hidden="true"></span>
+                      }
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <p class="sr-only" aria-live="polite">{{ bookingStatusMessage() }}</p>
+
+        @if (isLoading()) {
+          <div class="divide-y divide-[var(--surface-card-border)]" aria-label="Caricamento agenda">
+            @for (row of [1, 2, 3, 4, 5]; track row) {
+              <div
+                class="grid grid-cols-[58px_1fr] gap-3 px-4 py-4 sm:grid-cols-[72px_1.35fr_1fr_110px_56px]"
+              >
+                <span class="h-3 animate-pulse bg-[var(--surface-subtle)]"></span>
+                <span class="h-3 animate-pulse bg-[var(--surface-subtle)]"></span>
+                <span class="hidden h-3 animate-pulse bg-[var(--surface-subtle)] sm:block"></span>
+                <span class="hidden h-3 animate-pulse bg-[var(--surface-subtle)] sm:block"></span>
+                <span class="hidden h-3 animate-pulse bg-[var(--surface-subtle)] sm:block"></span>
+              </div>
+            }
+          </div>
+        } @else if (viewMode() === 'list') {
+          <div
+            class="hidden grid-cols-[72px_minmax(170px,1.35fr)_minmax(130px,1fr)_110px_56px] border-b border-[var(--surface-card-border)] bg-[var(--surface-subtle)] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)] sm:grid"
+          >
+            <span>Ora</span><span>Cliente / servizio</span><span>Staff</span><span>Stato</span
+            ><span class="text-right">Durata</span>
+          </div>
+
+          @if (dayAppointments().length === 0) {
+            <div class="px-4">
+              <app-empty-state
+                icon=""
+                title="Agenda libera"
+                description="Non ci sono appuntamenti attivi in questa giornata. Puoi inserire una prenotazione mantenendo la data selezionata."
+                actionLabel="Nuova prenotazione"
+                actionRoute="/appuntamenti/nuovo"
+              />
+            </div>
+          } @else {
+            <div class="divide-y divide-[var(--surface-card-border)]">
+              @for (appointment of dayAppointments(); track appointment.id) {
+                <a
+                  [routerLink]="['/appuntamenti', appointment.id]"
+                  class="grid min-h-[72px] grid-cols-[58px_minmax(0,1fr)] items-center gap-3 px-4 py-3 hover:bg-[var(--surface-hover)] sm:grid-cols-[72px_minmax(170px,1.35fr)_minmax(130px,1fr)_110px_56px]"
+                >
+                  <span class="text-sm font-semibold tabular-nums text-[var(--text-primary)]">{{
+                    formatTime(appointment.startDatetime)
+                  }}</span>
+                  <span class="min-w-0">
+                    <span class="block truncate text-sm font-semibold text-[var(--text-primary)]">{{
+                      appointment.clientFullName
+                    }}</span>
+                    <span class="mt-0.5 block truncate text-xs text-[var(--text-secondary)]">{{
+                      appointment.serviceTypeName || 'Servizio non specificato'
+                    }}</span>
+                    <span class="mt-1 block sm:hidden"
+                      ><app-badge [variant]="statusVariant(appointment.status)">{{
+                        statusLabel(appointment.status)
+                      }}</app-badge></span
+                    >
+                  </span>
+                  <span class="hidden truncate text-xs text-[var(--text-secondary)] sm:block">{{
+                    appointment.professionalFullName
+                  }}</span>
+                  <span class="hidden sm:block"
+                    ><app-badge [variant]="statusVariant(appointment.status)">{{
+                      statusLabel(appointment.status)
+                    }}</app-badge></span
+                  >
+                  <span
+                    class="hidden text-right text-xs tabular-nums text-[var(--text-secondary)] sm:block"
+                    >{{ durationMinutes(appointment) }}′</span
+                  >
+                </a>
+              }
+            </div>
+          }
+        } @else {
+          <div
+            class="flex items-center gap-3 overflow-x-auto border-b border-[var(--surface-card-border)] bg-[var(--surface-subtle)] px-4 py-2.5 text-xs text-[var(--text-secondary)]"
+          >
+            @if (serviceTypes().length > 0) {
+              <span
+                class="shrink-0 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]"
+                >Servizi</span
+              >
+              @for (service of serviceTypes(); track service.id) {
+                <span
+                  class="inline-flex shrink-0 items-center gap-1.5 text-[var(--text-secondary)]"
+                >
+                  <span
+                    class="h-2 w-2 border border-[var(--surface-card-border)]"
+                    [style.background-color]="service.color || 'var(--surface-subtle)'"
+                    aria-hidden="true"
+                  ></span>
+                  {{ service.name }}
+                </span>
+              }
+              <span
+                class="h-4 w-px shrink-0 bg-[var(--surface-card-border)]"
+                aria-hidden="true"
+              ></span>
+            }
+            <span class="inline-flex shrink-0 items-center gap-2"
+              ><span
+                class="agenda-hatch h-3 w-5 border border-[var(--surface-card-border)]"
+                aria-hidden="true"
+              ></span
+              >Non prenotabile</span
+            >
+            <span class="inline-flex shrink-0 items-center gap-2"
+              ><span class="h-px w-5 bg-[var(--color-primary)]" aria-hidden="true"></span>Ora
+              corrente</span
+            >
+            <span class="ml-auto hidden shrink-0 text-[var(--text-secondary)] lg:inline"
+              >Slot da 15 min · clic o Invio · frecce per muoversi</span
+            >
+            <span class="ml-auto shrink-0 sm:hidden">Scorri per vedere lo staff →</span>
+          </div>
+
+          @if (activeProfessionals().length === 0) {
+            <div class="px-4">
+              <app-empty-state
+                icon=""
+                title="Nessun professionista attivo"
+                description="Attiva almeno un professionista per costruire la pianificazione giornaliera."
+              />
+            </div>
+          } @else {
+            <div class="-mx-px overflow-x-auto" aria-label="Griglia giornaliera per professionista">
+              <div class="min-w-max">
+                <div
+                  class="sticky top-0 z-20 grid border-b border-[var(--surface-card-border)] bg-[var(--surface-card)]"
+                  [style.grid-template-columns]="calendarGridCols()"
+                >
+                  <div
+                    class="sticky left-0 z-[21] min-w-[44px] border-r border-[var(--surface-card-border)] bg-[var(--surface-subtle)] px-2 py-3 text-right text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-secondary)] sm:min-w-[56px]"
+                  >
+                    Ora
+                  </div>
+                  @for (professional of activeProfessionals(); track professional.id) {
+                    <div
+                      class="min-w-[120px] border-r border-[var(--surface-card-border)] px-3 py-3 last:border-r-0 sm:min-w-[160px]"
+                    >
+                      <p class="truncate text-xs font-semibold text-[var(--text-primary)]">
+                        {{ professional.firstName }} {{ professional.lastName }}
+                      </p>
+                      <p class="mt-0.5 text-[10px] text-[var(--text-secondary)]">
+                        Disponibilità giornaliera
+                      </p>
+                    </div>
+                  }
+                </div>
+
+                <div
+                  class="relative grid bg-[var(--surface-card)]"
+                  [style.grid-template-columns]="calendarGridCols()"
+                  [style.height.px]="calendarHeight"
+                >
+                  @if (currentTimeTopPx() !== null) {
+                    <div
+                      id="agenda-current-time-anchor"
+                      class="pointer-events-none absolute inset-x-0 z-[7]"
+                      [style.top.px]="currentTimeTopPx()"
+                    >
+                      <span
+                        class="absolute left-0 -translate-y-1/2 bg-[var(--color-primary)] px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-white"
+                        >{{ currentTimeLabel() }}</span
+                      >
+                      <span
+                        class="absolute right-0 h-px bg-[var(--color-primary)]"
+                        [style.left.px]="isMobile() ? 44 : 56"
+                      ></span>
+                    </div>
+                  }
+
+                  <div
+                    class="sticky left-0 z-[5] min-w-[44px] border-r border-[var(--surface-card-border)] bg-[var(--surface-subtle)] sm:min-w-[56px]"
+                  >
+                    @for (hour of hours; track hour) {
+                      <span
+                        class="absolute pr-2 text-right text-[10px] font-semibold tabular-nums text-[var(--text-secondary)]"
+                        [style.top.px]="(hour - hourStart) * slotHeight"
+                        [style.width.px]="isMobile() ? 44 : 56"
+                        [style.line-height.px]="0"
+                        >{{ hour }}:00</span
+                      >
+                      <span
+                        class="absolute pr-2 text-right text-[10px] tabular-nums text-[var(--text-secondary)]"
+                        [style.top.px]="(hour - hourStart) * slotHeight + slotHeight / 2"
+                        [style.width.px]="isMobile() ? 44 : 56"
+                        [style.line-height.px]="0"
+                        >{{ hour }}:30</span
+                      >
+                    }
+                  </div>
+
+                  @for (professional of activeProfessionals(); track professional.id) {
+                    <div
+                      class="relative min-w-[120px] border-r border-[var(--surface-card-border)] last:border-r-0 sm:min-w-[160px]"
+                    >
+                      @for (hour of hours; track hour) {
+                        <span
+                          class="absolute inset-x-0 border-t border-[var(--surface-card-border)]"
+                          [style.top.px]="(hour - hourStart) * slotHeight"
+                        ></span>
+                        <span
+                          class="absolute inset-x-0 border-t border-dashed border-[var(--surface-subtle-border)] opacity-55"
+                          [style.top.px]="(hour - hourStart) * slotHeight + slotHeight / 4"
+                        ></span>
+                        <span
+                          class="absolute inset-x-0 border-t border-[var(--surface-subtle-border)]"
+                          [style.top.px]="(hour - hourStart) * slotHeight + slotHeight / 2"
+                        ></span>
+                        <span
+                          class="absolute inset-x-0 border-t border-dashed border-[var(--surface-subtle-border)] opacity-55"
+                          [style.top.px]="(hour - hourStart) * slotHeight + (slotHeight * 3) / 4"
+                        ></span>
+                      }
+
+                      @for (block of getUnavailableBlocks(professional.id); track $index) {
+                        <div
+                          class="absolute inset-x-0 z-[2] overflow-hidden"
+                          role="img"
+                          [attr.aria-label]="block.label"
+                          [style.top.px]="block.topPx"
+                          [style.height.px]="block.heightPx"
+                        >
+                          <div
+                            class="agenda-hatch flex h-full items-center justify-center border-y border-[var(--surface-subtle-border)] px-2 text-center"
+                          >
+                            @if (block.heightPx >= 42) {
+                              <span
+                                class="text-[10px] font-medium leading-tight text-[var(--text-secondary)]"
+                                >{{ block.label }}</span
+                              >
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      @for (slot of calendarSlots; track slot.index) {
+                        <app-button
+                          class="absolute inset-x-0 block"
+                          [style.top.px]="slot.topPx"
+                          [style.height.px]="slot.heightPx"
+                          [style.z-index]="
+                            selectedSlotKey() === slotKey(professional.id, slot.index) ? 9 : 3
+                          "
+                          variant="ghost"
+                          size="sm"
+                          [extraClass]="slotButtonClass(professional.id, slot.index)"
+                          [buttonId]="slotButtonId(professional.id, slot.index)"
+                          [ariaLabel]="slotAriaLabel(professional, slot)"
+                          [tabIndex]="slotTabIndex(professional.id, slot.index)"
+                          (focusin)="onSlotFocus(professional.id, slot.index)"
+                          (keydown)="onSlotKeydown($event, professional.id, slot.index)"
+                          (click)="selectCalendarSlot(professional.id, slot)"
+                        >
+                          <span
+                            class="pointer-events-none absolute left-1 top-1 z-10 bg-[var(--surface-card)] px-1 text-[10px] font-semibold tabular-nums text-[var(--text-secondary)] opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
+                            >{{ slot.time }}</span
+                          >
+                          @if (
+                            selectedSlotKey() === slotKey(professional.id, slot.index) &&
+                            isCheckingBookingSlot()
+                          ) {
+                            <span
+                              class="pointer-events-none absolute right-1 top-1 z-10 h-3 w-3 animate-spin rounded-full border-2 border-[var(--surface-card-border)] border-t-[var(--color-primary)]"
+                              aria-hidden="true"
+                            ></span>
+                          }
+                          @if (
+                            selectedSlotKey() === slotKey(professional.id, slot.index) &&
+                            bookingFeedback()
+                          ) {
+                            <span [class]="slotFeedbackClass(professional.id)">
+                              {{ bookingFeedback() }}
+                            </span>
+                          }
+                        </app-button>
+                      }
+
+                      @for (
+                        layout of calendarAppointmentLayouts(professional.id);
+                        track layout.appointment.id
+                      ) {
+                        <a
+                          [id]="'agenda-appointment-' + layout.appointment.id"
+                          [routerLink]="['/appuntamenti', layout.appointment.id]"
+                          class="absolute z-[6] overflow-hidden border bg-[var(--surface-card)] px-2 py-1 hover:bg-[var(--surface-hover)] focus-visible:z-[9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+                          [style.top.px]="calendarTop(layout.appointment)"
+                          [style.height.px]="calendarBlockHeight(layout.appointment)"
+                          [style.left.%]="layout.leftPercent"
+                          [style.width.%]="layout.widthPercent"
+                          [style.border-color]="aptBorder(layout.appointment)"
+                          [attr.aria-label]="calendarAppointmentLabel(layout.appointment)"
+                        >
+                          <span
+                            class="block truncate text-[10px] font-semibold tabular-nums text-[var(--text-primary)]"
+                            >{{ formatTime(layout.appointment.startDatetime) }} ·
+                            {{ layout.appointment.clientFullName }}</span
+                          >
+                          @if (!isCompactAppointment(layout.appointment)) {
+                            <span
+                              class="mt-0.5 block truncate text-[10px] text-[var(--text-secondary)]"
+                              >{{
+                                layout.appointment.serviceTypeName || 'Servizio non specificato'
+                              }}</span
+                            >
+                          }
+                        </a>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </app-register-surface>
+    </section>
+  </div>
+
+  <app-confirm-dialog
+    [open]="pendingBooking() !== null"
+    title="Conferma l’orario selezionato"
+    [message]="bookingConfirmationMessage()"
+    confirmLabel="Continua"
+    confirmVariant="primary"
+    (onCancel)="cancelBooking()"
+    (onConfirm)="continueBooking()"
+  />
+</app-page-shell>

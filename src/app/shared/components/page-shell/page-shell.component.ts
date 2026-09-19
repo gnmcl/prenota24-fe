@@ -307,6 +307,7 @@ export class PageShellComponent {
       { path: '/servizi', label: 'Servizi', icon: 'M4 7h16M7 4v16m10-16v16M4 17h16' },
       { path: '/agenda', label: 'Agenda', icon: 'M9 5H6a2 2 0 00-2 2v12h16V7a2 2 0 00-2-2h-3M9 5a3 3 0 006 0M9 12h6m-6 4h6' },
       { path: '/eventi', label: 'Eventi', icon: 'M12 3l2.6 5.3 5.9.9-4.25 4.15 1 5.85L12 16.45 6.75 19.2l1-5.85L3.5 9.2l5.9-.9L12 3z' },
+      { path: '/messaggi', label: 'Messaggi', icon: 'M7 8h10M7 12h6M4 3h16a1 1 0 011 1v12a1 1 0 01-1 1H8l-5 4V4a1 1 0 011-1z' },
     ];
   });
 
