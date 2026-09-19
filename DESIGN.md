@@ -126,6 +126,16 @@ Icone SVG outline a 1.6–1.65px, testo 13px, stato attivo cobalto su fondo azzu
 
 Le righe sono ordinate per orario e allineano ora, cliente/servizio, staff, stato e durata. La selezione usa fondo cobalto tenue; una hairline cobalto con etichetta tabulare mostra l’ora corrente. Il dettaglio non apre un modal: resta accanto al registro o si espande sotto la riga su mobile.
 
+### Agenda Register
+
+Agenda riusa lo stesso indice settimanale della dashboard: sette celle contigue, separatori hairline, giorno selezionato cobalto e sintesi `mese · appuntamenti`. Le soglie di carico usano piccoli marcatori e mostrano la legenda solo quando esiste un avviso; il colore non è mai l’unico significato.
+
+La navigazione della giornata mantiene due livelli: controlli compatti `precedente · oggi/ora · successivo` per il movimento e indice settimanale per l’orientamento. Il calendario mensile resta un popover piatto per i salti non contigui. All’apertura della giornata corrente, la vista si porta al prossimo appuntamento o all’ora corrente senza animazione; il comando `Ora` permette di tornarci esplicitamente.
+
+La vista Lista è un registro tabulare; la vista Calendario è una griglia tecnica per professionista con slot reali da 15 minuti e altezza minima di 24px. Gli slot sono focusabili con navigazione a frecce, Page Up/Down e Home/End; clic, Invio e Spazio avviano la stessa verifica di disponibilità. Appuntamenti simultanei vengono affiancati, l’asse orario resta visibile nello scorrimento orizzontale e il tratteggio per gli intervalli non prenotabili rimane leggero e funzionale. Su mobile la griglia conserva la struttura, offre target da almeno 44px nei controlli principali e comunica esplicitamente lo scorrimento laterale.
+
+L’azione primaria di creazione compare una sola volta per viewport: nella top bar su desktop e nel contenuto della pagina su mobile. Servizi, indisponibilità, ora corrente e istruzioni condividono un’unica fascia di utilità per evitare barre ridondanti.
+
 ## Do's and Don'ts
 
 ### Do
@@ -134,6 +144,7 @@ Le righe sono ordinate per orario e allineano ora, cliente/servizio, staff, stat
 - **Do** mantenere azioni, stato e contenuto visibili senza cambio di contesto.
 - **Do** progettare prima la sequenza mobile, poi il rail tablet e la griglia desktop.
 - **Do** riusare token e primitive shared prima di estendere il sistema alle altre sezioni.
+- **Do** usare lo stesso indice settimanale per dashboard e superfici di pianificazione.
 
 ### Don't
 
@@ -141,3 +152,4 @@ Le righe sono ordinate per orario e allineano ora, cliente/servizio, staff, stat
 - **Don't** usare gradienti, glassmorphism, glow, ombre decorative o grafici finti.
 - **Don't** riempire l’interfaccia di pill, icone in riquadri o accenti colorati inattivi.
 - **Don't** usare emoji o glifi Unicode come sistema di icone; usare SVG coerenti.
+- **Don't** sovrapporre card appuntamento alla griglia: gli slot usano bordi hairline e superfici del registro.

@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "node tests/run-tests.mjs",
+    "test:messages": "node tests/run-tests.mjs"
   },
   "private": true,
   "packageManager": "npm@10.9.2",

@@ -5,14 +5,34 @@ import { Component, Input } from '@angular/core';
   standalone: true,
   template: `
     <button
+      [id]="buttonId"
       [type]="type"
       [disabled]="disabled || isLoading"
+      [attr.aria-label]="ariaLabel"
+      [attr.aria-pressed]="ariaPressed"
+      [attr.tabindex]="tabIndex"
       [class]="buttonClasses"
     >
       @if (isLoading) {
-        <svg class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        <svg
+          class="h-4 w-4 animate-spin"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+          ></path>
         </svg>
       }
       <ng-content />
@@ -20,12 +40,16 @@ import { Component, Input } from '@angular/core';
   `,
 })
 export class ButtonComponent {
-  @Input() variant: 'primary' | 'secondary' | 'danger' | 'ghost' = 'primary';
+  @Input() variant: 'primary' | 'secondary' | 'chat' | 'danger' | 'ghost' = 'primary';
   @Input() size: 'sm' | 'md' | 'icon' = 'md';
   @Input() isLoading = false;
   @Input() disabled = false;
   @Input() type: 'button' | 'submit' | 'reset' = 'button';
   @Input() extraClass = '';
+  @Input() buttonId: string | null = null;
+  @Input() ariaLabel: string | null = null;
+  @Input() ariaPressed: boolean | null = null;
+  @Input() tabIndex: number | null = null;
 
   get buttonClasses(): string {
     const base =
@@ -44,6 +68,7 @@ export class ButtonComponent {
         'border-[var(--button-secondary-border)] bg-[var(--button-secondary-bg)] text-[var(--text-primary)] hover:bg-[var(--button-secondary-hover)]',
       danger:
         'border-[var(--button-danger-bg)] bg-[var(--button-danger-bg)] text-white hover:bg-[var(--button-danger-hover)] disabled:bg-[var(--button-danger-disabled)]',
+      chat: 'border-[var(--button-chat-bg)] bg-[var(--button-chat-bg)] text-white hover:border-[var(--button-chat-hover)] hover:bg-[var(--button-chat-hover)] disabled:bg-[var(--button-chat-disabled)]',
       ghost:
         'border-transparent bg-transparent text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]',
     };

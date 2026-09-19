@@ -90,6 +90,13 @@
       "description": "Riga tabulare selezionata che mantiene il contesto.",
       "html": "<button class=\"ds-appointment-row\"><strong>09:30</strong><span><b>Andrea Conti</b><small>Consulenza</small></span><em>60′</em></button>",
       "css": ".ds-appointment-row{display:grid;width:100%;grid-template-columns:64px 1fr 48px;align-items:center;gap:16px;min-height:72px;padding:12px 16px;border:0;border-bottom:1px solid #D5D8D0;background:#E3E9FF;color:#171A1F;text-align:left;font:400 14px 'Public Sans',sans-serif}.ds-appointment-row span{display:grid;gap:3px}.ds-appointment-row small{color:#5B625A}.ds-appointment-row em{text-align:right;font-style:normal;color:#5B625A}.ds-appointment-row:hover{background:#DDE5FF}.ds-appointment-row:focus-visible{outline:2px solid #315CF4;outline-offset:-2px}"
+    },
+    {
+      "name": "Agenda Schedule Grid",
+      "kind": "custom",
+      "description": "Griglia giornaliera piatta per professionista con slot focusabili da 15 minuti, ora corrente live e appuntamenti sovrapposti affiancati.",
+      "html": "<section class=\"ds-agenda-grid\"><header>Ora · Staff</header><div class=\"ds-agenda-slot\">09:30 · Andrea Conti</div></section>",
+      "css": ".ds-agenda-grid{overflow:auto;border:1px solid #D5D8D0;background:#FBFCF8;color:#171A1F;font:400 14px 'Public Sans',sans-serif}.ds-agenda-grid header{padding:12px 16px;border-bottom:1px solid #D5D8D0;background:#ECEFE8;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}.ds-agenda-slot{min-height:24px;padding:0 8px;border:1px solid #D5D8D0;font-variant-numeric:tabular-nums}.ds-agenda-slot:focus-visible{outline:2px solid #315CF4;outline-offset:-2px}"
     }
   ],
   "narrative": {
@@ -98,7 +105,8 @@
     "keyCharacteristics": ["griglia hairline continua", "rail desktop collassabile", "Public Sans compatta", "dati tabulari", "cobalto funzionale", "verde registro raro", "nessuna ombra"],
     "rules": [
       { "name": "Functional Accent", "body": "Cobalto per azione e selezione; verde registro per attenzione e presenza.", "section": "colors" },
-      { "name": "Flat By Construction", "body": "Profondità tramite tono e hairline, mai tramite ombre decorative.", "section": "elevation" }
+      { "name": "Flat By Construction", "body": "Profondità tramite tono e hairline, mai tramite ombre decorative.", "section": "elevation" },
+      { "name": "Shared Week Index", "body": "Dashboard e Agenda usano lo stesso indice settimanale contiguo e la stessa sintassi mese · conteggio.", "section": "navigation" }
     ],
     "dos": ["Usare superfici a registro per moduli coordinati.", "Espandere il dettaglio in-place su mobile.", "Mantenere orari e durate tabulari."],
     "donts": ["Non usare mosaici KPI o card annidate.", "Non usare gradienti, glassmorphism o fake charts.", "Non usare pill decorative o emoji come icone."]

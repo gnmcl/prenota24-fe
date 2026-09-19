@@ -137,6 +137,18 @@ export const routes: Routes = [
 
   // Appointments
   {
+    path: 'messaggi',
+    loadComponent: () => import('./features/messages/messages.component').then(m => m.MessagesComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { allowed: ['ADMIN'] },
+  },
+  {
+    path: 'messaggi/:id',
+    loadComponent: () => import('./features/messages/messages.component').then(m => m.MessagesComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { allowed: ['ADMIN'] },
+  },
+  {
     path: 'appuntamenti',
     loadComponent: () => import('./features/appointments/appointments.component').then(m => m.AppointmentsComponent),
     canActivate: [authGuard, roleGuard],
