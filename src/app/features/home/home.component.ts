@@ -199,7 +199,10 @@ import { RouterLink } from '@angular/router';
             <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 text-[10px] font-black text-white">P</span>
             <span class="text-sm font-semibold text-gray-500">Prenota<span class="text-indigo-600">24</span></span>
           </div>
-          <p class="text-xs text-gray-400">&copy; {{ currentYear }} Prenota24 — Tutti i diritti riservati.</p>
+          <div class="flex flex-col items-center gap-2 text-xs text-gray-400 sm:items-end">
+            <a routerLink="/privacy" class="font-medium text-gray-500 underline underline-offset-2 hover:text-indigo-600">Informativa privacy</a>
+            <p>&copy; {{ currentYear }} Prenota24 — Tutti i diritti riservati.</p>
+          </div>
         </div>
       </footer>
     </div>

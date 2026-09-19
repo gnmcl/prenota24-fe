@@ -79,6 +79,10 @@ function matchPasswords(control: AbstractControl): ValidationErrors | null {
               formControlName="confirmPassword"
               [error]="getFieldError('confirmPassword')"
             />
+            <p class="text-xs leading-5 text-gray-500">
+              Consulta l'<a routerLink="/privacy" class="font-semibold text-indigo-600 underline underline-offset-2 hover:text-indigo-500">informativa privacy</a>
+              per sapere come trattiamo i dati necessari alla registrazione.
+            </p>
             <app-button type="submit" [isLoading]="isLoading()">Registrati</app-button>
           </form>
 

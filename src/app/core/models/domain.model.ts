@@ -125,6 +125,8 @@ export interface EventResponse {
   currentParticipants: number;
   status: EventStatus;
   shareLink: string;
+  studioName: string;
+  studioPrivacyContactEmail: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -473,6 +475,7 @@ export interface StudioPublicResponse {
   name: string;
   slug: string;
   timezone: string;
+  privacyContactEmail: string | null;
   professionals: ProfessionalResponse[];
 }
 

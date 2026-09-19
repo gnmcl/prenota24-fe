@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { PublicEventService } from '../../core/services/public-event.service';
 import { getErrorMessage } from '../../shared/utils/errors';
@@ -12,7 +12,7 @@ import type { EventResponse } from '../../core/models/domain.model';
 @Component({
   selector: 'app-public-event',
   standalone: true,
-  imports: [ReactiveFormsModule, CardComponent, ButtonComponent, InputComponent, AlertComponent],
+  imports: [ReactiveFormsModule, RouterLink, CardComponent, ButtonComponent, InputComponent, AlertComponent],
   template: `
     @if (isLoading()) {
       <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
@@ -30,6 +30,8 @@ import type { EventResponse } from '../../core/models/domain.model';
         <header class="border-b border-gray-200/60 bg-white/80 backdrop-blur-sm">
           <div class="mx-auto flex h-14 max-w-3xl items-center px-6">
             <span class="text-lg font-bold tracking-tight text-indigo-600">Prenota24</span>
+            <span class="mx-3 text-gray-300">|</span>
+            <span class="truncate text-sm font-medium text-gray-700">{{ event()!.studioName }}</span>
           </div>
         </header>
 
@@ -94,6 +96,16 @@ import type { EventResponse } from '../../core/models/domain.model';
                 <div class="absolute -left-[9999px]" aria-hidden="true">
                   <input type="text" tabindex="-1" autocomplete="off" formControlName="honeypot" />
                 </div>
+
+                <p class="text-xs leading-5 text-gray-500">
+                  Consulta l'<a routerLink="/privacy" class="font-semibold text-indigo-600 underline underline-offset-2 hover:text-indigo-500">informativa privacy</a>.
+                  <strong class="font-semibold text-gray-700">{{ event()!.studioName }}</strong> è titolare dei dati necessari alla prenotazione e deve fornirti la propria informativa.
+                  @if (event()!.studioPrivacyContactEmail) {
+                    Puoi contattarlo a <a [href]="'mailto:' + event()!.studioPrivacyContactEmail" class="font-semibold text-indigo-600 underline underline-offset-2 hover:text-indigo-500">{{ event()!.studioPrivacyContactEmail }}</a>.
+                  } @else {
+                    Per ottenere i suoi recapiti scrivi a <a href="mailto:info@prenota24.com" class="font-semibold text-indigo-600 underline underline-offset-2 hover:text-indigo-500">info&#64;prenota24.com</a> indicando il nome dell'organizzatore.
+                  }
+                </p>
 
                 <app-button type="submit" [isLoading]="submitLoading()">Conferma prenotazione</app-button>
               </form>

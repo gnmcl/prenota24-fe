@@ -59,6 +59,9 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
               Non hai un account?
               <a routerLink="/registrati" class="font-semibold text-indigo-600 hover:text-indigo-500">Registrati</a>
             </p>
+            <p class="mt-4 text-center text-xs text-gray-400">
+              Consulta l'<a routerLink="/privacy" class="font-semibold text-indigo-600 underline underline-offset-2 hover:text-indigo-500">informativa privacy</a>
+            </p>
           </app-card>
         </div>
       </app-page-shell>

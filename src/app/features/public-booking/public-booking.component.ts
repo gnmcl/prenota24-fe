@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { PublicBookingService } from '../../core/services/public-booking.service';
@@ -21,6 +21,7 @@ import type {
   standalone: true,
   imports: [
     ReactiveFormsModule,
+    RouterLink,
     CardComponent,
     ButtonComponent,
     InputComponent,
@@ -333,6 +334,16 @@ import type {
                   <div class="absolute -left-[9999px]" aria-hidden="true">
                     <input type="text" tabindex="-1" autocomplete="off" formControlName="honeypot" />
                   </div>
+
+                  <p class="text-xs leading-5 text-gray-500">
+                    Consulta l'<a routerLink="/privacy" class="font-semibold text-indigo-600 underline underline-offset-2 hover:text-indigo-500">informativa privacy</a>.
+                    <strong class="font-semibold text-gray-700">{{ studio()!.name }}</strong> è titolare dei dati necessari alla prenotazione e deve fornirti la propria informativa.
+                    @if (studio()!.privacyContactEmail) {
+                      Puoi contattarlo a <a [href]="'mailto:' + studio()!.privacyContactEmail" class="font-semibold text-indigo-600 underline underline-offset-2 hover:text-indigo-500">{{ studio()!.privacyContactEmail }}</a>.
+                    } @else {
+                      Per ottenere i suoi recapiti scrivi a <a href="mailto:info@prenota24.com" class="font-semibold text-indigo-600 underline underline-offset-2 hover:text-indigo-500">info&#64;prenota24.com</a> indicando il nome dello studio.
+                    }
+                  </p>
 
                   <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-2 border-t border-gray-100">
                     <app-button variant="secondary" type="button" (click)="goBack()" extraClass="w-full sm:w-auto">
