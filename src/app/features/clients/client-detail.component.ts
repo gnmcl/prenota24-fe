@@ -6,6 +6,8 @@ import { CardComponent } from '../../shared/components/card/card.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
+import { AlertComponent } from '../../shared/components/alert/alert.component';
+import { getErrorMessage } from '../../shared/utils/errors';
 import { ClientService } from '../../core/services/client.service';
 import type {
   ClientResponse,
@@ -17,7 +19,7 @@ import type {
 @Component({
   selector: 'app-client-detail',
   standalone: true,
-  imports: [RouterLink, FormsModule, PageShellComponent, CardComponent, ButtonComponent, BadgeComponent, ConfirmDialogComponent],
+  imports: [RouterLink, FormsModule, PageShellComponent, CardComponent, ButtonComponent, BadgeComponent, ConfirmDialogComponent, AlertComponent],
   template: `
     <app-page-shell>
       <div class="mx-auto max-w-4xl">
@@ -28,6 +30,12 @@ import type {
           </svg>
           Torna alla lista
         </a>
+
+        @if (deleteError()) {
+          <div class="mb-6">
+            <app-alert variant="error" [message]="deleteError()!" (dismiss)="deleteError.set(null)" />
+          </div>
+        }
 
         @if (isLoading()) {
           <div class="flex justify-center py-12">
@@ -232,6 +240,7 @@ export class ClientDetailComponent implements OnInit {
   readonly activeTab = signal<'info' | 'notes' | 'appointments'>('info');
   readonly deleteDialogOpen = signal(false);
   readonly isDeleting = signal(false);
+  readonly deleteError = signal<string | null>(null);
   readonly addingNote = signal(false);
   newNoteContent = '';
 
@@ -283,9 +292,15 @@ export class ClientDetailComponent implements OnInit {
 
   deleteClient(): void {
     this.isDeleting.set(true);
+    this.deleteError.set(null);
     this.clientService.delete(this.client()!.id).subscribe({
       next: () => this.router.navigate(['/clienti']),
-      error: () => this.isDeleting.set(false),
+      error: (err) => {
+        // Es. 409 se il cliente ha appuntamenti: il server spiega il motivo.
+        this.isDeleting.set(false);
+        this.deleteDialogOpen.set(false);
+        this.deleteError.set(getErrorMessage(err));
+      },
     });
   }
 
