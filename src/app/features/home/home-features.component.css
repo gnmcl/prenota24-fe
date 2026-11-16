@@ -1,0 +1,126 @@
+/* Feature cards: open cards, a panel holding a drawn fragment, a title and a line. Unencapsulated like the page system (home.component.css): every rule under .landing. */
+
+.landing .cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 40px var(--col-gap);
+}
+@media (min-width: 1024px) {
+  .landing .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.landing .card h3 { margin-top: 20px; }
+.landing .card p { margin-top: 6px; max-width: 58ch; }
+.landing .card__panel {
+  display: grid;
+  place-items: center;
+  height: clamp(150px, 19svh, 184px);
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-frame);
+  background: var(--subtle);
+  overflow: hidden;
+}
+.landing .card__panel > * {
+  transition: transform 260ms var(--ease);
+}
+/* placements: the chat sits low on the left, the team list runs off the panel's foot,
+   the event card holds the top-left corner, the client card runs off the right edge */
+.landing .card--wide .card__panel { place-items: end start; padding: 24px; }
+.landing .card--flush .card__panel { place-items: end center; padding: 20px 20px 0; }
+.landing .card--flush .team { border-bottom: 0; border-radius: var(--r-control) var(--r-control) 0 0; }
+.landing .card--corner .card__panel { place-items: start; padding: 20px; }
+.landing .card--edge .card__panel { place-items: center end; padding: 20px 0 20px 24px; }
+.landing .card--edge .client { border-right: 0; border-radius: var(--r-control) 0 0 var(--r-control); }
+.landing .card:hover .card__panel > * { transform: translateY(-2px); }
+
+/* chat */
+.landing .chat { display: grid; gap: 8px; width: min(100%, 340px); font-size: var(--t-small); }
+.landing .chat__ctx { font-size: var(--t-label); color: var(--muted); }
+.landing .bubble {
+  max-width: 85%;
+  padding: 8px 12px;
+  border-radius: var(--r-control);
+  border: 1px solid var(--line);
+  line-height: 1.4;
+}
+.landing .bubble--in { justify-self: start; background: var(--surface); }
+.landing .bubble--out {
+  justify-self: end;
+  border-color: color-mix(in oklab, var(--action) 30%, transparent);
+  background: var(--surface-active-nav);
+}
+
+/* team */
+.landing .team {
+  display: grid;
+  width: min(100%, 360px);
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  background: var(--surface);
+  font-size: var(--t-small);
+}
+.landing .team__row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+}
+.landing .team__row + .team__row { border-top: 1px solid var(--line); }
+.landing .avatar {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-control);
+  background: var(--subtle);
+  font-size: var(--t-label);
+  font-weight: 600;
+}
+.landing .avatar--empty { border: 1px dashed var(--surface-input-border); background: none; color: var(--muted); }
+
+/* event */
+.landing .event {
+  display: grid;
+  gap: 8px;
+  width: min(100%, 320px);
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  background: var(--surface);
+}
+.landing .event__date { font-size: var(--t-label); color: var(--muted); }
+.landing .event__title { font-size: var(--t-card); font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; }
+.landing .event__bar { display: block; height: 6px; border-radius: 1px; background: var(--subtle); overflow: hidden; }
+.landing .event__bar span { display: block; height: 100%; background: var(--action); }
+.landing .event__count { font-size: var(--t-small); }
+
+/* client */
+.landing .client {
+  display: grid;
+  gap: 6px;
+  width: min(100%, 360px);
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  background: var(--surface);
+  font-size: var(--t-small);
+}
+.landing .client__name { font-size: var(--t-card); font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; }
+.landing .client__note { color: var(--muted); }
+.landing .client__line {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+}
+
+@media (min-width: 1024px) and (max-height: 820px) {
+  .landing .card__panel { height: 128px; }
+  .landing .cards { row-gap: 28px; }
+}
+@media (max-width: 639px) {
+  .landing .card__panel { height: 210px; }
+}

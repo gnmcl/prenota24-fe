@@ -52,12 +52,14 @@ test('every public data collection form links to the privacy notice before submi
 });
 
 test('the marketing and authentication pages expose the privacy notice', async () => {
-  const [home, login] = await Promise.all([
+  const [home, homeTemplate, homeFooter, login] = await Promise.all([
     source('src/app/features/home/home.component.ts'),
+    source('src/app/features/home/home.component.html'),
+    source('src/app/features/home/home-closing.component.html'),
     source('src/app/features/login/login.component.ts'),
   ]);
 
-  assert.match(home, /routerLink="\/privacy"/);
+  assert.match(`${home}\n${homeTemplate}\n${homeFooter}`, /routerLink="\/privacy"/);
   assert.match(login, /routerLink="\/privacy"/);
 });
 

@@ -1,0 +1,66 @@
+<div class="window frame app-frame" data-ui>
+  <div class="window__bar">
+    <span class="window__title">Agenda · giovedì 19 novembre</span>
+    <span class="window__attention"><span class="count">{{ pendingCount }}</span> da confermare</span>
+  </div>
+
+  <div class="window__body">
+    <div class="ledger">
+      <div class="ledger__columns" aria-hidden="true">
+        <span>Ora</span><span>Cliente e servizio</span><span>Professionista</span><span>Stato</span>
+      </div>
+      <ul class="ledger__rows">
+        @for (appointment of appointments; track appointment.id) {
+          <li [class.is-selected]="selected() === appointment" [class.is-extra]="$index === 3">
+            <button
+              type="button"
+              class="ledger__row"
+              [attr.aria-pressed]="selected() === appointment"
+              [attr.aria-label]="
+                appointment.time + ', ' + appointment.client + ', ' + statusLabel(appointment.status) + ': apri il dettaglio'
+              "
+              (click)="selected.set(appointment)"
+            >
+              <span class="ledger__time">{{ appointment.time }}</span>
+              <span class="ledger__client"
+                ><b>{{ appointment.client }}</b><span>{{ appointment.service }}</span></span
+              >
+              <span class="ledger__pro">{{ appointment.professional }}</span>
+              <span class="ledger__status"
+                ><app-badge [variant]="statusVariant(appointment.status)">{{
+                  statusLabel(appointment.status)
+                }}</app-badge></span
+              >
+            </button>
+            @if (selected() === appointment) {
+              <div class="detail detail--inline">
+                <ng-container [ngTemplateOutlet]="detail" />
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    </div>
+
+    <div class="detail detail--side">
+      <ng-container [ngTemplateOutlet]="detail" />
+    </div>
+  </div>
+</div>
+
+<ng-template #detail>
+  <div class="detail__inner" aria-live="polite" aria-atomic="true">
+    <span class="detail__meta"><span>Appuntamento</span><span>{{ selected().time }}</span></span>
+    <span class="detail__name">{{ selected().client }}</span>
+    <app-badge [variant]="statusVariant(selected().status)">{{ statusLabel(selected().status) }}</app-badge>
+    <dl class="detail__facts">
+      <div><dt>Servizio</dt><dd>{{ selected().service }}</dd></div>
+      <div><dt>Professionista</dt><dd>{{ selected().professional }}</dd></div>
+      <div><dt>Durata</dt><dd>{{ selected().duration }}</dd></div>
+    </dl>
+    <span class="detail__actions" aria-hidden="true">
+      <span class="detail__primary">{{ selected().actions[0] }}</span>
+      <span class="detail__secondary">{{ selected().actions[1] }}</span>
+    </span>
+  </div>
+</ng-template>

@@ -1,0 +1,64 @@
+<!--
+  Kind: software (site-kind software). Deal: hero triptych · nav-mega · footer-columns · close-type ·
+  rhythm space · buttons arrow · mark: the client's own P24 tile · moment pinned-chapters
+  (counter-rolls dealt too, dropped: the brief has no real figures to roll).
+  Palette and type: the client's own (DESIGN.md, Registro di coordinamento): Public Sans, technical
+  paper, cobalt for actions, register green for attention, hairlines, no shadows.
+-->
+<div class="landing">
+  <app-home-nav />
+
+  <main id="top">
+    <!-- 1 · Hero: what it is, for whom, one hard fact, the main action -->
+    <section class="hero" data-enter aria-labelledby="hero-title">
+      <div class="wrap">
+       <div class="hero-text hero__grid">
+        <div class="hero__text">
+          <h1 id="hero-title">Agenda online per studi</h1>
+          <p class="hero__lead">
+            I clienti prenotano dalla pagina del tuo studio, tu confermi dall’agenda e Prenota24 invia
+            il promemoria email 24 ore prima.
+          </p>
+        </div>
+        <app-home-hero-collage class="hero__collage" />
+        <div class="hero__cta">
+          <a routerLink="/registrati" class="btn btn--primary btn--hero"
+            >Crea il tuo studio
+            <svg class="btn__arrow" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M2 8h11M9 4l4 4-4 4" /></svg
+          ></a>
+        </div>
+       </div>
+      </div>
+    </section>
+
+    <!-- 2 · The product big: the day's agenda beside the open appointment -->
+    <section class="section" id="agenda" aria-labelledby="agenda-title">
+      <div class="wrap">
+        <div class="section__head">
+          <h2 id="agenda-title">La giornata dello studio in una schermata</h2>
+          <p class="section__intro">
+            Richieste da confermare, appuntamenti del team e scheda del cliente restano nella stessa
+            vista. Apri una riga e decidi senza cambiare pagina.
+          </p>
+        </div>
+        <app-home-agenda-preview />
+      </div>
+    </section>
+
+    <!-- 3 · How a booking goes: the pinned-chapters moment -->
+    <section appHomeBookingSteps class="section section--steps" id="come-funziona"></section>
+
+    <!-- 4 · No-shows: emails with a cancel link, outcome tracked -->
+    <section appHomeReminders class="section" id="promemoria" aria-labelledby="reminders-title"></section>
+
+    <!-- 5 · The rest of the studio: four features, one card each -->
+    <section appHomeFeatures class="section section--features" id="funzioni" aria-labelledby="features-title"></section>
+
+    <!-- 6 · Questions: the calm section before the close -->
+    <section appHomeFaq class="section" id="domande" aria-labelledby="faq-title"></section>
+  </main>
+
+  <!-- Close and footer: one section -->
+  <footer appHomeClosing class="closing" id="contatti"></footer>
+</div>

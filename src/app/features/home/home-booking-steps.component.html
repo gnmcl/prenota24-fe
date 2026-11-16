@@ -1,0 +1,74 @@
+<div class="wrap">
+  <div class="steps__stage steps" [attr.data-edge-free]="live() ? '' : null">
+    <div class="steps__text">
+      <h2 id="steps-title">Come funziona una prenotazione</h2>
+      <p class="section__intro">
+        Ogni passaggio cambia lo stato dell’appuntamento, così tu e il team sapete sempre a che punto è.
+      </p>
+      <ol class="steps__list">
+        @for (step of steps; track step.title; let i = $index) {
+          <li class="step" [class.is-on]="!live() || active() === i">
+            <span class="step__num" aria-hidden="true">{{ i + 1 }}</span>
+            <div class="step__body">
+              <h3>{{ step.title }}</h3>
+              <p class="step__text"><span>{{ step.text }}</span></p>
+            </div>
+            @if (!live()) {
+              <div class="step__visual" role="img" [attr.aria-label]="step.visualLabel">
+                <ng-container [ngTemplateOutlet]="visual" [ngTemplateOutletContext]="{ $implicit: i }" />
+              </div>
+            }
+          </li>
+        }
+      </ol>
+    </div>
+
+    @if (live()) {
+      <div class="steps__frame" role="img" [attr.aria-label]="steps[active()].visualLabel">
+        @for (step of steps; track step.title; let i = $index) {
+          <div class="steps__screen" [class.is-on]="active() === i" [class.is-past]="active() > i" aria-hidden="true">
+            <ng-container [ngTemplateOutlet]="visual" [ngTemplateOutletContext]="{ $implicit: i }" />
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<ng-template #visual let-i>
+  @switch (i) {
+    @case (0) {
+      <div class="ui ui--booking">
+        <span class="ui__eyebrow">Studio Moretti · prenotazione</span>
+        <span class="ui__title">Scegli un orario</span>
+        <span class="ui__field">Massaggio decontratturante · 50 min · Andrea Conti</span>
+        <span class="ui__slots">
+          <span>09:00</span><span>10:30</span><span class="is-picked">11:15</span>
+          <span>14:00</span><span>15:30</span><span>17:00</span>
+        </span>
+        <span class="ui__button">Invia la richiesta</span>
+      </div>
+    }
+    @case (1) {
+      <div class="ui ui--request">
+        <span class="ui__row ui__row--head"><span class="ui__eyebrow">Richiesta · gio 19 nov, 11:15</span><span class="tag tag--amber">Da confermare</span></span>
+        <span class="ui__title">Marco Bianchi</span>
+        <span class="ui__actions"><span class="ui__button">Conferma</span><span class="ui__ghost">Proponi un altro orario</span></span>
+        <span class="ui__proposal"><span class="ui__eyebrow">Proposta inviata</span><b>ven 20 nov · 09:30</b><span class="tag tag--blue">In attesa del cliente</span></span>
+      </div>
+    }
+    @case (2) {
+      <div class="ui ui--mails">
+        <span class="ui__mail"><span class="ui__eyebrow">mar 17 nov · 16:02</span><b>Appuntamento confermato</b><span>gio 19 nov alle 11:15 con Andrea Conti</span></span>
+        <span class="ui__mail"><span class="ui__eyebrow">mer 18 nov · 11:15</span><b>Promemoria: domani alle 11:15</b><span class="ui__link">Annulla appuntamento</span></span>
+      </div>
+    }
+    @case (3) {
+      <div class="ui ui--outcome">
+        <span class="ui__row"><b>11:15</b><span>Marco Bianchi · Massaggio decontratturante</span></span>
+        <span class="ui__segmented"><span class="is-picked">Completato</span><span>Non presentato</span></span>
+        <span class="ui__history"><span class="ui__eyebrow">Storico del cliente</span><span>4 appuntamenti · 4 completati</span></span>
+      </div>
+    }
+  }
+</ng-template>
