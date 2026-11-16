@@ -20,12 +20,12 @@ type ProposalViewState = 'pending' | 'accepted' | 'rejected' | 'unavailable';
   standalone: true,
   imports: [RouterLink, CardComponent, ButtonComponent, AlertComponent],
   template: `
-    <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-violet-50 px-4 sm:px-6 py-5 sm:py-8">
+    <div class="min-h-screen bg-[var(--surface-page)] px-4 sm:px-6 py-5 sm:py-8">
       <div class="mx-auto w-full max-w-2xl">
         @if (loading()) {
           <app-card>
             <div class="flex flex-col items-center py-10">
-              <div class="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+              <div class="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-primary)]/20 border-t-[var(--color-primary)]"></div>
               <p class="text-sm text-gray-500">Caricamento proposta orario...</p>
             </div>
           </app-card>
@@ -45,7 +45,7 @@ type ProposalViewState = 'pending' | 'accepted' | 'rejected' | 'unavailable';
                 Hai confermato il tuo appuntamento con
                 <strong>{{ appointment()!.professionalFullName }}</strong>.
               </p>
-              <div class="mx-auto inline-flex rounded-lg bg-indigo-50 px-4 py-3 text-sm font-medium text-indigo-700">
+              <div class="mx-auto inline-flex rounded-lg bg-[var(--surface-active-nav)] px-4 py-3 text-sm font-medium text-[var(--color-primary)]">
                 📅 {{ formatFull(appointment()!.startDatetime) }} – {{ formatTime(appointment()!.endDatetime) }}
               </div>
               @if (appointment()!.studioSlug) {
@@ -104,8 +104,8 @@ type ProposalViewState = 'pending' | 'accepted' | 'rejected' | 'unavailable';
                 @for (slot of proposedSlots(); track slot.start) {
                   <label
                     class="flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors"
-                    [class.border-indigo-400]="selectedSlot()?.start === slot.start"
-                    [class.bg-indigo-50]="selectedSlot()?.start === slot.start"
+                    [class.border-[var(--color-primary)]]="selectedSlot()?.start === slot.start"
+                    [class.bg-[var(--surface-active-nav)]]="selectedSlot()?.start === slot.start"
                     [class.border-gray-200]="selectedSlot()?.start !== slot.start"
                     [class.bg-white]="selectedSlot()?.start !== slot.start"
                   >
@@ -115,7 +115,7 @@ type ProposalViewState = 'pending' | 'accepted' | 'rejected' | 'unavailable';
                       [value]="slot.start"
                       [checked]="selectedSlot()?.start === slot.start"
                       (change)="selectedSlot.set(slot)"
-                      class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                      class="h-4 w-4 text-[var(--color-primary)] border-gray-300 focus:ring-[var(--color-primary)]"
                     />
                     <span class="text-sm font-medium text-gray-900">{{ slot.label }}</span>
                   </label>

@@ -30,6 +30,7 @@ import type {
   AvailabilityResponse,
   AvailabilityExceptionResponse,
 } from '../../core/models/domain.model';
+import { appointmentStatusLabel, appointmentStatusVariant, type AppointmentStatusVariant } from '../../shared/utils/appointment-status';
 
 const HOUR_START = 7;
 const HOUR_END = 21;
@@ -998,26 +999,10 @@ export class AgendaComponent implements OnInit {
   }
 
   statusLabel(status: AppointmentStatus): string {
-    const map: Record<string, string> = {
-      REQUESTED: 'Da confermare',
-      CONFIRMED: 'Confermato',
-      PROPOSED_NEW_TIME: 'Proposta',
-      CANCELLED: 'Cancellato',
-      COMPLETED: 'Completato',
-      NO_SHOW: 'Non presentato',
-    };
-    return map[status] ?? status;
+    return appointmentStatusLabel(status, true);
   }
 
-  statusVariant(status: AppointmentStatus): 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple' {
-    const map: Record<string, 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple'> = {
-      REQUESTED: 'amber',
-      CONFIRMED: 'green',
-      PROPOSED_NEW_TIME: 'blue',
-      CANCELLED: 'red',
-      COMPLETED: 'gray',
-      NO_SHOW: 'purple',
-    };
-    return map[status] ?? 'gray';
+  statusVariant(status: AppointmentStatus): AppointmentStatusVariant {
+    return appointmentStatusVariant(status);
   }
 }

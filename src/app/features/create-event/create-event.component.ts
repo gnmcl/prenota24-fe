@@ -17,15 +17,15 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
     <app-page-shell>
       <div class="mx-auto max-w-lg">
         <div class="mb-8">
-          <button (click)="router.navigate(['/eventi'])" class="mb-2 text-sm text-indigo-600 hover:text-indigo-500 font-medium">← Torna ai tuoi eventi</button>
+          <button (click)="router.navigate(['/eventi'])" class="mb-2 text-sm text-[var(--color-primary)] hover:text-[var(--color-primary-dark)] font-medium">← Torna ai tuoi eventi</button>
           <h2 class="text-2xl font-bold text-gray-900">Crea nuovo evento</h2>
           <p class="mt-1 text-sm text-gray-500">Compila i dettagli del tuo evento. Potrai pubblicarlo dopo averlo creato.</p>
         </div>
 
         @if (form.get('title')?.value) {
-          <div class="mb-6 rounded-lg bg-indigo-50 border border-indigo-100 px-4 py-3 text-sm">
-            <span class="text-indigo-600 font-medium">Link anteprima: </span>
-            <span class="text-indigo-900 font-mono">/e/{{ slugPreview }}-xxx</span>
+          <div class="mb-6 rounded-lg bg-[var(--surface-active-nav)] border border-[var(--color-primary)]/20 px-4 py-3 text-sm">
+            <span class="text-[var(--color-primary)] font-medium">Link anteprima: </span>
+            <span class="text-[var(--color-primary)] font-mono">/e/{{ slugPreview }}-xxx</span>
           </div>
         }
 
@@ -42,7 +42,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
             <div class="flex flex-col gap-1.5">
               <label class="text-sm font-medium text-gray-700" for="description">Descrizione (opzionale)</label>
               <textarea id="description" rows="3" placeholder="Descrivi il tuo evento..." formControlName="description"
-                class="block w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+                class="block w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] resize-none"></textarea>
             </div>
 
             <app-input label="Data evento" type="date" [min]="today" formControlName="eventDate" [error]="getFieldError('eventDate')" />

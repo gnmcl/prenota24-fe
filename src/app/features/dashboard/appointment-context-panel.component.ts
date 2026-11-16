@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import type { AppointmentResponse, AppointmentStatus } from '../../core/models/domain.model';
 import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
+import { appointmentStatusLabel, appointmentStatusVariant, type AppointmentStatusVariant } from '../../shared/utils/appointment-status';
 
 @Component({
   selector: 'app-appointment-context-panel',
@@ -71,26 +72,10 @@ export class AppointmentContextPanelComponent {
   }
 
   statusLabel(status: AppointmentStatus): string {
-    const map: Record<AppointmentStatus, string> = {
-      REQUESTED: 'Da confermare',
-      CONFIRMED: 'Confermato',
-      PROPOSED_NEW_TIME: 'Proposta',
-      CANCELLED: 'Cancellato',
-      COMPLETED: 'Completato',
-      NO_SHOW: 'Non presentato',
-    };
-    return map[status];
+    return appointmentStatusLabel(status, true);
   }
 
-  statusVariant(status: AppointmentStatus): 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple' {
-    const map: Record<AppointmentStatus, 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple'> = {
-      REQUESTED: 'amber',
-      CONFIRMED: 'green',
-      PROPOSED_NEW_TIME: 'blue',
-      CANCELLED: 'red',
-      COMPLETED: 'gray',
-      NO_SHOW: 'purple',
-    };
-    return map[status];
+  statusVariant(status: AppointmentStatus): AppointmentStatusVariant {
+    return appointmentStatusVariant(status);
   }
 }

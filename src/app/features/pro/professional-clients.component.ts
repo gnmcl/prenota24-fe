@@ -30,7 +30,7 @@ import type { ClientSummaryResponse, CreateClientRequest } from '../../core/mode
             </svg>
             <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)"
               placeholder="Cerca per nome, email o telefono..."
-              class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] py-2.5 pl-10 pr-4 text-sm text-[var(--text-primary)] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-colors" />
+              class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] py-2.5 pl-10 pr-4 text-sm text-[var(--text-primary)] focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:outline-none transition-colors" />
           </div>
         </div>
 
@@ -44,19 +44,19 @@ import type { ClientSummaryResponse, CreateClientRequest } from '../../core/mode
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Nome *</label>
-                <input type="text" [(ngModel)]="form.firstName" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:focus:border-indigo-400" />
+                <input type="text" [(ngModel)]="form.firstName" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:outline-none" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Cognome *</label>
-                <input type="text" [(ngModel)]="form.lastName" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:focus:border-indigo-400" />
+                <input type="text" [(ngModel)]="form.lastName" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:outline-none" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Email</label>
-                <input type="email" [(ngModel)]="form.email" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:focus:border-indigo-400" />
+                <input type="email" [(ngModel)]="form.email" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:outline-none" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Telefono</label>
-                <input type="tel" [(ngModel)]="form.phone" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:focus:border-indigo-400" />
+                <input type="tel" [(ngModel)]="form.phone" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:outline-none" />
               </div>
             </div>
             <div class="mt-4 flex items-center gap-3">
@@ -68,7 +68,7 @@ import type { ClientSummaryResponse, CreateClientRequest } from '../../core/mode
 
         @if (isLoading()) {
           <div class="flex justify-center py-12">
-            <div class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+            <div class="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-primary)]/20 border-t-[var(--color-primary)]"></div>
           </div>
         } @else if (clients().length === 0) {
           <app-empty-state
@@ -83,7 +83,7 @@ import type { ClientSummaryResponse, CreateClientRequest } from '../../core/mode
             <div class="divide-y divide-[var(--surface-card-border)]">
               @for (client of clients(); track client.id) {
                 <div class="flex items-center gap-4 px-5 py-4 hover:bg-[var(--surface-hover)] transition-colors">
-                  <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-sm font-semibold text-indigo-700 dark:text-indigo-300">
+                  <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--surface-active-nav)] text-sm font-semibold text-[var(--color-primary)]">
                     {{ client.firstName.charAt(0) }}{{ client.lastName.charAt(0) }}
                   </div>
                   <div class="flex-1 min-w-0">

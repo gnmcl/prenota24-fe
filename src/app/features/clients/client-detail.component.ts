@@ -15,6 +15,7 @@ import type {
   AppointmentResponse,
   AppointmentStatus,
 } from '../../core/models/domain.model';
+import { appointmentStatusLabel, appointmentStatusVariant, type AppointmentStatusVariant } from '../../shared/utils/appointment-status';
 
 @Component({
   selector: 'app-client-detail',
@@ -39,7 +40,7 @@ import type {
 
         @if (isLoading()) {
           <div class="flex justify-center py-12">
-            <div class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+            <div class="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-primary)]/20 border-t-[var(--color-primary)]"></div>
           </div>
         }
 
@@ -47,7 +48,7 @@ import type {
           <!-- Client Header -->
           <div class="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div class="flex items-center gap-4">
-              <div class="flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 text-lg font-bold text-indigo-700">
+              <div class="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--surface-active-nav)] text-lg font-bold text-[var(--color-primary)]">
                 {{ client()!.firstName.charAt(0) }}{{ client()!.lastName.charAt(0) }}
               </div>
               <div>
@@ -77,7 +78,7 @@ import type {
             @for (tab of tabs; track tab.key) {
               <button (click)="activeTab.set(tab.key)"
                 [class]="activeTab() === tab.key
-                  ? 'border-b-2 border-indigo-600 pb-3 px-4 text-sm font-semibold text-indigo-600'
+                  ? 'border-b-2 border-[var(--color-primary)] pb-3 px-4 text-sm font-semibold text-[var(--color-primary)]'
                   : 'pb-3 px-4 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors'">
                 {{ tab.label }}
               </button>
@@ -139,7 +140,7 @@ import type {
                   [(ngModel)]="newNoteContent"
                   placeholder="Scrivi una nota..."
                   rows="3"
-                  class="w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none resize-none transition-colors"
+                  class="w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] focus:outline-none resize-none transition-colors"
                 ></textarea>
                 <div class="mt-2 flex justify-end">
                   <app-button [disabled]="!newNoteContent.trim()" [isLoading]="addingNote()" (click)="addNote()">
@@ -315,13 +316,11 @@ export class ClientDetailComponent implements OnInit {
   }
 
   appointmentStatusLabel(status: AppointmentStatus): string {
-    const map: Record<string, string> = { REQUESTED: 'Da confermare', CONFIRMED: 'Confermato', PROPOSED_NEW_TIME: 'Proposta orario', CANCELLED: 'Cancellato', COMPLETED: 'Completato', NO_SHOW: 'Non presentato' };
-    return map[status] ?? status;
+    return appointmentStatusLabel(status);
   }
 
-  appointmentStatusVariant(status: AppointmentStatus): 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple' {
-    const map: Record<string, 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple'> = { REQUESTED: 'amber', CONFIRMED: 'green', PROPOSED_NEW_TIME: 'blue', CANCELLED: 'red', COMPLETED: 'gray', NO_SHOW: 'purple' };
-    return map[status] ?? 'gray';
+  appointmentStatusVariant(status: AppointmentStatus): AppointmentStatusVariant {
+    return appointmentStatusVariant(status);
   }
 
   formatDate(iso: string): string {

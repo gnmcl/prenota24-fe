@@ -19,7 +19,7 @@ import type { EventResponse, ReservationResponse } from '../../core/models/domai
       <!-- Loading spinner — shown only while loading -->
       @if (eventLoading()) {
         <div class="flex justify-center py-12">
-          <div class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+          <div class="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-primary)]/20 border-t-[var(--color-primary)]"></div>
         </div>
       }
 
@@ -36,7 +36,7 @@ import type { EventResponse, ReservationResponse } from '../../core/models/domai
           <!-- Header -->
           <div class="mb-6 flex items-start justify-between">
             <div>
-              <button (click)="router.navigate(['/eventi'])" class="mb-2 text-sm text-indigo-600 hover:text-indigo-500 font-medium">← Torna ai tuoi eventi</button>
+              <button (click)="router.navigate(['/eventi'])" class="mb-2 text-sm text-[var(--color-primary)] hover:text-[var(--color-primary-dark)] font-medium">← Torna ai tuoi eventi</button>
               <h2 class="text-2xl font-bold text-gray-900">{{ event()!.title }}</h2>
               <div class="mt-1 flex items-center gap-3">
                 <span [class]="'inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ' + getBadgeClass(event()!.status)">
@@ -58,7 +58,7 @@ import type { EventResponse, ReservationResponse } from '../../core/models/domai
           <!-- Stats -->
           <div class="grid grid-cols-3 gap-4 mb-6">
             <app-card extraClass="text-center !p-4">
-              <div class="text-2xl font-bold text-indigo-600">{{ confirmedCount() }}</div>
+              <div class="text-2xl font-bold text-[var(--color-primary)]">{{ confirmedCount() }}</div>
               <div class="text-xs text-gray-500 mt-1">Prenotazioni confermate</div>
             </app-card>
             <app-card extraClass="text-center !p-4">
@@ -108,7 +108,7 @@ import type { EventResponse, ReservationResponse } from '../../core/models/domai
 
             @if (reservationsLoading()) {
               <div class="flex justify-center py-6">
-                <div class="h-6 w-6 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+                <div class="h-6 w-6 animate-spin rounded-full border-4 border-[var(--color-primary)]/20 border-t-[var(--color-primary)]"></div>
               </div>
             }
 

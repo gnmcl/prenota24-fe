@@ -42,7 +42,7 @@ import { getErrorMessage } from '../../shared/utils/errors';
             <div class="mt-5">
               <label class="text-sm font-medium text-gray-700">Note</label>
               <textarea formControlName="notes" rows="3" placeholder="Note sul cliente..."
-                class="mt-1.5 w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none resize-none transition-colors">
+                class="mt-1.5 w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] focus:outline-none resize-none transition-colors">
               </textarea>
             </div>
 
@@ -50,14 +50,14 @@ import { getErrorMessage } from '../../shared/utils/errors';
               <label class="text-sm font-medium text-gray-700">Tag</label>
               <div class="mt-1.5 flex flex-wrap items-center gap-2">
                 @for (tag of tags(); track tag) {
-                  <span class="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-3 py-1 text-sm text-indigo-700">
+                  <span class="inline-flex items-center gap-1 rounded-full bg-[var(--surface-active-nav)] px-3 py-1 text-sm text-[var(--color-primary)]">
                     {{ tag }}
-                    <button type="button" (click)="removeTag(tag)" class="ml-0.5 hover:text-indigo-900">&times;</button>
+                    <button type="button" (click)="removeTag(tag)" class="ml-0.5 hover:text-[var(--color-primary-dark)]">&times;</button>
                   </span>
                 }
                 <input #tagInput (keydown.enter)="addTag(tagInput); $event.preventDefault()"
                        placeholder="Aggiungi tag..."
-                       class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors w-36" />
+                       class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] focus:outline-none transition-colors w-36" />
               </div>
             </div>
 

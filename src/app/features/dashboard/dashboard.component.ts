@@ -20,6 +20,7 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { RegisterSurfaceComponent } from '../../shared/components/register-surface/register-surface.component';
 import { AppointmentContextPanelComponent } from './appointment-context-panel.component';
+import { appointmentStatusLabel, appointmentStatusVariant, type AppointmentStatusVariant } from '../../shared/utils/appointment-status';
 
 interface WeekDay {
   dateKey: string;
@@ -276,27 +277,11 @@ export class DashboardComponent implements OnInit {
   }
 
   statusLabel(status: AppointmentStatus): string {
-    const map: Record<AppointmentStatus, string> = {
-      REQUESTED: 'Da confermare',
-      CONFIRMED: 'Confermato',
-      PROPOSED_NEW_TIME: 'Proposta',
-      CANCELLED: 'Cancellato',
-      COMPLETED: 'Completato',
-      NO_SHOW: 'Non presentato',
-    };
-    return map[status];
+    return appointmentStatusLabel(status, true);
   }
 
-  statusVariant(status: AppointmentStatus): 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple' {
-    const map: Record<AppointmentStatus, 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple'> = {
-      REQUESTED: 'amber',
-      CONFIRMED: 'green',
-      PROPOSED_NEW_TIME: 'blue',
-      CANCELLED: 'red',
-      COMPLETED: 'gray',
-      NO_SHOW: 'purple',
-    };
-    return map[status];
+  statusVariant(status: AppointmentStatus): AppointmentStatusVariant {
+    return appointmentStatusVariant(status);
   }
 
   weekDayClass(day: WeekDay): string {

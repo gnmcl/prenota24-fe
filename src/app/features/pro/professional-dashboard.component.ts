@@ -7,6 +7,7 @@ import { CardComponent } from '../../shared/components/card/card.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import type { ProfessionalDashboardResponse, AppointmentResponse, AppointmentStatus } from '../../core/models/domain.model';
+import { appointmentStatusLabel, appointmentStatusVariant, type AppointmentStatusVariant } from '../../shared/utils/appointment-status';
 
 const HOUR_START = 7;
 const HOUR_END = 21;
@@ -39,7 +40,7 @@ const SLOT_HEIGHT = 56;
 
         @if (isLoading()) {
           <div class="flex justify-center py-20">
-            <div class="h-10 w-10 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+            <div class="h-10 w-10 animate-spin rounded-full border-4 border-[var(--color-primary)]/20 border-t-[var(--color-primary)]"></div>
           </div>
         } @else if (hasError()) {
           <app-card extraClass="text-center py-12">
@@ -73,29 +74,29 @@ const SLOT_HEIGHT = 56;
           <!-- Quick links -->
           <div class="grid grid-cols-2 gap-4 mb-8 sm:grid-cols-4">
             <a routerLink="/pro/appuntamenti"
-               class="flex flex-col items-center gap-2 rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-card)] p-4 hover:border-indigo-400/60 hover:bg-[var(--surface-hover)] transition-colors text-center">
-              <svg class="h-6 w-6 text-indigo-500 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="flex flex-col items-center gap-2 rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-card)] p-4 hover:border-[var(--color-primary)]/60 hover:bg-[var(--surface-hover)] transition-colors text-center">
+              <svg class="h-6 w-6 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
               </svg>
               <span class="text-sm font-medium text-[var(--text-primary)]">Appuntamenti</span>
             </a>
             <a routerLink="/pro/clienti"
-               class="flex flex-col items-center gap-2 rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-card)] p-4 hover:border-indigo-400/60 hover:bg-[var(--surface-hover)] transition-colors text-center">
-              <svg class="h-6 w-6 text-indigo-500 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="flex flex-col items-center gap-2 rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-card)] p-4 hover:border-[var(--color-primary)]/60 hover:bg-[var(--surface-hover)] transition-colors text-center">
+              <svg class="h-6 w-6 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
               </svg>
               <span class="text-sm font-medium text-[var(--text-primary)]">Clienti</span>
             </a>
             <a routerLink="/pro/disponibilita"
-               class="flex flex-col items-center gap-2 rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-card)] p-4 hover:border-indigo-400/60 hover:bg-[var(--surface-hover)] transition-colors text-center">
-              <svg class="h-6 w-6 text-indigo-500 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="flex flex-col items-center gap-2 rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-card)] p-4 hover:border-[var(--color-primary)]/60 hover:bg-[var(--surface-hover)] transition-colors text-center">
+              <svg class="h-6 w-6 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
               <span class="text-sm font-medium text-[var(--text-primary)]">Disponibilità</span>
             </a>
             <a routerLink="/pro/profilo"
-               class="flex flex-col items-center gap-2 rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-card)] p-4 hover:border-indigo-400/60 hover:bg-[var(--surface-hover)] transition-colors text-center">
-              <svg class="h-6 w-6 text-indigo-500 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="flex flex-col items-center gap-2 rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-card)] p-4 hover:border-[var(--color-primary)]/60 hover:bg-[var(--surface-hover)] transition-colors text-center">
+              <svg class="h-6 w-6 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A8.966 8.966 0 0112 15c2.137 0 4.104.745 5.657 1.977M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
               </svg>
               <span class="text-sm font-medium text-[var(--text-primary)]">Profilo</span>
@@ -241,13 +242,11 @@ export class ProfessionalDashboardComponent implements OnInit {
   }
 
   statusLabel(status: AppointmentStatus): string {
-    const map: Record<string, string> = { REQUESTED: 'Da confermare', CONFIRMED: 'Confermato', PROPOSED_NEW_TIME: 'Proposta', CANCELLED: 'Cancellato', COMPLETED: 'Completato', NO_SHOW: 'Non presentato' };
-    return map[status] ?? status;
+    return appointmentStatusLabel(status, true);
   }
 
-  statusVariant(status: AppointmentStatus): 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple' {
-    const map: Record<string, 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple'> = { REQUESTED: 'amber', CONFIRMED: 'green', PROPOSED_NEW_TIME: 'blue', CANCELLED: 'red', COMPLETED: 'gray', NO_SHOW: 'purple' };
-    return map[status] ?? 'gray';
+  statusVariant(status: AppointmentStatus): AppointmentStatusVariant {
+    return appointmentStatusVariant(status);
   }
 
   formatTime(iso: string): string {

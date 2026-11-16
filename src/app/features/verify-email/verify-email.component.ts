@@ -17,8 +17,8 @@ import { VerificationCodeInputComponent } from '../../shared/components/verifica
     <app-page-shell>
       <div class="mx-auto max-w-sm pt-12">
         <div class="mb-8 text-center">
-          <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100">
-            <svg class="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--surface-active-nav)]">
+            <svg class="h-8 w-8 text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
             </svg>
           </div>
@@ -57,7 +57,7 @@ import { VerificationCodeInputComponent } from '../../shared/components/verifica
                 type="button"
                 (click)="onResend()"
                 [disabled]="isResending() || resendCooldown() > 0"
-                class="font-semibold text-indigo-600 hover:text-indigo-500 disabled:cursor-not-allowed disabled:text-gray-400"
+                class="font-semibold text-[var(--color-primary)] hover:text-[var(--color-primary-dark)] disabled:cursor-not-allowed disabled:text-gray-400"
               >
                 @if (resendCooldown() > 0) {
                   Reinvia tra {{ resendCooldown() }}s
@@ -67,7 +67,7 @@ import { VerificationCodeInputComponent } from '../../shared/components/verifica
               </button>
             </p>
             <p class="mt-3 text-sm text-gray-500">
-              <a routerLink="/registrati" class="font-semibold text-indigo-600 hover:text-indigo-500">Torna alla registrazione</a>
+              <a routerLink="/registrati" class="font-semibold text-[var(--color-primary)] hover:text-[var(--color-primary-dark)]">Torna alla registrazione</a>
             </p>
           </div>
         </app-card>

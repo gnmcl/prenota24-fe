@@ -19,7 +19,7 @@ import type { ProfessionalDashboardResponse } from '../../core/models/domain.mod
         <app-card>
           @if (isLoading()) {
             <div class="flex justify-center py-12">
-              <div class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+              <div class="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-primary)]/20 border-t-[var(--color-primary)]"></div>
             </div>
           } @else if (profile()) {
             <div class="space-y-6">

@@ -83,9 +83,9 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                   class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all"
                   [class]="
                     s.done
-                      ? 'bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer'
+                      ? 'bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-dark)] cursor-pointer'
                       : s.active
-                        ? 'border-2 border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
+                        ? 'border-2 border-[var(--color-primary)] text-[var(--color-primary)]'
                         : 'border-2 border-[var(--surface-card-border)] text-[var(--text-tertiary)] cursor-not-allowed'
                   "
                 >
@@ -105,7 +105,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                 @if (s.n < 4) {
                   <div
                     class="h-0.5 flex-1 mx-1 rounded transition-colors"
-                    [class]="s.done ? 'bg-indigo-600' : 'bg-[var(--surface-card-border)]'"
+                    [class]="s.done ? 'bg-[var(--color-primary)]' : 'bg-[var(--surface-card-border)]'"
                   ></div>
                 }
               </div>
@@ -113,7 +113,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                 class="mt-1.5 text-[10px] font-medium leading-tight"
                 [class]="
                   s.active
-                    ? 'text-indigo-600 dark:text-indigo-400'
+                    ? 'text-[var(--color-primary)]'
                     : s.done
                       ? 'text-[var(--text-secondary)]'
                       : 'text-[var(--text-tertiary)]'
@@ -137,7 +137,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
             >
               <div class="flex items-center gap-2 min-w-0">
                 <span
-                  class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white text-[10px] font-bold"
+                  class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-white text-[10px] font-bold"
                   >✓</span
                 >
                 <span class="text-[var(--text-tertiary)] shrink-0">Servizio:</span>
@@ -163,7 +163,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
               <button
                 (click)="goToStep(1)"
                 type="button"
-                class="ml-3 shrink-0 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:opacity-75 transition-opacity"
+                class="ml-3 shrink-0 text-xs font-medium text-[var(--color-primary)] hover:opacity-75 transition-opacity"
               >
                 Modifica
               </button>
@@ -175,7 +175,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
               >
                 <div class="flex items-center gap-2 min-w-0">
                   <span
-                    class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white text-[10px] font-bold"
+                    class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-white text-[10px] font-bold"
                     >✓</span
                   >
                   <span class="text-[var(--text-tertiary)] shrink-0">Professionista:</span>
@@ -186,7 +186,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                 <button
                   (click)="goToStep(2)"
                   type="button"
-                  class="ml-3 shrink-0 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:opacity-75 transition-opacity"
+                  class="ml-3 shrink-0 text-xs font-medium text-[var(--color-primary)] hover:opacity-75 transition-opacity"
                 >
                   Modifica
                 </button>
@@ -199,7 +199,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
               >
                 <div class="flex items-center gap-2 min-w-0">
                   <span
-                    class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white text-[10px] font-bold"
+                    class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-white text-[10px] font-bold"
                     >✓</span
                   >
                   <span class="text-[var(--text-tertiary)] shrink-0">Cliente:</span>
@@ -210,7 +210,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                 <button
                   (click)="goToStep(3)"
                   type="button"
-                  class="ml-3 shrink-0 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:opacity-75 transition-opacity"
+                  class="ml-3 shrink-0 text-xs font-medium text-[var(--color-primary)] hover:opacity-75 transition-opacity"
                 >
                   Modifica
                 </button>
@@ -250,7 +250,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
               [ngModel]="serviceSearchText()"
               (ngModelChange)="onServiceSearch($event)"
               placeholder="Cerca servizio per nome..."
-              class="mb-3 w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors"
+              class="mb-3 w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] shadow-sm focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] focus:outline-none transition-colors"
             />
             <div class="max-h-64 overflow-y-auto space-y-1">
               <button
@@ -258,7 +258,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                 type="button"
                 [class]="
                   !selectedServiceId()
-                    ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 p-3 text-left text-sm transition-colors'
+                    ? 'w-full rounded-lg border-2 border-[var(--color-primary)] bg-[var(--surface-active-nav)] p-3 text-left text-sm transition-colors'
                     : 'w-full rounded-lg border border-[var(--surface-card-border)] p-3 text-left text-sm hover:bg-[var(--surface-hover)] transition-colors'
                 "
               >
@@ -271,7 +271,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                   type="button"
                   [class]="
                     selectedServiceId() === svc.id
-                      ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 p-3 text-left text-sm transition-colors'
+                      ? 'w-full rounded-lg border-2 border-[var(--color-primary)] bg-[var(--surface-active-nav)] p-3 text-left text-sm transition-colors'
                       : 'w-full rounded-lg border border-[var(--surface-card-border)] p-3 text-left text-sm hover:bg-[var(--surface-hover)] transition-colors'
                   "
                 >
@@ -304,7 +304,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
               [ngModel]="professionalSearchText()"
               (ngModelChange)="onProfessionalSearch($event)"
               placeholder="Cerca per nome o email..."
-              class="mb-3 w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors"
+              class="mb-3 w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] shadow-sm focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] focus:outline-none transition-colors"
             />
             @if (searchedProfessionals().length === 0) {
               <p class="text-sm text-[var(--text-tertiary)]">
@@ -318,7 +318,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                     type="button"
                     [class]="
                       selectedProfessionalId() === pro.id
-                        ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 p-3 text-left transition-colors'
+                        ? 'w-full rounded-lg border-2 border-[var(--color-primary)] bg-[var(--surface-active-nav)] p-3 text-left transition-colors'
                         : 'w-full rounded-lg border border-[var(--surface-card-border)] p-3 text-left hover:bg-[var(--surface-hover)] transition-colors'
                     "
                   >
@@ -348,7 +348,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
               [(ngModel)]="clientSearch"
               (input)="searchClients()"
               placeholder="Cerca cliente per nome o email..."
-              class="mb-3 w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors"
+              class="mb-3 w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] shadow-sm focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] focus:outline-none transition-colors"
             />
             @if (clientResults().length > 0) {
               <div class="max-h-48 overflow-y-auto space-y-1 mb-3">
@@ -362,7 +362,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                     type="button"
                     [class]="
                       selectedClientId() === c.id
-                        ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-2 text-left text-sm transition-colors'
+                        ? 'w-full rounded-lg border-2 border-[var(--color-primary)] bg-[var(--surface-active-nav)] px-3 py-2 text-left text-sm transition-colors'
                         : 'w-full rounded-lg border border-[var(--surface-card-border)] px-3 py-2 text-left text-sm hover:bg-[var(--surface-hover)] transition-colors'
                     "
                   >
@@ -378,9 +378,9 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
             }
             @if (selectedClientName()) {
               <div
-                class="mb-3 flex items-center gap-2 rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-2 text-sm"
+                class="mb-3 flex items-center gap-2 rounded-lg border-2 border-[var(--color-primary)] bg-[var(--surface-active-nav)] px-3 py-2 text-sm"
               >
-                <span class="font-medium text-indigo-700 dark:text-indigo-300">{{
+                <span class="font-medium text-[var(--color-primary)]">{{
                   selectedClientName()
                 }}</span>
                 <button
@@ -403,7 +403,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
               <button
                 (click)="showNewClientForm.set(true)"
                 type="button"
-                class="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400 font-medium hover:opacity-75 transition-opacity mt-1"
+                class="flex items-center gap-2 text-sm text-[var(--color-primary)] font-medium hover:opacity-75 transition-opacity mt-1"
               >
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -428,7 +428,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                     <input
                       type="text"
                       [(ngModel)]="newClientFirstName"
-                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors"
+                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] focus:outline-none transition-colors"
                     />
                   </div>
                   <div>
@@ -438,7 +438,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                     <input
                       type="text"
                       [(ngModel)]="newClientLastName"
-                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors"
+                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] focus:outline-none transition-colors"
                     />
                   </div>
                   <div>
@@ -448,7 +448,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                     <input
                       type="email"
                       [(ngModel)]="newClientEmail"
-                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors"
+                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] focus:outline-none transition-colors"
                     />
                   </div>
                   <div>
@@ -458,7 +458,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                     <input
                       type="tel"
                       [(ngModel)]="newClientPhone"
-                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors"
+                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
@@ -551,7 +551,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                       {{ day.num }}
                       @if (day.isToday) {
                         <span
-                          class="absolute bottom-1 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-indigo-500"
+                          class="absolute bottom-1 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-[var(--color-primary)]"
                         ></span>
                       }
                     </button>
@@ -611,7 +611,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                       [ngModel]="selectedStartTime()"
                       (ngModelChange)="setStartTime($event)"
                       step="300"
-                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors"
+                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] focus:outline-none transition-colors"
                     />
                   </div>
                   <div>
@@ -625,7 +625,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                         (ngModelChange)="setDuration($event)"
                         min="5"
                         step="5"
-                        class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors"
+                        class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] focus:outline-none transition-colors"
                       />
                     } @else {
                       <label class="block text-xs font-medium text-[var(--text-secondary)] mb-1"
@@ -659,7 +659,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                 @if (loadingSlots()) {
                   <div class="flex items-center gap-2">
                     <div
-                      class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--surface-card-border)] border-t-indigo-600"
+                      class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--surface-card-border)] border-t-[var(--color-primary)]"
                     ></div>
                     <span class="text-xs text-[var(--text-tertiary)]"
                       >Carico orari disponibili...</span
@@ -674,7 +674,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                         type="button"
                         [class]="
                           selectedStartTime() === formatSlotTime(slot.start)
-                            ? 'rounded-full bg-indigo-600 px-3 py-1 text-xs font-medium text-white'
+                            ? 'rounded-full bg-[var(--color-primary)] px-3 py-1 text-xs font-medium text-white'
                             : 'rounded-full border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-1 text-xs text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors'
                         "
                       >
@@ -700,7 +700,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                 [(ngModel)]="notes"
                 rows="3"
                 placeholder="Note sull'appuntamento..."
-                class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none resize-none transition-colors"
+                class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] shadow-sm focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] focus:outline-none resize-none transition-colors"
               >
               </textarea>
             </div>
@@ -1126,10 +1126,10 @@ export class AppointmentFormComponent implements OnInit {
     isToday: boolean;
     capacityStatus: 'green' | 'yellow' | 'red' | null;
   }): string {
-    if (day.isSelected) return 'bg-indigo-600 text-white font-semibold rounded-lg shadow-sm';
+    if (day.isSelected) return 'bg-[var(--color-primary)] text-white font-semibold rounded-lg shadow-sm';
     if (day.isPast) return 'text-[var(--text-tertiary)] cursor-not-allowed';
     let base = day.isToday
-      ? 'text-indigo-600 dark:text-indigo-400 font-bold rounded-lg'
+      ? 'text-[var(--color-primary)] font-bold rounded-lg'
       : 'text-[var(--text-primary)] rounded-lg';
     if (day.capacityStatus === 'red')
       base += ' bg-red-100 dark:bg-red-900/40 hover:bg-red-200 dark:hover:bg-red-900/60';

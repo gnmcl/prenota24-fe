@@ -28,25 +28,33 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
             });
             return next(retryReq);
           }),
-          catchError(() => {
-            return throwError(() => error.error as ApiErrorResponse);
-          }),
+          // A failed retry reports its own error; a failed refresh reports the original 401.
+          catchError((retryError: unknown) =>
+            throwError(() => toApiError(retryError instanceof HttpErrorResponse ? retryError : error)),
+          ),
         );
       }
 
       if (error.status === 401) {
         authService.logout();
         window.location.href = '/accedi';
-        return throwError(() => error.error as ApiErrorResponse);
+        return throwError(() => toApiError(error));
       }
 
-      const normalised: ApiErrorResponse = {
-        status: error.status || 0,
-        error: error.error?.error,
-        message: error.error?.message ?? error.message ?? 'Network error – please check your connection.',
-        errors: error.error?.errors,
-      };
-      return throwError(() => normalised);
+      return throwError(() => toApiError(error));
     }),
   );
 };
+
+/** Maps an HTTP failure to the backend ErrorResponse shape, also for network errors with no body. */
+function toApiError(error: HttpErrorResponse): ApiErrorResponse {
+  const body: Partial<ApiErrorResponse> | null =
+    typeof error.error === 'object' && error.error !== null ? error.error : null;
+  return {
+    status: body?.status ?? error.status,
+    error: body?.error,
+    message: body?.message ?? error.message ?? 'Network error – please check your connection.',
+    path: body?.path,
+    timestamp: body?.timestamp,
+  };
+}

@@ -64,7 +64,7 @@ export const routes: Routes = [
   {
     path: 'settings',
     loadComponent: () => import('./features/settings/settings.component').then(m => m.SettingsComponent),
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard],
     data: { allowed: ['ADMIN', 'PROFESSIONAL'] },
   },
   // Events
