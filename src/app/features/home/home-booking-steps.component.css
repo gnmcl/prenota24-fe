@@ -1,0 +1,187 @@
+/* Host is main > section#come-funziona; the section box itself comes from .landing main > section. */
+
+/* ---------------------------------------------------------------- live: the stage sticks for one screen of scroll */
+:host(.is-live) { height: 200svh; padding: 0; }
+:host(.is-live) > .wrap { height: 100%; }
+:host(.is-live) .steps__stage {
+  position: sticky;
+  top: 0;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--col-gap);
+  height: 100svh;
+  padding: var(--padt) 0 var(--padb);
+}
+:host(.is-live) .steps__text { grid-column: 1 / span 5; }
+:host(.is-live) .steps__frame { grid-column: 7 / span 6; }
+
+.steps__list { margin: 40px 0 0; padding: 0; list-style: none; }
+.step {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  column-gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+.step__num {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  font-size: var(--t-label);
+  font-weight: 600;
+  color: var(--muted);
+  transition: background-color 300ms var(--ease), color 300ms var(--ease), border-color 300ms var(--ease);
+}
+.step.is-on .step__num { border-color: var(--action); background: var(--action); color: var(--text-inverted); }
+.step h3 { font-size: var(--t-card); }
+.step:not(.is-on) h3 { color: var(--muted); }
+
+/* the active step opens its two lines; the others collapse to their title */
+.step__text {
+  display: grid;
+  grid-template-rows: 0fr;
+  max-width: 52ch;
+  transition: grid-template-rows 360ms var(--ease), margin-top 360ms var(--ease);
+}
+.step__text > span { overflow: hidden; }
+.step.is-on .step__text { grid-template-rows: 1fr; margin-top: 6px; }
+
+/* the shared frame on the right */
+.steps__frame {
+  position: relative;
+  align-self: stretch;
+  border: 1px solid var(--line);
+  border-radius: var(--r-frame);
+  background:
+    linear-gradient(color-mix(in oklab, var(--ink) 5%, transparent) 1px, transparent 1px) 0 0 / 24px 24px,
+    linear-gradient(90deg, color-mix(in oklab, var(--ink) 5%, transparent) 1px, transparent 1px) 0 0 / 24px 24px,
+    var(--subtle);
+  overflow: hidden;
+}
+.steps__screen {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 40px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 420ms var(--ease), transform 420ms var(--ease);
+}
+.steps__screen.is-past { transform: translateY(-12px); }
+.steps__screen.is-on { opacity: 1; transform: none; }
+
+/* ---------------------------------------------------------------- static rows (under 1024, short screens, reduced motion) */
+:host(:not(.is-live)) .step__visual {
+  grid-column: 2;
+  display: grid;
+  place-items: center;
+  margin-top: 16px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-frame);
+  background: var(--subtle);
+}
+@media (min-width: 640px) {
+  :host(:not(.is-live)) .step {
+    grid-template-columns: 32px minmax(0, 1fr) minmax(0, 1.1fr);
+    align-items: start;
+  }
+  :host(:not(.is-live)) .step__visual { grid-column: 3; margin-top: 0; max-height: 30svh; overflow: hidden; }
+}
+@media (min-width: 1024px) {
+  :host(:not(.is-live)) .steps__text { max-width: none; }
+}
+
+/* ---------------------------------------------------------------- the step screens (live HTML) */
+.ui {
+  display: grid;
+  gap: 12px;
+  width: min(100%, 420px);
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  background: var(--surface);
+  font-size: var(--t-small);
+  line-height: 1.4;
+}
+:host(:not(.is-live)) .ui { padding: 16px; gap: 10px; }
+.ui__eyebrow { font-size: var(--t-label); color: var(--muted); }
+.ui__title { font-size: 20px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.2; }
+.ui__field { padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-control); }
+.ui__slots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.ui__slots > span {
+  display: grid;
+  place-items: center;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  font-weight: 500;
+}
+.ui__slots > .is-picked { border-color: var(--action); background: var(--action); color: var(--text-inverted); }
+.ui__button,
+.ui__ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: var(--r-control);
+  font-weight: 500;
+}
+.ui__button { background: var(--action); color: var(--text-inverted); }
+.ui__ghost { border: 1px solid var(--surface-input-border); }
+.ui__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.ui__row { display: flex; align-items: center; gap: 12px; }
+.ui__row--head { justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.ui__row b { font-weight: 600; }
+.ui__proposal {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  padding: 12px;
+  border: 1px dashed color-mix(in oklab, var(--action) 45%, transparent);
+  border-radius: var(--r-control);
+  background: var(--surface-active-nav);
+}
+.ui__mail {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+}
+.ui__mail b { font-weight: 600; }
+.ui__link { color: var(--action); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+.ui__segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--surface-input-border);
+  border-radius: var(--r-control);
+  overflow: hidden;
+}
+.ui__segmented > span { display: grid; place-items: center; height: 38px; font-weight: 500; }
+.ui__segmented > span + span { border-left: 1px solid var(--surface-input-border); }
+.ui__segmented > .is-picked { background: var(--action); color: var(--text-inverted); }
+.ui__history { display: grid; gap: 2px; padding-top: 10px; border-top: 1px solid var(--line); }
+
+/* phone: each step keeps its screen, trimmed to the part that tells the step, so the section holds two screens */
+@media (max-width: 639px) {
+  :host(:not(.is-live)) .steps__list { margin-top: 32px; }
+  :host(:not(.is-live)) .step { padding: 14px 0; }
+  :host(:not(.is-live)) .step__visual { margin-top: 12px; padding: 12px; }
+  :host(:not(.is-live)) .ui { padding: 12px; gap: 8px; }
+  .ui--booking .ui__field,
+  .ui--booking .ui__button,
+  .ui--booking .ui__eyebrow,
+  .ui--request .ui__row--head,
+  .ui--mails .ui__mail:first-child,
+  .ui--outcome .ui__history { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .steps__screen, .step__text, .step__num { transition: none; }
+}

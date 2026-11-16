@@ -1,0 +1,33 @@
+/* Close and footer: one section. Unencapsulated like the page system (home.component.css). */
+
+.landing .closing { display: flex; }
+.landing .closing__wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 48px;
+}
+.landing .close__title { max-width: 16ch; font-size: clamp(36px, 2.5vw + 26px, 64px); }
+.landing .close__line { margin-top: 16px; max-width: 52ch; font-size: var(--t-lead); line-height: 1.5; }
+.landing .close .btn { margin-top: 32px; }
+@media (max-width: 639px) {
+  .landing .close .btn { width: 100%; height: 56px; font-size: var(--t-body); }
+}
+
+.landing .directory { border-top: 1px solid var(--line); padding-top: 32px; }
+.landing .directory__cols {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px var(--col-gap);
+  margin-top: 24px;
+}
+.landing .directory h3 { font-size: var(--t-label); font-weight: 500; letter-spacing: 0; color: var(--muted); }
+.landing .directory ul { display: grid; margin-top: 8px; }
+.landing .directory li a { display: inline-flex; align-items: center; min-height: 44px; }
+@media (min-width: 1024px) {
+  .landing .directory li a { min-height: 36px; }
+  .landing .directory li a.link { background-position: 0 calc(100% - 6px); }
+}
+.landing .directory li a.link { background-position: 0 calc(100% - 10px); }
+.landing .legal { margin-top: 32px; font-size: var(--t-label); color: var(--muted); }
+

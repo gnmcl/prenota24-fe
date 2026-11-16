@@ -1,0 +1,222 @@
+:host { display: block; }
+
+.collage {
+  position: relative;
+  height: 100%;
+  min-height: inherit;
+  border: 1px solid var(--line);
+  border-radius: var(--r-frame);
+  /* technical paper: a faint 24px grid of hairlines on the subtle surface */
+  background:
+    linear-gradient(color-mix(in oklab, var(--ink) 5%, transparent) 1px, transparent 1px) 0 0 / 24px 24px,
+    linear-gradient(90deg, color-mix(in oklab, var(--ink) 5%, transparent) 1px, transparent 1px) 0 0 / 24px 24px,
+    var(--subtle);
+  overflow: hidden;
+  container: collage / size;
+}
+.collage__stage { position: absolute; inset: 0; }
+
+.collage__set {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 700ms ease;
+}
+.collage__set.is-on { opacity: 1; }
+
+/* ---------------------------------------------------------------- pieces */
+.piece {
+  position: absolute;
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  background: var(--surface);
+  font-size: var(--t-label);
+  line-height: 1.35;
+  color: var(--ink);
+}
+.piece__eyebrow { font-size: var(--t-label); color: var(--muted); }
+.piece__title { font-size: 18px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.2; }
+.piece__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--r-control);
+  background: var(--action);
+  color: var(--text-inverted);
+  font-size: var(--t-label);
+  font-weight: 500;
+}
+.piece__ghost {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--surface-input-border);
+  border-radius: var(--r-control);
+  font-size: var(--t-label);
+  font-weight: 500;
+}
+
+/* booking page */
+.booking__service { padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-control); font-size: var(--t-small); }
+.booking__day { font-weight: 600; font-size: var(--t-small); }
+.booking__slots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.booking__slots > span {
+  display: grid;
+  place-items: center;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  font-size: var(--t-small);
+  font-weight: 500;
+}
+.booking__slots > .is-picked { border-color: var(--action); background: var(--action); color: var(--text-inverted); }
+
+/* request */
+.request__head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.request__when { font-size: var(--t-small); }
+.request__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* agenda */
+.piece--agenda { gap: 0; padding: 0; overflow: hidden; }
+.agenda__head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 16px 18px 12px; }
+.agenda__row {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 10px;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border-top: 1px solid var(--line);
+  font-size: var(--t-small);
+}
+.agenda__row b { font-weight: 600; }
+.agenda__row.is-sel { background: var(--surface-active-nav); box-shadow: inset 2px 0 0 var(--action); }
+.sq { width: 8px; height: 8px; border-radius: 1px; }
+.sq--green { background: var(--status-success-text); }
+.sq--amber { background: var(--status-warning-text); }
+
+/* sent */
+.piece--sent { gap: 4px; padding: 14px 16px; }
+.sent__line { font-size: var(--t-small); font-weight: 500; }
+
+/* mail */
+.mail-piece__body { font-size: var(--t-small); }
+.mail-piece__link { color: var(--action); font-size: var(--t-small); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+
+/* chat */
+.chat-piece__in,
+.chat-piece__out {
+  max-width: 88%;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  font-size: var(--t-small);
+}
+.chat-piece__in { justify-self: start; background: var(--subtle); }
+.chat-piece__out { justify-self: end; background: var(--surface-active-nav); border-color: color-mix(in oklab, var(--action) 30%, transparent); }
+
+/* event */
+.event-piece__bar { display: block; height: 6px; border-radius: 1px; background: var(--subtle); overflow: hidden; }
+.event-piece__bar > span { display: block; width: 60%; height: 100%; background: var(--action); }
+.event-piece__count { font-size: var(--t-small); }
+
+/* professionals for the service */
+.piece--pros { gap: 0; padding: 14px 0 4px; }
+.piece--pros .piece__eyebrow { padding: 0 18px 8px; }
+.pros__row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 18px;
+  border-top: 1px solid var(--line);
+  font-size: var(--t-small);
+}
+.pros__row.is-picked { background: var(--surface-active-nav); box-shadow: inset 2px 0 0 var(--action); }
+.pros__free { font-size: var(--t-label); color: var(--muted); }
+
+/* team */
+.piece--team { gap: 0; padding: 14px 0 4px; }
+.piece--team .piece__eyebrow { padding: 0 18px 8px; }
+.team-piece__row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 18px;
+  border-top: 1px solid var(--line);
+  font-size: var(--t-small);
+}
+.team-piece__row b { font-weight: 600; }
+.team-piece__av {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-control);
+  background: var(--subtle);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------- placement (desktop: % of a 628 x 716 collage) */
+.p1a { left: 5%; top: 5%; width: 58%; }
+.p1b { right: 4%; bottom: 4%; width: 50%; }
+.p1c { left: 5%; top: 58%; width: 44%; }
+
+.p2a { left: 5%; top: 5%; width: 56%; }
+.p2c { right: 4%; top: 9%; width: 34%; }
+.p2b { right: 4%; bottom: 4%; width: 58%; }
+
+.p3a { left: 5%; top: 5%; width: 54%; }
+.p3b { right: 4%; top: 24%; width: 36%; }
+.p3c { right: 4%; bottom: 4%; width: 60%; }
+
+/* tablet: a tall, narrow collage */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .p1a, .p2a, .p3a { left: 6%; top: 4%; width: 88%; }
+  .p1b, .p2b, .p3c { right: 6%; bottom: 4%; width: 82%; }
+  .p2c, .p1c { display: none; }
+  .p3b { right: 6%; top: auto; bottom: 34%; width: 60%; }
+}
+
+/* phone: the first set only; the request card drops out when the collage is too short to hold both */
+@media (max-width: 639px) {
+  .piece { padding: 14px; gap: 8px; }
+  .p1a { left: 12px; top: 12px; width: calc(100% - 56px); }
+  .p1b { right: 12px; bottom: 12px; width: calc(100% - 72px); }
+  .booking__service, .p1a .piece__button, .p1c { display: none; }
+}
+@container collage (max-height: 430px) {
+  .p1b { display: none; }
+}
+
+/* ---------------------------------------------------------------- pause */
+.collage__pause {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 160ms var(--ease);
+}
+.collage__pause:hover { transform: scale(1.06); }
+.collage__pause svg { width: 14px; height: 14px; fill: currentColor; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+@media (prefers-reduced-motion: reduce) {
+  .collage__set { transition: none; }
+}

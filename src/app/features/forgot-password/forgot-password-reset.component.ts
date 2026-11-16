@@ -103,7 +103,7 @@ function matchPasswords(control: AbstractControl): ValidationErrors | null {
               type="button"
               (click)="onResendCode()"
               [disabled]="isResending() || resendCooldown() > 0"
-              class="font-semibold text-indigo-600 hover:text-indigo-500 disabled:cursor-not-allowed disabled:text-gray-400"
+              class="font-semibold text-[var(--color-primary)] hover:text-[var(--color-primary-dark)] disabled:cursor-not-allowed disabled:text-gray-400"
             >
               @if (isResending()) {
                 Invio in corso...
@@ -116,7 +116,7 @@ function matchPasswords(control: AbstractControl): ValidationErrors | null {
           </div>
 
           <p class="mt-4 text-center text-sm text-gray-500">
-            <a routerLink="/accedi" class="font-semibold text-indigo-600 hover:text-indigo-500">Torna al login</a>
+            <a routerLink="/accedi" class="font-semibold text-[var(--color-primary)] hover:text-[var(--color-primary-dark)]">Torna al login</a>
           </p>
         </app-card>
       </div>

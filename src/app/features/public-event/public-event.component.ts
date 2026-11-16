@@ -15,21 +15,21 @@ import type { EventResponse } from '../../core/models/domain.model';
   imports: [ReactiveFormsModule, RouterLink, CardComponent, ButtonComponent, InputComponent, AlertComponent],
   template: `
     @if (isLoading()) {
-      <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
-        <div class="h-10 w-10 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+      <div class="min-h-screen bg-[var(--surface-page)] flex items-center justify-center">
+        <div class="h-10 w-10 animate-spin rounded-full border-4 border-[var(--color-primary)]/20 border-t-[var(--color-primary)]"></div>
       </div>
     } @else if (!event()) {
-      <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center px-4">
+      <div class="min-h-screen bg-[var(--surface-page)] flex items-center justify-center px-4">
         <app-card extraClass="max-w-md text-center">
           <h2 class="text-xl font-bold text-gray-900 mb-2">Evento non trovato</h2>
           <p class="text-gray-500">Il link potrebbe essere errato o l'evento potrebbe essere stato rimosso.</p>
         </app-card>
       </div>
     } @else {
-      <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      <div class="min-h-screen bg-[var(--surface-page)]">
         <header class="border-b border-gray-200/60 bg-white/80 backdrop-blur-sm">
           <div class="mx-auto flex h-14 max-w-3xl items-center px-6">
-            <span class="text-lg font-bold tracking-tight text-indigo-600">Prenota24</span>
+            <span class="text-lg font-bold tracking-tight text-[var(--color-primary)]">Prenota24</span>
             <span class="mx-3 text-gray-300">|</span>
             <span class="truncate text-sm font-medium text-gray-700">{{ event()!.studioName }}</span>
           </div>
@@ -89,7 +89,7 @@ import type { EventResponse } from '../../core/models/domain.model';
                 <div class="flex flex-col gap-1.5">
                   <label class="text-sm font-medium text-gray-700" for="notes">Note (opzionale)</label>
                   <textarea id="notes" rows="2" placeholder="Allergie, richieste speciali..." formControlName="notes"
-                    class="block w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+                    class="block w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] resize-none"></textarea>
                 </div>
 
                 <!-- Honeypot -->
@@ -98,12 +98,12 @@ import type { EventResponse } from '../../core/models/domain.model';
                 </div>
 
                 <p class="text-xs leading-5 text-gray-500">
-                  Consulta l'<a routerLink="/privacy" class="font-semibold text-indigo-600 underline underline-offset-2 hover:text-indigo-500">informativa privacy</a>.
+                  Consulta l'<a routerLink="/privacy" class="font-semibold text-[var(--color-primary)] underline underline-offset-2 hover:text-[var(--color-primary-dark)]">informativa privacy</a>.
                   <strong class="font-semibold text-gray-700">{{ event()!.studioName }}</strong> è titolare dei dati necessari alla prenotazione e deve fornirti la propria informativa.
                   @if (event()!.studioPrivacyContactEmail) {
-                    Puoi contattarlo a <a [href]="'mailto:' + event()!.studioPrivacyContactEmail" class="font-semibold text-indigo-600 underline underline-offset-2 hover:text-indigo-500">{{ event()!.studioPrivacyContactEmail }}</a>.
+                    Puoi contattarlo a <a [href]="'mailto:' + event()!.studioPrivacyContactEmail" class="font-semibold text-[var(--color-primary)] underline underline-offset-2 hover:text-[var(--color-primary-dark)]">{{ event()!.studioPrivacyContactEmail }}</a>.
                   } @else {
-                    Per ottenere i suoi recapiti scrivi a <a href="mailto:info@prenota24.com" class="font-semibold text-indigo-600 underline underline-offset-2 hover:text-indigo-500">info&#64;prenota24.com</a> indicando il nome dell'organizzatore.
+                    Per ottenere i suoi recapiti scrivi a <a href="mailto:info@prenota24.com" class="font-semibold text-[var(--color-primary)] underline underline-offset-2 hover:text-[var(--color-primary-dark)]">info&#64;prenota24.com</a> indicando il nome dell'organizzatore.
                   }
                 </p>
 

@@ -42,3 +42,6 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# taste-skill design checks (screenshots, headless Chrome profiles, gate state)
+/.taste-skill/

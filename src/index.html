@@ -2,11 +2,20 @@
 <html lang="it">
   <head>
     <meta charset="utf-8" />
-    <title>Prenota24 — Gestisci le tue prenotazioni</title>
-    <meta name="description" content="Prenota24 ti permette di creare landing page di prenotazione bellissime e funzionali, condividerle con i tuoi clienti e gestire tutto da un'unica dashboard." />
+    <title>Prenota24: agenda online per studi su appuntamento</title>
+    <meta name="description" content="Prenotazioni dalla pagina dello studio, agenda condivisa con il team, promemoria email 24 ore prima, messaggi WhatsApp ed eventi." />
+    <meta property="og:title" content="Prenota24: agenda online per studi su appuntamento" />
+    <meta property="og:description" content="Prenotazioni dalla pagina dello studio, agenda condivisa con il team, promemoria email 24 ore prima, messaggi WhatsApp ed eventi." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/share.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#F5F6F2" />
+    <!-- <link rel="canonical" href="..."> once the production domain is confirmed -->
     <base href="/" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <!-- Marks <html> before first paint so the landing hero can run its one-time entrance; without script the words show at once. -->
+    <script>document.documentElement.classList.add('m-enter');setTimeout(function(){document.documentElement.classList.add('m-enter-done')},700)</script>
   </head>
   <body class="font-sans antialiased">
     <!--

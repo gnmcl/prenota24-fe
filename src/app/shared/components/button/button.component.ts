@@ -41,7 +41,8 @@ import { Component, Input } from '@angular/core';
 })
 export class ButtonComponent {
   @Input() variant: 'primary' | 'secondary' | 'chat' | 'danger' | 'ghost' = 'primary';
-  @Input() size: 'sm' | 'md' | 'icon' = 'md';
+  /** 'lg': 48px with a 16px label, for the main action of public forms. */
+  @Input() size: 'sm' | 'md' | 'lg' | 'icon' = 'md';
   @Input() isLoading = false;
   @Input() disabled = false;
   @Input() type: 'button' | 'submit' | 'reset' = 'button';
@@ -53,12 +54,13 @@ export class ButtonComponent {
 
   get buttonClasses(): string {
     const base =
-      'inline-flex items-center justify-center gap-2 rounded-[var(--radius-lg)] border text-sm font-semibold leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--surface-card)] disabled:cursor-not-allowed disabled:opacity-55';
+      'inline-flex items-center justify-center gap-2 rounded-[var(--radius-lg)] border font-semibold leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--surface-card)] disabled:cursor-not-allowed disabled:opacity-55';
 
     const sizes: Record<string, string> = {
       sm: 'min-h-9 px-3 py-2 text-xs',
-      md: 'min-h-10 px-4 py-2.5',
-      icon: 'h-10 w-10 p-0',
+      md: 'min-h-10 px-4 py-2.5 text-sm',
+      lg: 'min-h-12 px-6 text-base transition-[background-color,transform] duration-150 hover:-translate-y-px active:translate-y-0 active:scale-[.98] disabled:hover:translate-y-0',
+      icon: 'h-10 w-10 p-0 text-sm',
     };
 
     const variants: Record<string, string> = {

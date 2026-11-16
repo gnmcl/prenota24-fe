@@ -18,6 +18,7 @@ import type {
   TimeSlotResponse,
 } from '../../core/models/domain.model';
 import { getErrorMessage } from '../../shared/utils/errors';
+import { appointmentStatusLabel, appointmentStatusVariant, type AppointmentStatusVariant } from '../../shared/utils/appointment-status';
 
 const MONTHS_IT = [
   'Gennaio',
@@ -69,7 +70,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
         @if (isLoading()) {
           <div class="flex justify-center py-12">
             <div
-              class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"
+              class="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-primary)]/20 border-t-[var(--color-primary)]"
             ></div>
           </div>
         }
@@ -102,7 +103,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
 
           <!-- Edit form -->
           @if (editMode()) {
-            <app-card extraClass="mb-6 !border-indigo-200 dark:!border-indigo-800/60 !border-2">
+            <app-card extraClass="mb-6 !border-[var(--color-primary)]/20 !border-2">
               <h3 class="mb-4 text-lg font-semibold text-[var(--text-primary)]">
                 Modifica appuntamento
               </h3>
@@ -180,11 +181,11 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                           [disabled]="day.isPast"
                           [class]="
                             day.dateStr === editDate
-                              ? 'relative py-2 text-center text-xs bg-indigo-600 text-white font-semibold rounded-lg shadow-sm transition-all'
+                              ? 'relative py-2 text-center text-xs bg-[var(--color-primary)] text-white font-semibold rounded-lg shadow-sm transition-all'
                               : day.isPast
                                 ? 'relative py-2 text-center text-xs text-[var(--text-tertiary)] cursor-not-allowed'
                                 : day.isToday
-                                  ? 'relative py-2 text-center text-xs text-indigo-600 dark:text-indigo-400 font-bold hover:bg-[var(--surface-hover)] rounded-lg'
+                                  ? 'relative py-2 text-center text-xs text-[var(--color-primary)] font-bold hover:bg-[var(--surface-hover)] rounded-lg'
                                   : 'relative py-2 text-center text-xs text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-lg transition-colors'
                           "
                         >
@@ -209,7 +210,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                     [ngModel]="editStartTime()"
                     (ngModelChange)="editStartTime.set($event)"
                     step="300"
-                    class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors"
+                    class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] focus:outline-none transition-colors"
                   />
                 </div>
                 <div>
@@ -222,7 +223,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                     (ngModelChange)="setEditDuration($event)"
                     min="5"
                     step="5"
-                    class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors"
+                    class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] focus:outline-none transition-colors"
                   />
                 </div>
                 <div>
@@ -260,7 +261,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                   @if (editLoadingSlots()) {
                     <div class="flex items-center gap-2">
                       <div
-                        class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--surface-card-border)] border-t-indigo-600"
+                        class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--surface-card-border)] border-t-[var(--color-primary)]"
                       ></div>
                       <span class="text-xs text-[var(--text-tertiary)]"
                         >Carico orari disponibili...</span
@@ -275,7 +276,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                           type="button"
                           [class]="
                             editStartTime() === formatTime(slot.start)
-                              ? 'rounded-full bg-indigo-600 px-3 py-1 text-xs font-medium text-white'
+                              ? 'rounded-full bg-[var(--color-primary)] px-3 py-1 text-xs font-medium text-white'
                               : 'rounded-full border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-1 text-xs text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors'
                           "
                         >
@@ -303,7 +304,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                       type="button"
                       [class]="
                         editProfessionalId() === pro.id
-                          ? 'w-full rounded-lg border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-2 text-left text-sm'
+                          ? 'w-full rounded-lg border-2 border-[var(--color-primary)] bg-[var(--surface-active-nav)] px-3 py-2 text-left text-sm'
                           : 'w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-left text-sm hover:bg-[var(--surface-hover)] transition-colors'
                       "
                     >
@@ -323,7 +324,7 @@ const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
                 <textarea
                   [(ngModel)]="editNotes"
                   rows="2"
-                  class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none resize-none transition-colors"
+                  class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] focus:outline-none resize-none transition-colors"
                 >
                 </textarea>
               </div>
@@ -1150,7 +1151,7 @@ export class AppointmentDetailComponent implements OnInit {
     const base =
       'w-full rounded-lg border px-3 py-2 text-left text-sm font-medium transition-colors';
     if (selected)
-      return `${base} border-indigo-600 bg-indigo-600 text-white dark:border-indigo-300 dark:bg-indigo-700 dark:text-white`;
+      return `${base} border-[var(--color-primary)] bg-[var(--color-primary)] text-white dark:text-white`;
     if (suggested)
       return `${base} border-blue-200 bg-white text-blue-900 hover:border-blue-400 hover:bg-blue-100 dark:border-blue-700 dark:bg-slate-900 dark:text-blue-100 dark:hover:border-blue-500 dark:hover:bg-blue-900/40`;
     return `${base} border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:border-slate-500 dark:hover:bg-slate-800`;
@@ -1180,27 +1181,11 @@ export class AppointmentDetailComponent implements OnInit {
   }
 
   statusLabel(status: AppointmentStatus): string {
-    const map: Record<string, string> = {
-      REQUESTED: 'Da confermare',
-      CONFIRMED: 'Confermato',
-      PROPOSED_NEW_TIME: 'Proposta orario',
-      CANCELLED: 'Cancellato',
-      COMPLETED: 'Completato',
-      NO_SHOW: 'Non presentato',
-    };
-    return map[status] ?? status;
+    return appointmentStatusLabel(status);
   }
 
-  statusVariant(status: AppointmentStatus): 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple' {
-    const map: Record<string, 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple'> = {
-      REQUESTED: 'amber',
-      CONFIRMED: 'green',
-      PROPOSED_NEW_TIME: 'blue',
-      CANCELLED: 'red',
-      COMPLETED: 'gray',
-      NO_SHOW: 'purple',
-    };
-    return map[status] ?? 'gray';
+  statusVariant(status: AppointmentStatus): AppointmentStatusVariant {
+    return appointmentStatusVariant(status);
   }
 
   cancelledByLabel(val: string): string {

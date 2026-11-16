@@ -40,7 +40,7 @@ import { getErrorMessage } from '../../shared/utils/errors';
               [ngModel]="searchQuery()"
               (ngModelChange)="onSearch($event)"
               placeholder="Cerca per nome, email o telefono..."
-              class="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+              class="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm shadow-sm focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:outline-none transition-colors"
             />
           </div>
         </div>
@@ -48,7 +48,7 @@ import { getErrorMessage } from '../../shared/utils/errors';
         <!-- Loading -->
         @if (isLoading()) {
           <div class="flex justify-center py-12">
-            <div class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+            <div class="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-primary)]/20 border-t-[var(--color-primary)]"></div>
           </div>
         }
 
@@ -73,7 +73,7 @@ import { getErrorMessage } from '../../shared/utils/errors';
             <app-entity-list>
               @for (client of clients(); track client.id) {
                 <app-entity-list-row [route]="['/clienti', client.id]">
-                  <div class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700 shrink-0">
+                  <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--surface-active-nav)] text-sm font-semibold text-[var(--color-primary)] shrink-0">
                     {{ client.firstName.charAt(0) }}{{ client.lastName.charAt(0) }}
                   </div>
                   <div class="min-w-0 flex-1">

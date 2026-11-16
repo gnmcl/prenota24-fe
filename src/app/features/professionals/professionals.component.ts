@@ -46,7 +46,7 @@ import type { ProfessionalResponse } from '../../core/models/domain.model';
                 [ngModel]="searchQuery()"
                 (ngModelChange)="searchQuery.set($event)"
                 placeholder="Cerca per nome, email o telefono..."
-                class="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+                class="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm shadow-sm focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:outline-none transition-colors"
               />
             </div>
           </div>
@@ -54,7 +54,7 @@ import type { ProfessionalResponse } from '../../core/models/domain.model';
 
         @if (isLoading()) {
           <div class="flex justify-center py-12">
-            <div class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+            <div class="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-primary)]/20 border-t-[var(--color-primary)]"></div>
           </div>
         } @else if (filteredProfessionals().length === 0 && professionals().length === 0) {
           <app-empty-state
@@ -72,7 +72,7 @@ import type { ProfessionalResponse } from '../../core/models/domain.model';
           <app-entity-list>
             @for (pro of filteredProfessionals(); track pro.id) {
               <app-entity-list-row [route]="['/professionisti', pro.id]">
-                <div class="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-violet-100 to-indigo-100 text-sm font-bold text-violet-700 shrink-0">
+                <div class="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--surface-active-nav)] text-sm font-bold text-[var(--color-primary)] shrink-0">
                   {{ pro.firstName.charAt(0) }}{{ pro.lastName.charAt(0) }}
                 </div>
                 <div class="min-w-0 flex-1">

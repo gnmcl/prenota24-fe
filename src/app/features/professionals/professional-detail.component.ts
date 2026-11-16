@@ -36,7 +36,7 @@ interface DaySlot {
 
         @if (isLoading()) {
           <div class="flex justify-center py-12">
-            <div class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+            <div class="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-primary)]/20 border-t-[var(--color-primary)]"></div>
           </div>
         }
 
@@ -70,7 +70,7 @@ interface DaySlot {
                 type="button"
                 (click)="activeTab.set(tab.key)"
                 [class]="activeTab() === tab.key
-                  ? 'border-b-2 border-indigo-600 pb-3 px-3 sm:px-4 text-sm font-semibold text-indigo-600 whitespace-nowrap'
+                  ? 'border-b-2 border-[var(--color-primary)] pb-3 px-3 sm:px-4 text-sm font-semibold text-[var(--color-primary)] whitespace-nowrap'
                   : 'pb-3 px-3 sm:px-4 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors whitespace-nowrap'">
                 {{ tab.label }}
               </button>
@@ -101,7 +101,7 @@ interface DaySlot {
               <app-card>
                 <h3 class="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">Accesso portale</h3>
                 @if (inviteLoading()) {
-                  <div class="h-6 w-6 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+                  <div class="h-6 w-6 animate-spin rounded-full border-4 border-[var(--color-primary)]/20 border-t-[var(--color-primary)]"></div>
                 } @else if (invitation() && (invitation()!.status === 'PENDING' || invitation()!.status === 'ACCEPTED')) {
                   <div class="space-y-3">
                     <div class="flex items-center gap-2">

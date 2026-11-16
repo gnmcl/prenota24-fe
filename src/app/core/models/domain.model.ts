@@ -175,11 +175,13 @@ export interface CreateReservationRequest {
 
 /* ── API Error Shape ────────────────────── */
 
+/** Mirrors backend `ErrorResponse`. `error` is a stable code (e.g. NOT_FOUND); `message` is user-facing Italian text. */
 export interface ApiErrorResponse {
   status: number;
   error?: string;
   message: string;
-  errors?: Record<string, string>;
+  path?: string;
+  timestamp?: string; // ISO-8601 UTC
 }
 
 /* ── Professional ───────────────────────── */

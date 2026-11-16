@@ -15,16 +15,16 @@ import type { InvitationInfo } from '../../core/models/auth.model';
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, CardComponent, ButtonComponent, InputComponent, AlertComponent],
   template: `
-    <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-violet-50 flex items-center justify-center p-6">
+    <div class="min-h-screen bg-[var(--surface-page)] flex items-center justify-center p-6">
       <div class="w-full max-w-md">
         <!-- Logo -->
         <div class="mb-8 text-center">
           <div class="inline-flex items-center gap-2 mb-4">
-            <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-sm font-black text-white shadow-lg shadow-indigo-200">
+            <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-primary)] text-sm font-black text-white">
               P
             </span>
             <span class="text-xl font-bold tracking-tight text-gray-900">
-              Prenota<span class="text-indigo-600">24</span>
+              Prenota<span class="text-[var(--color-primary)]">24</span>
             </span>
           </div>
         </div>
@@ -32,7 +32,7 @@ import type { InvitationInfo } from '../../core/models/auth.model';
         @if (loading()) {
           <app-card>
             <div class="flex flex-col items-center py-8">
-              <div class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600 mb-4"></div>
+              <div class="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-primary)]/20 border-t-[var(--color-primary)] mb-4"></div>
               <p class="text-sm text-gray-500">Verifica invito in corso...</p>
             </div>
           </app-card>
@@ -90,16 +90,16 @@ import type { InvitationInfo } from '../../core/models/auth.model';
               </div>
 
               <!-- Info box -->
-              <div class="rounded-lg bg-indigo-50 p-4 mb-6">
+              <div class="rounded-lg bg-[var(--surface-active-nav)] p-4 mb-6">
                 <div class="flex items-center gap-3 text-sm">
-                  <div class="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 shrink-0">
-                    <svg class="h-4 w-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div class="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--surface-active-nav)] shrink-0">
+                    <svg class="h-4 w-4 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                   </div>
                   <div>
-                    <span class="text-indigo-800 font-medium">{{ invitationInfo()!.professionalName }}</span>
-                    <span class="text-indigo-600"> · {{ invitationInfo()!.email }}</span>
+                    <span class="text-[var(--color-primary)] font-medium">{{ invitationInfo()!.professionalName }}</span>
+                    <span class="text-[var(--color-primary)]"> · {{ invitationInfo()!.email }}</span>
                   </div>
                 </div>
               </div>
@@ -144,7 +144,7 @@ import type { InvitationInfo } from '../../core/models/auth.model';
 
               <p class="mt-6 text-center text-sm text-gray-500">
                 Hai già un account?
-                <a routerLink="/accedi" class="font-semibold text-indigo-600 hover:text-indigo-500">Accedi</a>
+                <a routerLink="/accedi" class="font-semibold text-[var(--color-primary)] hover:text-[var(--color-primary-dark)]">Accedi</a>
               </p>
             </app-card>
           }

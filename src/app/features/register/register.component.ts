@@ -1,13 +1,12 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, ElementRef, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { getErrorMessage } from '../../shared/utils/errors';
-import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
-import { CardComponent } from '../../shared/components/card/card.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
+import { PublicHeaderComponent } from '../../shared/components/public-header/public-header.component';
 
 function matchPasswords(control: AbstractControl): ValidationErrors | null {
   const password = control.get('password');
@@ -19,86 +18,162 @@ function matchPasswords(control: AbstractControl): ValidationErrors | null {
   return null;
 }
 
+/**
+ * Sign up (/registrati), on the public pages' system (src/styles/landing.css): one screen, the form on
+ * the left, from 1024px the studio's first setup drawn on the right.
+ */
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, PageShellComponent, CardComponent, ButtonComponent, InputComponent, AlertComponent],
+  imports: [ReactiveFormsModule, RouterLink, ButtonComponent, InputComponent, AlertComponent, PublicHeaderComponent],
   template: `
-    <app-page-shell>
-      <div class="mx-auto max-w-sm pt-12">
-        <div class="mb-8 text-center">
-          <h2 class="text-2xl font-bold text-gray-900">Crea il tuo account</h2>
-          <p class="mt-1 text-sm text-gray-500">Inizia ad organizzare i tuoi eventi con Prenota24</p>
-        </div>
+    <div class="landing">
+      <app-public-header prompt="Hai già un account?" actionLabel="Accedi" actionRoute="/accedi" />
 
-        <app-card>
-          @if (serverError()) {
-            <div class="mb-4">
-              <app-alert variant="error" [message]="serverError()!" (dismiss)="serverError.set(null)" />
+      <main id="top">
+        <section class="auth" data-enter aria-labelledby="register-title">
+          <div class="wrap auth__grid">
+            <div class="auth__form">
+              <h1 id="register-title">Crea il tuo studio</h1>
+              <p class="auth__lead">Dopo la registrazione confermi l’email, poi configuri servizi, orari e team.</p>
+
+              @if (serverError()) {
+                <div class="auth__alert">
+                  <app-alert variant="error" [message]="serverError()!" (dismiss)="serverError.set(null)" />
+                </div>
+              }
+
+              <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth__fields" novalidate>
+                <div class="auth__pair">
+                  <app-input
+                    label="Nome e cognome"
+                    type="text"
+                    size="lg"
+                    autocomplete="name"
+                    formControlName="name"
+                    [error]="getFieldError('name')"
+                  />
+                  <app-input
+                    label="Nome dello studio"
+                    type="text"
+                    size="lg"
+                    autocomplete="organization"
+                    formControlName="studioName"
+                    [error]="getFieldError('studioName')"
+                  />
+                </div>
+                <app-input
+                  label="Email"
+                  type="email"
+                  size="lg"
+                  autocomplete="email"
+                  formControlName="email"
+                  [error]="getFieldError('email')"
+                />
+                <div class="auth__pair">
+                  <app-input
+                    label="Password"
+                    type="password"
+                    size="lg"
+                    autocomplete="new-password"
+                    hint="Almeno 8 caratteri"
+                    formControlName="password"
+                    [error]="getFieldError('password')"
+                  />
+                  <app-input
+                    label="Ripeti la password"
+                    type="password"
+                    size="lg"
+                    autocomplete="new-password"
+                    formControlName="confirmPassword"
+                    [error]="getFieldError('confirmPassword')"
+                  />
+                </div>
+                <p class="auth__legal register__privacy">
+                  Consulta l’<a routerLink="/privacy" class="auth__link">informativa privacy</a>
+                  per sapere come trattiamo i dati necessari alla registrazione.
+                </p>
+                <app-button type="submit" size="lg" extraClass="w-full" [isLoading]="isLoading()">Crea il tuo studio</app-button>
+                <p class="auth__status" role="status">{{ formStatus() }}</p>
+              </form>
             </div>
-          }
 
-          <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
-            <app-input
-              label="Il tuo nome"
-              type="text"
-              placeholder="Mario Rossi"
-              autocomplete="name"
-              formControlName="name"
-              [error]="getFieldError('name')"
-            />
-            <app-input
-              label="Nome studio"
-              type="text"
-              placeholder="Studio Rossi"
-              autocomplete="organization"
-              formControlName="studioName"
-              [error]="getFieldError('studioName')"
-            />
-            <app-input
-              label="Email"
-              type="email"
-              placeholder="mario@esempio.com"
-              autocomplete="email"
-              formControlName="email"
-              [error]="getFieldError('email')"
-            />
-            <app-input
-              label="Password"
-              type="password"
-              placeholder="Almeno 8 caratteri"
-              autocomplete="new-password"
-              formControlName="password"
-              [error]="getFieldError('password')"
-            />
-            <app-input
-              label="Conferma password"
-              type="password"
-              placeholder="Ripeti la password"
-              autocomplete="new-password"
-              formControlName="confirmPassword"
-              [error]="getFieldError('confirmPassword')"
-            />
-            <p class="text-xs leading-5 text-gray-500">
-              Consulta l'<a routerLink="/privacy" class="font-semibold text-indigo-600 underline underline-offset-2 hover:text-indigo-500">informativa privacy</a>
-              per sapere come trattiamo i dati necessari alla registrazione.
-            </p>
-            <app-button type="submit" [isLoading]="isLoading()">Registrati</app-button>
-          </form>
-
-          <p class="mt-6 text-center text-sm text-gray-500">
-            Hai già un account?
-            <a routerLink="/accedi" class="font-semibold text-indigo-600 hover:text-indigo-500">Accedi</a>
-          </p>
-        </app-card>
-      </div>
-    </app-page-shell>
+            <div class="auth__visual frame frame--paper" data-ui role="img"
+              aria-label="La configurazione di Studio Moretti dopo la registrazione: studio creato, poi servizi, orari del team e pagina di prenotazione">
+              <div class="setup">
+                <div class="setup__head">
+                  <span class="setup__eyebrow">Primi passi</span>
+                  <span class="setup__title">Studio Moretti</span>
+                </div>
+                <ol class="setup__steps">
+                  <li class="is-done"><span class="setup__mark" aria-hidden="true"></span><span>Studio creato<small>Email confermata</small></span></li>
+                  <li class="is-now"><span class="setup__mark" aria-hidden="true">2</span><span>Servizi e durate<small>Massaggio decontratturante · 50 min</small></span></li>
+                  <li><span class="setup__mark" aria-hidden="true">3</span><span>Orari del team<small>Inviti a Elena Moretti e Andrea Conti</small></span></li>
+                  <li><span class="setup__mark" aria-hidden="true">4</span><span>Pagina di prenotazione<small>Il link da condividere con i clienti</small></span></li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
   `,
+  styles: [
+    `
+      .register__privacy { margin-top: 0; }
+      .auth__form { max-width: none; }
+      .setup {
+        width: min(100%, 460px);
+        border: 1px solid var(--line);
+        border-radius: var(--r-control);
+        background: var(--surface);
+        font-size: var(--t-small);
+      }
+      .setup__head { display: grid; gap: 2px; padding: 18px 20px; border-bottom: 1px solid var(--line); }
+      .setup__eyebrow { font-size: var(--t-label); color: var(--muted); }
+      .setup__title { font-size: 20px; font-weight: 600; letter-spacing: -0.015em; }
+      .setup__steps { margin: 0; padding: 0; list-style: none; }
+      .setup__steps li {
+        display: grid;
+        grid-template-columns: 28px minmax(0, 1fr);
+        align-items: center;
+        gap: 14px;
+        padding: 14px 20px;
+      }
+      .setup__steps li + li { border-top: 1px solid var(--line); }
+      .setup__steps li > span:last-child { display: grid; font-weight: 500; }
+      .setup__steps small { font-size: var(--t-label); font-weight: 400; color: var(--muted); }
+      .setup__mark {
+        display: grid;
+        place-items: center;
+        width: 28px;
+        height: 28px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-control);
+        font-size: var(--t-label);
+        font-weight: 600;
+        color: var(--muted);
+      }
+      .is-done .setup__mark { border-color: var(--status-success-text); background: var(--status-success-bg); }
+      .is-done .setup__mark::after {
+        content: '';
+        width: 10px;
+        height: 6px;
+        border-left: 2px solid var(--status-success-text);
+        border-bottom: 2px solid var(--status-success-text);
+        transform: translateY(-1px) rotate(-45deg);
+      }
+      .is-done > span:last-child { color: var(--muted); }
+      .is-now { background: var(--surface-active-nav); box-shadow: inset 2px 0 0 var(--action); }
+      .is-now .setup__mark { border-color: var(--action); background: var(--action); color: var(--text-inverted); }
+    `,
+  ],
 })
 export class RegisterComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   form = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(200)]],
@@ -110,25 +185,45 @@ export class RegisterComponent {
 
   readonly serverError = signal<string | null>(null);
   readonly isLoading = signal(false);
+  readonly formStatus = signal('');
 
   getFieldError(field: string): string {
     const control = this.form.get(field);
     if (!control?.touched || !control.errors) return '';
     if (control.errors['required']) {
-      const labels: Record<string, string> = { name: 'Il nome è obbligatorio', studioName: 'Il nome dello studio è obbligatorio', email: "L'email è obbligatoria", password: 'La password è obbligatoria', confirmPassword: 'Conferma la password' };
-      return labels[field] || 'Campo obbligatorio';
+      const labels: Record<string, string> = {
+        name: 'Scrivi il tuo nome e cognome',
+        studioName: 'Scrivi il nome dello studio, come lo vedranno i clienti',
+        email: 'Scrivi l’email con cui accederai',
+        password: 'Scegli una password di almeno 8 caratteri',
+        confirmPassword: 'Ripeti la password',
+      };
+      return labels[field] || 'Compila questo campo';
     }
-    if (control.errors['email']) return 'Inserisci un indirizzo email valido';
+    if (control.errors['email']) return 'Scrivi un indirizzo email completo, con la @';
     if (control.errors['minlength']) return 'La password deve avere almeno 8 caratteri';
-    if (control.errors['maxlength']) return field === 'name' ? 'Il nome deve avere al massimo 200 caratteri' : 'La password deve avere al massimo 128 caratteri';
-    if (control.errors['passwordMismatch']) return 'Le password non coincidono';
+    if (control.errors['maxlength']) {
+      const limits: Record<string, string> = {
+        name: 'Il nome può avere al massimo 200 caratteri',
+        studioName: 'Il nome dello studio può avere al massimo 255 caratteri',
+        password: 'La password può avere al massimo 128 caratteri',
+      };
+      return limits[field] || 'Il testo è troppo lungo';
+    }
+    if (control.errors['passwordMismatch']) return 'Le due password non coincidono';
     return '';
   }
 
   async onSubmit(): Promise<void> {
     this.form.markAllAsTouched();
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      const count = Object.values(this.form.controls).filter((c) => c.invalid).length;
+      this.formStatus.set(count === 1 ? 'Controlla il campo evidenziato.' : `Controlla i ${count} campi evidenziati.`);
+      this.focusFirstInvalid();
+      return;
+    }
 
+    this.formStatus.set('');
     this.serverError.set(null);
     this.isLoading.set(true);
 
@@ -141,5 +236,10 @@ export class RegisterComponent {
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  /** After the errors render, the first field that failed takes the focus. */
+  private focusFirstInvalid(): void {
+    setTimeout(() => this.host.nativeElement.querySelector<HTMLInputElement>('input[aria-invalid="true"]')?.focus());
   }
 }

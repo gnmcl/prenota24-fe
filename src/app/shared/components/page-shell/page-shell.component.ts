@@ -1,4 +1,4 @@
-import { Component, computed, HostListener, inject, signal } from '@angular/core';
+import { Component, computed, HostListener, inject, input, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { PendingAppointmentsService } from '../../../core/services/pending-appointments.service';
@@ -18,8 +18,8 @@ interface NavItem {
   standalone: true,
   imports: [RouterLink, RouterLinkActive, ButtonComponent],
   template: `
-    <div class="min-h-screen bg-[var(--surface-page)] pb-20 md:pb-0">
-      @if (authService.user()) {
+    <div [class]="publicLayout() ? 'min-h-screen bg-[var(--surface-page)]' : 'min-h-screen bg-[var(--surface-page)] pb-20 md:pb-0'">
+      @if (!publicLayout() && authService.user()) {
         <aside
           [class]="sidebarClasses()"
           aria-label="Navigazione principale"
@@ -104,6 +104,7 @@ interface NavItem {
       }
 
       <div [class]="contentClasses()">
+        @if (!publicLayout()) {
         <header class="sticky top-0 z-30 h-14 border-b border-[var(--surface-header-border)] bg-[var(--surface-header)] md:h-16">
           <div class="flex h-full items-center justify-between px-4 sm:px-5 lg:px-7">
             <a [routerLink]="homeLink()" class="flex items-center gap-2.5 md:hidden" aria-label="Prenota24, dashboard">
@@ -180,8 +181,9 @@ interface NavItem {
             }
           </div>
         </header>
+        }
 
-        @if (mobileMenuOpen()) {
+        @if (!publicLayout() && mobileMenuOpen()) {
           <nav class="fixed inset-x-0 top-14 z-40 max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-b border-[var(--surface-header-border)] bg-[var(--surface-card)] p-3 md:hidden" aria-label="Tutte le sezioni">
             <div class="grid grid-cols-2 gap-px overflow-hidden border border-[var(--surface-card-border)] bg-[var(--surface-card-border)]">
               @for (item of navItems(); track item.path) {
@@ -198,12 +200,12 @@ interface NavItem {
           </nav>
         }
 
-        <main class="px-3 py-4 sm:px-5 sm:py-5 lg:px-7 lg:py-6">
+        <main [class]="publicLayout() ? '' : 'px-3 py-4 sm:px-5 sm:py-5 lg:px-7 lg:py-6'">
           <ng-content />
         </main>
       </div>
 
-      @if (authService.user()) {
+      @if (!publicLayout() && authService.user()) {
         <nav class="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-[var(--surface-header-border)] bg-[var(--surface-card)] md:hidden" aria-label="Navigazione rapida">
           <div class="grid" [style.grid-template-columns]="'repeat(' + bottomNavItems().length + ', 1fr)'">
             @for (item of bottomNavItems(); track item.path) {
@@ -225,6 +227,7 @@ interface NavItem {
   `],
 })
 export class PageShellComponent {
+  readonly publicLayout = input(false);
   readonly authService = inject(AuthService);
   readonly studioService = inject(StudioService);
   readonly themeService = inject(ThemeService);
@@ -254,7 +257,7 @@ export class PageShellComponent {
   });
 
   readonly contentClasses = computed(() => {
-    if (!this.authService.user()) return '';
+    if (this.publicLayout() || !this.authService.user()) return '';
     const desktopPadding = this.navigationLayoutService.isSidebarCollapsed() ? '' : 'xl:pl-60';
     return `md:pl-[72px] transition-[padding] duration-200 ease-out ${desktopPadding}`;
   });

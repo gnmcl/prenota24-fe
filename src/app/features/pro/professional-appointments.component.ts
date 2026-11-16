@@ -9,6 +9,7 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
 import type { AppointmentResponse, AppointmentStatus, ClientSummaryResponse, CreateAppointmentRequest, CreateClientRequest, ProposeNewTimeRequest, ServiceTypeResponse, TimeSlotResponse, UUID } from '../../core/models/domain.model';
 import { AuthService } from '../../core/services/auth.service';
 import { FormsModule } from '@angular/forms';
+import { appointmentStatusLabel, appointmentStatusVariant, type AppointmentStatusVariant } from '../../shared/utils/appointment-status';
 
 const HOUR_START = 7;
 const HOUR_END = 21;
@@ -54,7 +55,7 @@ const SLOT_HEIGHT = 60;
             <div class="text-center flex-1">
               <h3 class="text-lg font-semibold text-[var(--text-primary)]">{{ dateLabel() }}</h3>
               @if (isToday()) {
-                <span class="text-xs text-indigo-600 font-medium">Oggi</span>
+                <span class="text-xs text-[var(--color-primary)] font-medium">Oggi</span>
               }
             </div>
             <app-button variant="secondary" (click)="nextDay()">→</app-button>
@@ -89,7 +90,7 @@ const SLOT_HEIGHT = 60;
 
         @if (isLoading()) {
           <div class="flex justify-center py-12">
-            <div class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+            <div class="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-primary)]/20 border-t-[var(--color-primary)]"></div>
           </div>
         } @else {
 
@@ -244,7 +245,7 @@ const SLOT_HEIGHT = 60;
               <div>
                 <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Cliente</label>
                 @if (!showQuickClient()) {
-                  <select [(ngModel)]="newApt.clientId" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none">
+                  <select [(ngModel)]="newApt.clientId" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:outline-none">
                     <option value="">Seleziona cliente...</option>
                     @for (c of clients(); track c.id) {
                       <option [value]="c.id">{{ c.firstName }} {{ c.lastName }}{{ c.email ? ' — ' + c.email : '' }}</option>
@@ -255,25 +256,25 @@ const SLOT_HEIGHT = 60;
                   </button>
                 } @else {
                   <!-- Quick create client inline -->
-                  <div class="rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50/50 dark:bg-indigo-900/20 p-4 space-y-3">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-indigo-500">Nuovo cliente</p>
+                  <div class="rounded-lg border border-[var(--color-primary)]/20 bg-[var(--surface-active-nav)]/50 p-4 space-y-3">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-[var(--color-primary)]">Nuovo cliente</p>
                     <div class="grid grid-cols-2 gap-3">
                       <div>
                         <label class="block text-xs text-[var(--text-secondary)] mb-1">Nome *</label>
-                        <input type="text" [(ngModel)]="quickClient.firstName" class="w-full rounded-md border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                        <input type="text" [(ngModel)]="quickClient.firstName" class="w-full rounded-md border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-2.5 py-1.5 text-sm focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:outline-none" />
                       </div>
                       <div>
                         <label class="block text-xs text-[var(--text-secondary)] mb-1">Cognome *</label>
-                        <input type="text" [(ngModel)]="quickClient.lastName" class="w-full rounded-md border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                        <input type="text" [(ngModel)]="quickClient.lastName" class="w-full rounded-md border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-2.5 py-1.5 text-sm focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:outline-none" />
                       </div>
                     </div>
                     <div>
                       <label class="block text-xs text-[var(--text-secondary)] mb-1">Email</label>
-                      <input type="email" [(ngModel)]="quickClient.email" class="w-full rounded-md border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                      <input type="email" [(ngModel)]="quickClient.email" class="w-full rounded-md border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-2.5 py-1.5 text-sm focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:outline-none" />
                     </div>
                     <div>
                       <label class="block text-xs text-[var(--text-secondary)] mb-1">Telefono</label>
-                      <input type="tel" [(ngModel)]="quickClient.phone" class="w-full rounded-md border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                      <input type="tel" [(ngModel)]="quickClient.phone" class="w-full rounded-md border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-2.5 py-1.5 text-sm focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:outline-none" />
                     </div>
                     <div class="flex items-center gap-2">
                       <app-button size="sm" [isLoading]="creatingClient()" [disabled]="!quickClient.firstName || !quickClient.lastName" (click)="createQuickClient()">Crea e seleziona</app-button>
@@ -286,7 +287,7 @@ const SLOT_HEIGHT = 60;
               <!-- Service type -->
               <div>
                 <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Tipo di servizio</label>
-                <select [(ngModel)]="newApt.serviceTypeId" (ngModelChange)="onServiceTypeChange()" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none">
+                <select [(ngModel)]="newApt.serviceTypeId" (ngModelChange)="onServiceTypeChange()" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:outline-none">
                   <option value="">Nessuno (generico)</option>
                   @for (st of serviceTypes(); track st.id) {
                     <option [value]="st.id">{{ st.name }} ({{ st.durationMinutes }} min)</option>
@@ -297,30 +298,30 @@ const SLOT_HEIGHT = 60;
               <!-- Date -->
               <div>
                 <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Data</label>
-                <input type="date" [(ngModel)]="newApt.date" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                <input type="date" [(ngModel)]="newApt.date" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:outline-none" />
               </div>
 
               <!-- Time -->
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Ora inizio</label>
-                  <input type="time" [(ngModel)]="newApt.startTime" (ngModelChange)="autoCalcEnd()" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                  <input type="time" [(ngModel)]="newApt.startTime" (ngModelChange)="autoCalcEnd()" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:outline-none" />
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Ora fine</label>
-                  <input type="time" [(ngModel)]="newApt.endTime" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                  <input type="time" [(ngModel)]="newApt.endTime" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:outline-none" />
                 </div>
               </div>
 
               <!-- Notes -->
               <div>
                 <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Note</label>
-                <textarea [(ngModel)]="newApt.notes" rows="2" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" placeholder="Note opzionali..."></textarea>
+                <textarea [(ngModel)]="newApt.notes" rows="2" class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] focus:outline-none" placeholder="Note opzionali..."></textarea>
               </div>
 
               <!-- Confirm immediately -->
               <label class="flex items-center gap-2 text-sm text-[var(--text-primary)]">
-                <input type="checkbox" [(ngModel)]="newApt.confirmImmediately" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                <input type="checkbox" [(ngModel)]="newApt.confirmImmediately" class="rounded border-gray-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)]" />
                 Conferma immediatamente
               </label>
 
@@ -368,7 +369,7 @@ const SLOT_HEIGHT = 60;
                     [value]="proposalDay()"
                     [min]="todayStr"
                     (change)="onProposalDateChange($event)"
-                    class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
                   />
                 </div>
 
@@ -424,7 +425,7 @@ const SLOT_HEIGHT = 60;
                   <div class="rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-hover)] p-4">
                     <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Data</label>
                     <input type="date" [value]="proposalDay2()" [min]="todayStr" (change)="onProposalDateChange2($event)"
-                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" />
+                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:outline-none" />
                   </div>
                   <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
                     @if (slotsLoading2()) {
@@ -439,7 +440,7 @@ const SLOT_HEIGHT = 60;
                         @for (slot of availableProposalSlots2(); track slot.start) {
                           <button (click)="selectedProposalSlot2.set(slot)"
                             [class]="selectedProposalSlot2()?.start === slot.start
-                              ? 'w-full rounded-lg border px-3 py-2 text-left text-sm font-medium border-indigo-600 bg-indigo-600 text-white'
+                              ? 'w-full rounded-lg border px-3 py-2 text-left text-sm font-medium border-[var(--color-primary)] bg-[var(--color-primary)] text-white'
                               : 'w-full rounded-lg border px-3 py-2 text-left text-sm font-medium border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'">
                             {{ formatProposalSlot(slot) }}
                           </button>
@@ -460,7 +461,7 @@ const SLOT_HEIGHT = 60;
                   <div class="rounded-xl border border-[var(--surface-card-border)] bg-[var(--surface-hover)] p-4">
                     <label class="mb-1 block text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Data</label>
                     <input type="date" [value]="proposalDay3()" [min]="todayStr" (change)="onProposalDateChange3($event)"
-                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" />
+                      class="w-full rounded-lg border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-[var(--text-primary)] px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:outline-none" />
                   </div>
                   <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
                     @if (slotsLoading3()) {
@@ -475,7 +476,7 @@ const SLOT_HEIGHT = 60;
                         @for (slot of availableProposalSlots3(); track slot.start) {
                           <button (click)="selectedProposalSlot3.set(slot)"
                             [class]="selectedProposalSlot3()?.start === slot.start
-                              ? 'w-full rounded-lg border px-3 py-2 text-left text-sm font-medium border-indigo-600 bg-indigo-600 text-white'
+                              ? 'w-full rounded-lg border px-3 py-2 text-left text-sm font-medium border-[var(--color-primary)] bg-[var(--color-primary)] text-white'
                               : 'w-full rounded-lg border px-3 py-2 text-left text-sm font-medium border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'">
                             {{ formatProposalSlot(slot) }}
                           </button>
@@ -661,13 +662,11 @@ export class ProfessionalAppointmentsComponent implements OnInit {
   }
 
   statusLabel(status: AppointmentStatus): string {
-    const map: Record<string, string> = { REQUESTED: 'Da confermare', CONFIRMED: 'Confermato', PROPOSED_NEW_TIME: 'Proposta', CANCELLED: 'Cancellato', COMPLETED: 'Completato', NO_SHOW: 'Non presentato' };
-    return map[status] ?? status;
+    return appointmentStatusLabel(status, true);
   }
 
-  statusVariant(status: AppointmentStatus): 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple' {
-    const map: Record<string, 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple'> = { REQUESTED: 'amber', CONFIRMED: 'green', PROPOSED_NEW_TIME: 'blue', CANCELLED: 'red', COMPLETED: 'gray', NO_SHOW: 'purple' };
-    return map[status] ?? 'gray';
+  statusVariant(status: AppointmentStatus): AppointmentStatusVariant {
+    return appointmentStatusVariant(status);
   }
 
   monthShort(iso: string): string {
@@ -856,7 +855,7 @@ export class ProfessionalAppointmentsComponent implements OnInit {
     const selected = this.selectedProposalSlot()?.start === slot.start;
     const base = 'w-full rounded-lg border px-3 py-2 text-left text-sm font-medium transition-colors';
     if (selected) {
-      return `${base} border-indigo-600 bg-indigo-600 text-white`;
+      return `${base} border-[var(--color-primary)] bg-[var(--color-primary)] text-white`;
     }
     if (suggested) {
       return `${base} border-blue-200 bg-white text-blue-800 hover:border-blue-400 hover:bg-blue-100`;

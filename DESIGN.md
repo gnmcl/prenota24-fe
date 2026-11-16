@@ -153,3 +153,13 @@ L’azione primaria di creazione compare una sola volta per viewport: nella top 
 - **Don't** riempire l’interfaccia di pill, icone in riquadri o accenti colorati inattivi.
 - **Don't** usare emoji o glifi Unicode come sistema di icone; usare SVG coerenti.
 - **Don't** sovrapporre card appuntamento alla griglia: gli slot usano bordi hairline e superfici del registro.
+
+### Estensione: home pubblica (landing)
+
+La landing estende il «Registro di coordinamento» con gli stessi token (`src/styles.css`): carta tecnica come unico fondo, cobalto solo per azioni, selezione e stato attivo, verde registro solo nel marchio P24 e nel conteggio da confermare, hairline, nessuna ombra. Public Sans resta l’unica famiglia; i titoli della landing usano peso 500 con tracking stretto (h1 52/40px, h2 46/30px), il testo da leggere 16px.
+
+- **Ritmo:** ogni sezione occupa esattamente uno o due schermi (`--h`/`--hm`), con un solo contenitore `.wrap` da 1280px e margini 80 / 48 tablet / 24 telefono. Le sezioni si separano con lo spazio, non con linee o card flottanti.
+- **Componenti:** la pagina è divisa in `home-nav`, `home-hero-collage`, `home-agenda-preview`, `home-booking-steps`, `home-reminders`, `home-features`, `home-faq`, `home-closing`. Le regole condivise vivono in `home.component.css`, non incapsulate ma tutte sotto `.landing`, così non toccano il gestionale.
+- **Immagini:** solo UI di Prenota24 disegnata in HTML (agenda, prenotazione, email, WhatsApp, team, eventi), mai screenshot o illustrazioni. I nomi nei mock sono di fantasia e coerenti tra le sezioni.
+- **Movimento:** l’hero entra una volta al caricamento; il collage dell’hero cambia gruppo ogni 2,8 s con pulsante di pausa; «Come funziona» tiene fermo il palco per uno schermo di scroll da 1024px in su. Telefono e `prefers-reduced-motion` mostrano tutto fermo.
+- **Azione principale:** «Crea il tuo studio» compare solo nel nav, nell’hero e nella chiusura.

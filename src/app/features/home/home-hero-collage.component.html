@@ -1,0 +1,90 @@
+<div class="collage" (mouseenter)="restart()">
+  <div class="collage__stage" role="img" [attr.aria-label]="setLabels[active()]">
+    <!-- Set 1 · the public booking page and the request it creates -->
+    <div class="collage__set" [class.is-on]="active() === 0" aria-hidden="true">
+      <div class="piece piece--booking p1a">
+        <span class="piece__eyebrow">Studio Moretti</span>
+        <span class="piece__title">Scegli un orario</span>
+        <span class="booking__service">Massaggio decontratturante · 50 min</span>
+        <span class="booking__day">Giovedì 19 novembre</span>
+        <span class="booking__slots">
+          <span>09:00</span><span>10:30</span><span class="is-picked">11:15</span>
+          <span>14:00</span><span>15:30</span><span>17:00</span>
+        </span>
+        <span class="piece__button">Invia la richiesta</span>
+      </div>
+      <div class="piece piece--pros p1c">
+        <span class="piece__eyebrow">Professionisti per questo servizio</span>
+        <span class="pros__row is-picked"><span class="team-piece__av">AC</span><span>Andrea Conti</span><span class="pros__free">3 orari liberi</span></span>
+        <span class="pros__row"><span class="team-piece__av">EM</span><span>Elena Moretti</span><span class="pros__free">5 orari liberi</span></span>
+      </div>
+      <div class="piece piece--request p1b">
+        <span class="request__head"><span class="piece__eyebrow">Nuova richiesta</span><span class="tag tag--amber">Da confermare</span></span>
+        <span class="piece__title">Marco Bianchi</span>
+        <span class="request__when">gio 19 nov · 11:15 · Andrea Conti</span>
+        <span class="request__actions"><span class="piece__button">Conferma</span><span class="piece__ghost">Proponi un orario</span></span>
+      </div>
+    </div>
+
+    <!-- Set 2 · the day in the agenda and the reminder email -->
+    <div class="collage__set" [class.is-on]="active() === 1" aria-hidden="true">
+      <div class="piece piece--agenda p2a">
+        <span class="agenda__head"><span class="piece__title">Giovedì 19 nov</span><span class="piece__eyebrow">5 appuntamenti</span></span>
+        <span class="agenda__row"><b>09:00</b><span>Giulia Rossi</span><i class="sq sq--green"></i></span>
+        <span class="agenda__row"><b>10:00</b><span>Sara Ricci</span><i class="sq sq--green"></i></span>
+        <span class="agenda__row is-sel"><b>11:15</b><span>Marco Bianchi</span><i class="sq sq--green"></i></span>
+        <span class="agenda__row"><b>14:00</b><span>Luca Ferri</span><i class="sq sq--amber"></i></span>
+        <span class="agenda__row"><b>16:30</b><span>Anna Galli</span><i class="sq sq--green"></i></span>
+      </div>
+      <div class="piece piece--sent p2c">
+        <span class="piece__eyebrow">Email inviata</span>
+        <span class="sent__line">Conferma a Marco Bianchi</span>
+      </div>
+      <div class="piece piece--mail p2b">
+        <span class="piece__eyebrow">mer 18 nov · 11:15</span>
+        <span class="piece__title">Promemoria: domani alle 11:15</span>
+        <span class="mail-piece__body">Ti aspettiamo da Studio Moretti con Andrea Conti.</span>
+        <span class="mail-piece__link">Annulla appuntamento</span>
+      </div>
+    </div>
+
+    <!-- Set 3 · messages, an event and the team -->
+    <div class="collage__set" [class.is-on]="active() === 2" aria-hidden="true">
+      <div class="piece piece--chat p3a">
+        <span class="piece__eyebrow">WhatsApp · Marco Bianchi</span>
+        <span class="chat-piece__in">Riesco ad arrivare alle 11:30?</span>
+        <span class="chat-piece__out">Sì, ti aspettiamo alle 11:30.</span>
+      </div>
+      <div class="piece piece--event p3b">
+        <span class="piece__eyebrow">sab 28 nov · 18:30</span>
+        <span class="piece__title">Yoga al tramonto</span>
+        <span class="event-piece__bar"><span></span></span>
+        <span class="event-piece__count"><b>12</b> iscritti su 20</span>
+      </div>
+      <div class="piece piece--team p3c">
+        <span class="piece__eyebrow">Team · oggi</span>
+        <span class="team-piece__row"><span class="team-piece__av">EM</span><span>Elena Moretti</span><b>4</b></span>
+        <span class="team-piece__row"><span class="team-piece__av">AC</span><span>Andrea Conti</span><b>6</b></span>
+        <span class="team-piece__row"><span class="team-piece__av">LF</span><span>Luca Ferri</span><span class="tag tag--amber">Invitato</span></span>
+      </div>
+    </div>
+  </div>
+
+  @if (looping()) {
+    <button
+      type="button"
+      class="collage__pause"
+      [attr.aria-label]="paused() ? 'Riprendi l’animazione' : 'Metti in pausa l’animazione'"
+      [attr.aria-pressed]="paused()"
+      (click)="togglePause()"
+    >
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        @if (paused()) {
+          <path d="M5 3.5v9l7-4.5z" />
+        } @else {
+          <path d="M5 3.5v9M11 3.5v9" />
+        }
+      </svg>
+    </button>
+  }
+</div>

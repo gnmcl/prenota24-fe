@@ -42,20 +42,20 @@ const PRESET_COLORS = ['#4F46E5', '#7C3AED', '#059669', '#D97706', '#DC2626', '#
 
         <!-- Create / Edit form (ABOVE the list) -->
         @if (showForm()) {
-          <app-card extraClass="mb-6 border-indigo-200 !border-2">
+          <app-card extraClass="mb-6 border-[var(--color-primary)]/20 !border-2">
             <h3 class="mb-4 text-lg font-semibold text-gray-900">{{ editingId() ? 'Modifica servizio' : 'Nuovo servizio' }}</h3>
             <div class="grid gap-4 sm:grid-cols-2">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
-                <input type="text" [(ngModel)]="formName" class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+                <input type="text" [(ngModel)]="formName" class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Durata (minuti) *</label>
-                <input type="number" [(ngModel)]="formDuration" min="5" step="5" class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+                <input type="number" [(ngModel)]="formDuration" min="5" step="5" class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Prezzo (€)</label>
-                <input type="number" [(ngModel)]="formPrice" min="0" step="0.5" class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-colors" />
+                <input type="number" [(ngModel)]="formPrice" min="0" step="0.5" class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] focus:outline-none transition-colors" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Colore</label>
@@ -74,7 +74,7 @@ const PRESET_COLORS = ['#4F46E5', '#7C3AED', '#059669', '#D97706', '#DC2626', '#
               <div class="sm:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Descrizione</label>
                 <textarea [(ngModel)]="formDescription" rows="2"
-                  class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none resize-none transition-colors"></textarea>
+                  class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] focus:outline-none resize-none transition-colors"></textarea>
               </div>
               <!-- Professional association -->
               <div class="sm:col-span-2">
@@ -114,7 +114,7 @@ const PRESET_COLORS = ['#4F46E5', '#7C3AED', '#059669', '#D97706', '#DC2626', '#
 
         @if (isLoading()) {
           <div class="flex justify-center py-12">
-            <div class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+            <div class="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-primary)]/20 border-t-[var(--color-primary)]"></div>
           </div>
         } @else if (services().length === 0 && !showForm()) {
           <app-empty-state
@@ -137,7 +137,7 @@ const PRESET_COLORS = ['#4F46E5', '#7C3AED', '#059669', '#D97706', '#DC2626', '#
                   [ngModel]="searchQuery()"
                   (ngModelChange)="searchQuery.set($event)"
                   placeholder="Cerca servizio..."
-                  class="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+                  class="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm shadow-sm focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:outline-none transition-colors"
                 />
               </div>
             </div>

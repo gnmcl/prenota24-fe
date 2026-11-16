@@ -63,7 +63,7 @@ import { PageShellComponent } from '../../shared/components/page-shell/page-shel
           </form>
 
           <p class="mt-6 text-center text-sm text-gray-500">
-            <a routerLink="/accedi" class="font-semibold text-indigo-600 hover:text-indigo-500">Torna al login</a>
+            <a routerLink="/accedi" class="font-semibold text-[var(--color-primary)] hover:text-[var(--color-primary-dark)]">Torna al login</a>
           </p>
         </app-card>
       </div>

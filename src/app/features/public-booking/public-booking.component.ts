@@ -29,23 +29,23 @@ import type {
   ],
   template: `
     @if (isLoading()) {
-      <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center px-4">
-        <div class="h-10 w-10 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+      <div class="min-h-screen bg-[var(--surface-page)] flex items-center justify-center px-4">
+        <div class="h-10 w-10 animate-spin rounded-full border-4 border-[var(--color-primary)]/20 border-t-[var(--color-primary)]"></div>
       </div>
     } @else if (!studio()) {
-      <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center px-4">
+      <div class="min-h-screen bg-[var(--surface-page)] flex items-center justify-center px-4">
         <app-card extraClass="max-w-md text-center">
           <h2 class="text-xl font-bold text-gray-900 mb-2">Studio non trovato</h2>
           <p class="text-gray-500">Il link potrebbe essere errato o lo studio non è più disponibile.</p>
         </app-card>
       </div>
     } @else {
-      <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      <div class="min-h-screen bg-[var(--surface-page)]">
 
         <!-- Header -->
         <header class="border-b border-gray-200/60 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
           <div class="mx-auto flex h-14 max-w-3xl items-center px-4 sm:px-6">
-            <span class="text-lg font-bold tracking-tight text-indigo-600">Prenota24</span>
+            <span class="text-lg font-bold tracking-tight text-[var(--color-primary)]">Prenota24</span>
             <span class="mx-3 text-gray-300">|</span>
             <span class="text-sm font-medium text-gray-700 truncate">{{ studio()!.name }}</span>
           </div>
@@ -65,7 +65,7 @@ import type {
                 è stato richiesto con successo.
               </p>
               @if (confirmedSlot()) {
-                <div class="rounded-lg bg-indigo-50 px-4 py-3 text-sm text-indigo-700 font-medium">
+                <div class="rounded-lg bg-[var(--surface-active-nav)] px-4 py-3 text-sm text-[var(--color-primary)] font-medium">
                   📅 {{ formatSlotDisplay(confirmedSlot()!.start) }}
                 </div>
               }
@@ -132,8 +132,8 @@ import type {
                       type="button"
                       (click)="selectService(service)"
                        class="text-left rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm
-                             hover:border-indigo-400 hover:shadow-md transition-all
-                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                             hover:border-[var(--color-primary)] hover:shadow-md transition-all
+                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
                     >
                       <div class="flex items-start gap-3">
                         <span
@@ -168,12 +168,12 @@ import type {
                     type="button"
                     (click)="selectProfessional(prof)"
                           class="text-left rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm
-                           hover:border-indigo-400 hover:shadow-md transition-all
-                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                           hover:border-[var(--color-primary)] hover:shadow-md transition-all
+                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
                   >
                     <div class="flex items-center gap-4">
                       <span class="flex h-12 w-12 items-center justify-center rounded-full
-                                   bg-indigo-100 text-indigo-700 font-bold text-sm flex-shrink-0">
+                                   bg-[var(--surface-active-nav)] text-[var(--color-primary)] font-bold text-sm flex-shrink-0">
                         {{ initials(prof) }}
                       </span>
                       <div class="flex-1 min-w-0">
@@ -204,7 +204,7 @@ import type {
                   <span class="text-sm font-medium text-gray-700">{{ selectedService()!.name }}</span>
                   <span class="text-gray-300 mx-1">·</span>
                   <span class="flex h-6 w-6 items-center justify-center rounded-full
-                               bg-indigo-100 text-indigo-700 text-xs font-bold flex-shrink-0">
+                               bg-[var(--surface-active-nav)] text-[var(--color-primary)] text-xs font-bold flex-shrink-0">
                     {{ initials(selectedProfessional()!) }}
                   </span>
                   <span class="text-sm text-gray-600">
@@ -224,13 +224,13 @@ import type {
                   (change)="onDateChange($event)"
                   class="block w-full rounded-lg border border-gray-300 px-3.5 py-2.5
                          text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2
-                         focus:ring-indigo-500 mb-6"
+                         focus:ring-[var(--color-primary)] mb-6"
                 />
 
                 @if (selectedDate()) {
                   @if (slotsLoading()) {
                     <div class="flex items-center gap-2 text-sm text-gray-500">
-                      <div class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-600"></div>
+                      <div class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-[var(--color-primary)]"></div>
                       Caricamento orari disponibili...
                     </div>
                   } @else if (slots().length === 0) {
@@ -263,12 +263,12 @@ import type {
             @else if (step() === 3) {
               <app-card>
                 <!-- Summary bar -->
-                <div class="rounded-lg bg-indigo-50 border border-indigo-100 px-4 py-3 mb-6 text-sm">
-                  <div class="flex flex-wrap gap-x-4 gap-y-1 text-indigo-700">
+                <div class="rounded-lg bg-[var(--surface-active-nav)] border border-[var(--color-primary)]/20 px-4 py-3 mb-6 text-sm">
+                  <div class="flex flex-wrap gap-x-4 gap-y-1 text-[var(--color-primary)]">
                     <span class="font-medium">{{ selectedService()!.name }}</span>
-                    <span class="text-indigo-400">·</span>
+                    <span class="text-[var(--color-primary)]">·</span>
                     <span>{{ selectedProfessional()!.firstName }} {{ selectedProfessional()!.lastName }}</span>
-                    <span class="text-indigo-400">·</span>
+                    <span class="text-[var(--color-primary)]">·</span>
                     <span>📅 {{ formatSlotDisplay(selectedSlot()!.start) }}</span>
                   </div>
                 </div>
@@ -326,7 +326,7 @@ import type {
                       formControlName="notes"
                       class="block w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm
                              text-gray-900 shadow-sm placeholder:text-gray-400 focus:outline-none
-                             focus:ring-2 focus:ring-indigo-500 resize-none"
+                             focus:ring-2 focus:ring-[var(--color-primary)] resize-none"
                     ></textarea>
                   </div>
 
@@ -336,12 +336,12 @@ import type {
                   </div>
 
                   <p class="text-xs leading-5 text-gray-500">
-                    Consulta l'<a routerLink="/privacy" class="font-semibold text-indigo-600 underline underline-offset-2 hover:text-indigo-500">informativa privacy</a>.
+                    Consulta l'<a routerLink="/privacy" class="font-semibold text-[var(--color-primary)] underline underline-offset-2 hover:text-[var(--color-primary-dark)]">informativa privacy</a>.
                     <strong class="font-semibold text-gray-700">{{ studio()!.name }}</strong> è titolare dei dati necessari alla prenotazione e deve fornirti la propria informativa.
                     @if (studio()!.privacyContactEmail) {
-                      Puoi contattarlo a <a [href]="'mailto:' + studio()!.privacyContactEmail" class="font-semibold text-indigo-600 underline underline-offset-2 hover:text-indigo-500">{{ studio()!.privacyContactEmail }}</a>.
+                      Puoi contattarlo a <a [href]="'mailto:' + studio()!.privacyContactEmail" class="font-semibold text-[var(--color-primary)] underline underline-offset-2 hover:text-[var(--color-primary-dark)]">{{ studio()!.privacyContactEmail }}</a>.
                     } @else {
-                      Per ottenere i suoi recapiti scrivi a <a href="mailto:info@prenota24.com" class="font-semibold text-indigo-600 underline underline-offset-2 hover:text-indigo-500">info&#64;prenota24.com</a> indicando il nome dello studio.
+                      Per ottenere i suoi recapiti scrivi a <a href="mailto:info@prenota24.com" class="font-semibold text-[var(--color-primary)] underline underline-offset-2 hover:text-[var(--color-primary-dark)]">info&#64;prenota24.com</a> indicando il nome dello studio.
                     }
                   </p>
 
@@ -580,10 +580,10 @@ export class PublicBookingComponent implements OnInit {
 
   slotButtonClass(slot: TimeSlotResponse): string {
     const isSelected = this.selectedSlot()?.start === slot.start;
-    const base = 'rounded-lg border px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 w-full sm:w-auto';
+    const base = 'rounded-lg border px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] w-full sm:w-auto';
     return isSelected
-      ? `${base} bg-indigo-600 text-white border-indigo-600`
-      : `${base} bg-white text-gray-700 border-gray-300 hover:border-indigo-400 hover:text-indigo-600`;
+      ? `${base} bg-[var(--color-primary)] text-white border-[var(--color-primary)]`
+      : `${base} bg-white text-gray-700 border-gray-300 hover:border-[var(--color-primary)] hover:text-[var(--color-primary-dark)]`;
   }
 
   getFieldError(field: string): string {

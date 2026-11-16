@@ -9,6 +9,7 @@ import { EntityListRowComponent } from '../../shared/components/entity-list/enti
 import { AppointmentService } from '../../core/services/appointment.service';
 import { PendingAppointmentsService } from '../../core/services/pending-appointments.service';
 import type { AppointmentResponse, AppointmentStatus, Page } from '../../core/models/domain.model';
+import { appointmentStatusLabel, appointmentStatusVariant, type AppointmentStatusVariant } from '../../shared/utils/appointment-status';
 
 @Component({
   selector: 'app-appointments',
@@ -94,7 +95,7 @@ import type { AppointmentResponse, AppointmentStatus, Page } from '../../core/mo
             </svg>
             Filtri
             @if (activeFilterCount() > 0) {
-              <span class="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white">{{ activeFilterCount() }}</span>
+              <span class="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-primary)] text-[10px] font-bold text-white">{{ activeFilterCount() }}</span>
             }
             <svg class="h-3.5 w-3.5 text-[var(--text-tertiary)] transition-transform" [class.rotate-180]="showFilters()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -333,13 +334,11 @@ export class AppointmentsComponent implements OnInit {
   }
 
   statusLabel(status: AppointmentStatus): string {
-    const map: Record<string, string> = { REQUESTED: 'Da confermare', CONFIRMED: 'Confermato', PROPOSED_NEW_TIME: 'Proposta orario', CANCELLED: 'Cancellato', COMPLETED: 'Completato', NO_SHOW: 'Non presentato' };
-    return map[status] ?? status;
+    return appointmentStatusLabel(status);
   }
 
-  statusVariant(status: AppointmentStatus): 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple' {
-    const map: Record<string, 'amber' | 'green' | 'blue' | 'red' | 'gray' | 'purple'> = { REQUESTED: 'amber', CONFIRMED: 'green', PROPOSED_NEW_TIME: 'blue', CANCELLED: 'red', COMPLETED: 'gray', NO_SHOW: 'purple' };
-    return map[status] ?? 'gray';
+  statusVariant(status: AppointmentStatus): AppointmentStatusVariant {
+    return appointmentStatusVariant(status);
   }
 
   monthShort(iso: string): string {
